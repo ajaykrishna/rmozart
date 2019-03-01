@@ -308,6 +308,24 @@
       </div>
     </section>
 
+    
+    <!-- Rules manager view -->
+    <section data-view="rules" id="rules-manager-view" class="hidden">
+      <div class="title-bar">
+        <h3 class="rules-header">Rules manager</h3>
+      </div>
+     <div id="area-wraper">
+        <div id="rules-side-menu" >
+          <div id="create-rule-hint" class="hidden">
+            No rules created. Click the plus button to create a rule.
+          </div>
+        </div>
+        <div id="rules-area"></div>
+     </div>
+      <button id="create-rule-button" class="icon-button"></button>
+    </section>
+
+
     <!-- Speech button -->
     <div id="speech-wrapper" class="hidden">
       <button id="speech-button" class="icon-button"></button>
@@ -322,6 +340,7 @@
         <li><a id="assistant-menu-item" href="/assistant" class="hidden" >Assistant</a></li>
         <li><a id="things-menu-item" href="/things" class="selected">Things</a></li>
         <li><a id="rules-menu-item" href="/rules">Rules</a></li>
+        <li><a id="rules-manager-menu-item" href="/rulesManager">Rules 2</a></li>
         <li><a id="floorplan-menu-item" href="/floorplan">Floorplan</a></li>
         <li><a id="settings-menu-item" href="/settings">Settings</a></li>
         <li>

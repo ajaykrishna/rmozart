@@ -32,9 +32,13 @@ let Router;
 // eslint-disable-next-line prefer-const
 let RulesScreen;
 // eslint-disable-next-line prefer-const
+let RulesManagerScreen;
+// eslint-disable-next-line prefer-const
 let RuleScreen;
 // eslint-disable-next-line prefer-const
 let Speech;
+
+
 
 const shaka = require('shaka-player/dist/shaka-player.compiled');
 const MobileDragDrop = require('mobile-drag-drop/index.min');
@@ -87,6 +91,7 @@ const App = {
     }
 
     RulesScreen.init();
+    RulesManagerScreen.init();
     RuleScreen.init();
 
     this.views = [];
@@ -94,6 +99,7 @@ const App = {
     this.views.floorplan = document.getElementById('floorplan-view');
     this.views.settings = document.getElementById('settings-view');
     this.views.rules = document.getElementById('rules-view');
+    this.views['rules-manager'] = document.getElementById('rules-manager-view');
     this.views.rule = document.getElementById('rule-view');
     this.views.assistant = document.getElementById('assistant-view');
     this.currentView = 'things';
@@ -229,7 +235,10 @@ const App = {
     RulesScreen.show();
     this.selectView('rules');
   },
-
+  showRulesManager: function() {
+    RulesManagerScreen.show();
+    this.selectView('rules-manager');
+  },
   showRule: function(context) {
     RuleScreen.show(context.params.rule);
     this.selectView('rule');
@@ -366,6 +375,7 @@ SettingsScreen = require('./settings');
 FloorplanScreen = require('./floorplan');
 Router = require('./router');
 RulesScreen = require('./rules-screen');
+RulesManagerScreen = require('./rules-manager-screen')
 RuleScreen = require('./rule-screen');
 Speech = require('./speech');
 
