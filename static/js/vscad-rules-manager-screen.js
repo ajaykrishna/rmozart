@@ -6,15 +6,15 @@
 
 const API = require('./api');
 const Gateway = require('./rules/Gateway');
-const RuleCardItem = require('./rules/RuleCardItem');
+const VscadRuleCardItem = require('./rules/VscadRuleCardItem');
 const page = require('page');
 
-const RulePropertyBlock = require('./rules/RulePropertyBlock');
+const VscadRulePropertyBlock = require('./rules/VscadRulePropertyBlock');
 
 'use strict';
 
 // eslint-disable-next-line no-unused-vars
-const RulesScreen = {
+const VscadRulesScreen = {
   init: function() {
     this.createRuleButton = document.getElementById('create-rule-button');
     this.createRuleHint = document.getElementById('create-rule-hint');
@@ -40,9 +40,9 @@ const RulesScreen = {
       });
 
       for (const ruleDesc of fetchedRules) {
-        console.log("CARGANDO REGLA ");
+        console.log(JSON.stringify(ruleDesc));
         
-        this.addRuleCardItem(ruleDesc);
+        this.addVscadRuleCardItem(ruleDesc);
       }
 
       if (fetchedRules.length === 0) {
@@ -56,11 +56,11 @@ const RulesScreen = {
    * Add a rule, filling it with the data from a RuleDescription
    * @param {RuleDescription} desc
    */
-  addRuleCardItem: function(desc) {
+  addVscadRuleCardItem: function(desc) {
     const ruleElt = document.createElement('div');
     ruleElt.classList.add('rule');
     try {
-      new RuleCardItem(this.gateway, ruleElt, this.nextId, desc);
+      new VscadRuleCardItem(this.gateway, ruleElt, this.nextId, desc);
     } catch (e) {
       console.error('Invalid rule', desc, e);
       this.nextId += 1;
@@ -87,7 +87,7 @@ const RulesScreen = {
 
     const x = deviceRect.left;
     const y = deviceRect.top;
-    const newBlock = new RulePropertyBlock(
+    const newBlock = new VscadRulePropertyBlock(
       this.ruleArea,desc,gateway);
     newBlock.snapToGrid(x, y);
     newBlock.draggable.onDown(event);
@@ -98,4 +98,4 @@ const RulesScreen = {
 
 };
 
-module.exports = RulesScreen;
+module.exports = VscadRulesScreen;

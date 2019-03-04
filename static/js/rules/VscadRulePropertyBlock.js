@@ -1,5 +1,5 @@
 const PropertySelect = require('./PropertySelect');
-const RuleBlock = require('./RuleBlock');
+const VscadRuleBlock = require('./VscadRuleBlock');
 const RuleUtils = require('./RuleUtils');
 
 /**
@@ -12,7 +12,7 @@ const RuleUtils = require('./RuleUtils');
  * @param {Rule} rule
  * @param {ThingDescription} thing
  */
-function RulePropertyBlock(ruleArea,desc,gateway) {
+function VscadRulePropertyBlock(ruleArea,desc,gateway) {
   console.log("des",desc);
   
   let iconTrigger = '/optimized-images/thing-icons/thing.svg';
@@ -28,19 +28,19 @@ function RulePropertyBlock(ruleArea,desc,gateway) {
     }
   }
 
-  RuleBlock.call(this, ruleArea, desc.name, iconTrigger);
+  VscadRuleBlock.call(this, ruleArea, desc.name, iconTrigger);
 
 }
 
-RulePropertyBlock.prototype = Object.create(RuleBlock.prototype);
+VscadRulePropertyBlock.prototype = Object.create(VscadRuleBlock.prototype);
 
 /**
  * On mouse up during a drag
  */
-RulePropertyBlock.prototype.onUp = function(clientX, clientY) {
-  RuleBlock.prototype.onUp.call(this, clientX, clientY);
+VscadRulePropertyBlock.prototype.onUp = function(clientX, clientY) {
+  VscadRuleBlock.prototype.onUp.call(this, clientX, clientY);
   
 };
 
 
-module.exports = RulePropertyBlock;
+module.exports = VscadRulePropertyBlock;

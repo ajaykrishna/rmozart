@@ -153,7 +153,7 @@ const webpackWeb = {
       './static/css/settings.css',
       './static/css/rules-common.css',
       './static/css/rules.css',
-      './static/css/rulesManager.css',
+      './static/css/vscad-rulesManager.css',
       './static/css/rule.css',
       './static/css/addons-form.css',
       './node_modules/mobile-drag-drop/default.css',

@@ -32,7 +32,7 @@ let Router;
 // eslint-disable-next-line prefer-const
 let RulesScreen;
 // eslint-disable-next-line prefer-const
-let RulesManagerScreen;
+let VscadRulesManagerScreen;
 // eslint-disable-next-line prefer-const
 let RuleScreen;
 // eslint-disable-next-line prefer-const
@@ -91,7 +91,7 @@ const App = {
     }
 
     RulesScreen.init();
-    RulesManagerScreen.init();
+    VscadRulesManagerScreen.init();
     RuleScreen.init();
 
     this.views = [];
@@ -236,7 +236,7 @@ const App = {
     this.selectView('rules');
   },
   showRulesManager: function() {
-    RulesManagerScreen.show();
+    VscadRulesManagerScreen.show();
     this.selectView('rules-manager');
   },
   showRule: function(context) {
@@ -375,7 +375,7 @@ SettingsScreen = require('./settings');
 FloorplanScreen = require('./floorplan');
 Router = require('./router');
 RulesScreen = require('./rules-screen');
-RulesManagerScreen = require('./rules-manager-screen')
+VscadRulesManagerScreen = require('./vscad-rules-manager-screen')
 RuleScreen = require('./rule-screen');
 Speech = require('./speech');
 

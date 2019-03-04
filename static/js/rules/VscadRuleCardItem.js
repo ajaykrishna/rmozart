@@ -11,7 +11,7 @@ const Utils = require('../utils');
  * @param {String} id - unique identifier of the rule card
  * @param {RuleDescription} desc - rule description to represent
  */
-function RuleCardItem(gateway, elt, id, desc) {
+function VscadRuleCardItem(gateway, elt, id, desc) {
   this.elt = elt;
   this.id = id;
   this.rule = new Rule(gateway, desc);
@@ -70,4 +70,4 @@ function RuleCardItem(gateway, elt, id, desc) {
 
 
 
-module.exports = RuleCardItem;
+module.exports = VscadRuleCardItem;

@@ -13,7 +13,7 @@ const Utils = require('../utils');
  * @param {number} x
  * @param {number} y
  */
-function RuleBlock(ruleArea,name,icon) {
+function VscadRuleBlock(ruleArea,name,icon) {
   this.role = '';
   this.rulePart = null;
 
@@ -30,7 +30,7 @@ function RuleBlock(ruleArea,name,icon) {
       </h3>
     </div>`;
 
-  this.RuleBlock = this.elt.querySelector('.rule-part-block');
+  this.VscadRuleBlock = this.elt.querySelector('.rule-part-block');
 
   this.ruleArea = ruleArea;
 
@@ -48,7 +48,7 @@ function RuleBlock(ruleArea,name,icon) {
 /**
  * On mouse down during a drag
  */
-RuleBlock.prototype.onDown = function() {
+VscadRuleBlock.prototype.onDown = function() {
   const openSelector = this.elt.querySelector('.open');
   if (openSelector) {
     openSelector.classList.remove('open');
@@ -58,7 +58,7 @@ RuleBlock.prototype.onDown = function() {
     transform: this.elt.style.transform,
   };
 
-  const deleteArea = document.getElementById('delete-area');
+  const deleteArea = document.getElementById('rules-side-menu');
   deleteArea.classList.add('delete-active');
   this.elt.classList.add('dragging');
   this.ruleArea.classList.add('drag-location-hint');
@@ -67,24 +67,29 @@ RuleBlock.prototype.onDown = function() {
 /**
  * On mouse move during a drag
  */
-RuleBlock.prototype.onMove = function(clientX, clientY, relX, relY) {
+VscadRuleBlock.prototype.onMove = function(clientX, clientY, relX, relY) {
   const ruleAreaRect = this.ruleArea.getBoundingClientRect();
-  
-  if (this.flexDir === 'row') {
+  const deleteArea = document.getElementById('rules-side-menu');
+  const deleteAreaWidth = deleteArea.getBoundingClientRect().width;
+  if (clientX < deleteAreaWidth) {
+    this.VscadRuleBlock.classList.remove('trigger');
+    this.VscadRuleBlock.classList.remove('effect');
+  } 
+  else if (this.flexDir === 'row') {
     if (relX < ruleAreaRect.width / 2) {
-      this.RuleBlock.classList.add('trigger');
-      this.RuleBlock.classList.remove('effect');
+      this.VscadRuleBlock.classList.add('trigger');
+      this.VscadRuleBlock.classList.remove('effect');
     } else {
-      this.RuleBlock.classList.remove('trigger');
-      this.RuleBlock.classList.add('effect');
+      this.VscadRuleBlock.classList.remove('trigger');
+      this.VscadRuleBlock.classList.add('effect');
     }
   } else if (this.flexDir === 'column') {
     if (relY < ruleAreaRect.height / 2) {
-      this.RuleBlock.classList.add('trigger');
-      this.RuleBlock.classList.remove('effect');
+      this.VscadRuleBlock.classList.add('trigger');
+      this.VscadRuleBlock.classList.remove('effect');
     } else {
-      this.RuleBlock.classList.remove('trigger');
-      this.RuleBlock.classList.add('effect');
+      this.VscadRuleBlock.classList.remove('trigger');
+      this.VscadRuleBlock.classList.add('effect');
     }
   }
 
@@ -96,7 +101,7 @@ RuleBlock.prototype.onMove = function(clientX, clientY, relX, relY) {
  * @param {number} relX - x coordinate relative to ruleArea
  * @param {number} relY - y coordinate relative to ruleArea
  */
-RuleBlock.prototype.snapToGrid = function(relX, relY) {
+VscadRuleBlock.prototype.snapToGrid = function(relX, relY) {
   const grid = 40;
   const x = Math.floor((relX - grid / 2) / grid) * grid + grid / 2;
   let y = Math.floor((relY - grid / 2) / grid) * grid + grid / 2;
@@ -110,7 +115,7 @@ RuleBlock.prototype.snapToGrid = function(relX, relY) {
 /**
  * On mouse up during a drag
  */
-RuleBlock.prototype.onUp = function(clientX, clientY) {
+VscadRuleBlock.prototype.onUp = function(clientX, clientY) {
   this.elt.classList.remove('dragging');
 
   /* calcula en que parte de la pantalla fue el drop para hacer la accion que prosigue */
@@ -120,29 +125,34 @@ RuleBlock.prototype.onUp = function(clientX, clientY) {
   // deleteArea.classList.remove('delete-active');
   // this.ruleArea.classList.remove('drag-location-hint');
 
-  // if (this.RuleBlock.classList.contains('trigger')) {
+  // if (this.VscadRuleBlock.classList.contains('trigger')) {
   //   this.role = 'trigger';
-  // } else if (this.RuleBlock.classList.contains('effect')) {
+  // } else if (this.VscadRuleBlock.classList.contains('effect')) {
   //   this.role = 'effect';
   // }
 
-  // if (clientY > window.innerHeight - deleteAreaHeight) {
-  //   this.remove();
-  // }
+  const deleteArea = document.getElementById('rules-side-menu');
+  const deleteAreaWidth = deleteArea.getBoundingClientRect().width;
+  console.log(clientX , deleteAreaWidth);
+  
+  if (clientX < deleteAreaWidth) {
+    this.remove();
+    
+  } 
 
 };
 
 /**
- * Reset the RuleBlock to before the current drag started
+ * Reset the VscadRuleBlock to before the current drag started
  */
-RuleBlock.prototype.reset = function() {
+VscadRuleBlock.prototype.reset = function() {
   this.elt.style.transform = this.resetState.transform;
   if (this.role === 'trigger') {
-    this.RuleBlock.classList.add('trigger');
-    this.RuleBlock.classList.remove('effect');
+    this.VscadRuleBlock.classList.add('trigger');
+    this.VscadRuleBlock.classList.remove('effect');
   } else if (this.role === 'effect') {
-    this.RuleBlock.classList.remove('trigger');
-    this.RuleBlock.classList.add('effect');
+    this.VscadRuleBlock.classList.remove('trigger');
+    this.VscadRuleBlock.classList.add('effect');
   } else {
     this.remove();
   }
@@ -151,14 +161,14 @@ RuleBlock.prototype.reset = function() {
 /**
  * Initialize based on an existing partial rule
  */
-RuleBlock.prototype.setRulePart = function(rulePart) {
+VscadRuleBlock.prototype.setRulePart = function(rulePart) {
   this.rulePart = rulePart;
   if (rulePart.trigger) {
     this.role = 'trigger';
-    this.RuleBlock.classList.add('trigger');
+    this.VscadRuleBlock.classList.add('trigger');
   } else if (rulePart.effect) {
     this.role = 'effect';
-    this.RuleBlock.classList.add('effect');
+    this.VscadRuleBlock.classList.add('effect');
   }
 };
 
@@ -170,7 +180,7 @@ RuleBlock.prototype.setRulePart = function(rulePart) {
  * @param {number?} index - Centered relative to a list
  * @param {number?} length
  */
-RuleBlock.prototype.snapToCenter = function(index, length) {
+VscadRuleBlock.prototype.snapToCenter = function(index, length) {
   if (!this.role) {
     return;
   }
@@ -212,12 +222,12 @@ RuleBlock.prototype.snapToCenter = function(index, length) {
 };
 
 /**
- * Remove the RuleBlock from the DOM and from its associated rule
+ * Remove the VscadRuleBlock from the DOM and from its associated rule
  */
-RuleBlock.prototype.remove = function() {
+VscadRuleBlock.prototype.remove = function() {
   this.ruleArea.removeChild(this.elt);
   this.rulePart = null;
   this.role = 'removed';
 };
 
-module.exports = RuleBlock;
+module.exports = VscadRuleBlock;

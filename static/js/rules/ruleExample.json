@@ -1,0 +1,35 @@
+{
+  "enabled": false,
+  "trigger": {
+    "type": "MultiTrigger",
+    "op": "AND",
+    "triggers": [{
+      "type": "BooleanTrigger",
+      "label": "Present",
+      "property": {
+        "type": "boolean",
+        "thing": "philips-hue-001788fffeb0362e-sensors-3",
+        "id": "on"
+      },
+      "onValue": true
+    }]
+  },
+  "effect": {
+    "type": "MultiEffect",
+    "effects": [{
+      "type": "SetEffect",
+      "label": "Color",
+      "property": {
+        "type": "string",
+        "thing": "philips-hue-001788fffeb0362e-1",
+        "id": "color"
+      },
+      "value": "#7e20cc"
+    }, {
+      "type": "NotificationEffect",
+      "message": "hola"
+    }]
+  },
+  "id": 2,
+  "name": "Rule Name"
+}
