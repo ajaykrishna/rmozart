@@ -66,7 +66,10 @@ const RulesScreen = {
       this.nextId += 1;
       return;
     }
-    ruleElt.addEventListener('mousedown',this.onDeviceBlockDown.bind(this))
+    ruleElt.addEventListener('mousedown',(event)=>{
+      this.onDeviceBlockDown(event,desc,this.gateway).bind(this)
+    }
+      )
     this.nextId += 1;
     this.rulesList.appendChild(ruleElt);
   },
@@ -78,17 +81,16 @@ const RulesScreen = {
       return this.readRules();
     });
   },
-  onDeviceBlockDown: function(event) {
+  onDeviceBlockDown: function(event,desc,gateway) {
 
     const deviceRect = event.target.getBoundingClientRect();
 
     const x = deviceRect.left;
     const y = deviceRect.top;
     const newBlock = new RulePropertyBlock(
-      this.ruleArea);
+      this.ruleArea,desc,gateway);
     newBlock.snapToGrid(x, y);
     newBlock.draggable.onDown(event);
-    this.partBlocks.push(newBlock);
   },
 
 

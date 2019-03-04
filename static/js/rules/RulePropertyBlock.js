@@ -12,9 +12,23 @@ const RuleUtils = require('./RuleUtils');
  * @param {Rule} rule
  * @param {ThingDescription} thing
  */
-function RulePropertyBlock(ruleArea) {
-  RuleBlock.call(this, ruleArea,
-                     'thing.name', 'RuleUtils.icon(thing)');
+function RulePropertyBlock(ruleArea,desc,gateway) {
+  console.log("des",desc);
+  
+  let iconTrigger = '/optimized-images/thing-icons/thing.svg';
+
+  if (desc.trigger) {
+    let trigger = desc.trigger;
+    if (trigger.triggers && trigger.triggers.length > 0) {
+      trigger = trigger.triggers[0];
+    }
+    const thingTrigger = RuleUtils.thingFromPart(gateway, trigger);
+    if (thingTrigger) {
+      iconTrigger = RuleUtils.icon(thingTrigger);
+    }
+  }
+
+  RuleBlock.call(this, ruleArea, desc.name, iconTrigger);
 
 }
 

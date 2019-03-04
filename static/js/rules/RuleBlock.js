@@ -17,6 +17,7 @@ function RuleBlock(ruleArea,name,icon) {
   this.role = '';
   this.rulePart = null;
 
+
   this.elt = document.createElement('div');
   this.elt.classList.add('rule-part-container');
 
@@ -25,7 +26,7 @@ function RuleBlock(ruleArea,name,icon) {
     </div>
     <div class="rule-part-info">
       <h3 class="rule-part-name">
-      ${Utils.escapeHtml(name)}
+      ${name}
       </h3>
     </div>`;
 
@@ -61,8 +62,6 @@ RuleBlock.prototype.onDown = function() {
   deleteArea.classList.add('delete-active');
   this.elt.classList.add('dragging');
   this.ruleArea.classList.add('drag-location-hint');
-
-  this.onPresentationChange();
 };
 
 /**
@@ -70,12 +69,8 @@ RuleBlock.prototype.onDown = function() {
  */
 RuleBlock.prototype.onMove = function(clientX, clientY, relX, relY) {
   const ruleAreaRect = this.ruleArea.getBoundingClientRect();
-  const deleteArea = document.getElementById('delete-area');
-  const deleteAreaHeight = deleteArea.getBoundingClientRect().height;
-  if (clientY > window.innerHeight - deleteAreaHeight) {
-    this.RuleBlock.classList.remove('trigger');
-    this.RuleBlock.classList.remove('effect');
-  } else if (this.flexDir === 'row') {
+  
+  if (this.flexDir === 'row') {
     if (relX < ruleAreaRect.width / 2) {
       this.RuleBlock.classList.add('trigger');
       this.RuleBlock.classList.remove('effect');
