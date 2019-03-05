@@ -8,9 +8,7 @@ const API = require('./api');
 const Gateway = require('./rules/Gateway');
 const VscadRuleCardItem = require('./rules/VscadRuleCardItem');
 const page = require('page');
-
 const VscadRulePropertyBlock = require('./rules/VscadRulePropertyBlock');
-
 'use strict';
 
 // eslint-disable-next-line no-unused-vars
@@ -20,14 +18,18 @@ const VscadRulesScreen = {
     this.createRuleHint = document.getElementById('create-rule-hint');
     this.rulesList = document.getElementById('rules-side-menu');
     this.ruleArea = document.getElementById('rules-area');
+    this.testButton = document.getElementById('test-button');
     this.gateway = new Gateway();
     this.nextId = 0;
 
+    this.testButton.addEventListener('click',()=>{
+      this.testApi();
+    });
     this.createRuleButton.addEventListener('click', () => {
       page('/rules/new');
     });
   },
-
+ 
   /**
    * @return {Promise<Array<RuleDescription>>}
    */
@@ -40,8 +42,6 @@ const VscadRulesScreen = {
       });
 
       for (const ruleDesc of fetchedRules) {
-        console.log(JSON.stringify(ruleDesc));
-        
         this.addVscadRuleCardItem(ruleDesc);
       }
 
