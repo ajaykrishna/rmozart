@@ -107,7 +107,8 @@ ComposedRule.prototype.toDescription = function() {
  * @param {boolean} html - whether to generate an interface
  * @return {String?}
  */
-ComposedRule.prototype.singleTriggerToHumanRepresentation = function(trigger, html) {
+ComposedRule.prototype.singleTriggerToHumanRepresentation = 
+function(trigger, html) {
   if (!trigger) {
     return null;
   }

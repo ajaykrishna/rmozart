@@ -39,7 +39,6 @@ let RuleScreen;
 let Speech;
 
 
-
 const shaka = require('shaka-player/dist/shaka-player.compiled');
 const MobileDragDrop = require('mobile-drag-drop/index.min');
 const ScrollBehavior = require('mobile-drag-drop/scroll-behaviour.min');
@@ -375,7 +374,7 @@ SettingsScreen = require('./settings');
 FloorplanScreen = require('./floorplan');
 Router = require('./router');
 RulesScreen = require('./rules-screen');
-VscadRulesManagerScreen = require('./vscad-rules-manager-screen')
+VscadRulesManagerScreen = require('./vscad-rules-manager-screen');
 RuleScreen = require('./rule-screen');
 Speech = require('./speech');
 

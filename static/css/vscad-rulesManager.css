@@ -16,11 +16,23 @@
   font-size: large;
 }
 
+#operators-side-menu{
 
+}
 
+.operator-menu-item{
+  background:#ffcf8a;
+}
+.operator-menu-item h3{
+  padding: 3rem;
+  color: #46769c;
+  font-weight: bold;
+}
 #area-wraper{
   display: flex;
+  height: -webkit-fill-available;
 }
+
 #rules-side-menu {
   overflow-y: scroll;
   width: 32rem;

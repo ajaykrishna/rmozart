@@ -1,5 +1,4 @@
 const Draggable = require('./Draggable');
-const Utils = require('../utils');
 
 /**
  * An element representing a component of a rule.  Drag-and-dropped within
@@ -13,7 +12,7 @@ const Utils = require('../utils');
  * @param {number} x
  * @param {number} y
  */
-function VscadRuleBlock(ruleArea,name,icon) {
+function VscadRuleBlock(ruleArea, name, icon) {
   this.role = '';
   this.rulePart = null;
 
@@ -74,8 +73,7 @@ VscadRuleBlock.prototype.onMove = function(clientX, clientY, relX, relY) {
   if (clientX < deleteAreaWidth) {
     this.VscadRuleBlock.classList.remove('trigger');
     this.VscadRuleBlock.classList.remove('effect');
-  } 
-  else if (this.flexDir === 'row') {
+  } else if (this.flexDir === 'row') {
     if (relX < ruleAreaRect.width / 2) {
       this.VscadRuleBlock.classList.add('trigger');
       this.VscadRuleBlock.classList.remove('effect');

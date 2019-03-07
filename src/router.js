@@ -151,7 +151,7 @@ const Router = {
     app.use(API_PREFIX + Constants.RULES_PATH, nocache, auth,
             require('./rules-engine/index.js'));
     app.use(API_PREFIX + Constants.COMPOSED_RULES_PATH, nocache, auth,
-                require('./vscad-rules-engine/VscadIndex.js'));
+            require('./vscad-rules-engine/VscadIndex.js'));
     app.use(API_PREFIX + Constants.LOGS_PATH, nocache, auth,
             require('./controllers/logs_controller'));
     app.use(API_PREFIX + Constants.PUSH_PATH, nocache, auth,

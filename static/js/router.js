@@ -26,7 +26,7 @@ const Router = {
     page('/floorplan', App.showFloorplan.bind(App));
     page('/rules', App.showRules.bind(App));
     page('/rules/:rule', App.showRule.bind(App));
-    page('/vscad-rulesManager',App.showRulesManager.bind(App));
+    page('/vscad-rulesManager', App.showRulesManager.bind(App));
     page();
   },
 };
