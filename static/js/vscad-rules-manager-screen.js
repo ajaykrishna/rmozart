@@ -45,22 +45,37 @@ const VscadRulesScreen = {
   },
  testApi:function testApi(){
    console.log("testing");
-   
-   // creation
-    var cRule = new VscadCompsedRule(this.gateway);
-    cRule.update(); 
-
-// get
-  rulePromise = fetch(`/composed-rules/1`, {
-    headers: API.headers(),
-  }).then((res) => {
-    console.log(res.json);
-    
+   //get all
+   fetch('/composed-rules', {headers: API.headers()}).then((res) => {
     return res.json();
+  }).then((fetchedRules) => {
+    for (const ruleDesc of fetchedRules) {
+      console.log(ruleDesc);
+      
+    }
   });
+   const desc ={
+    enabled:true,
+    name : "Rule Name",
+    rules : [],
+    expresion :"[r1 ; r3 , r2] | r4"
+   }
+   // creation
+    var cRule = new VscadCompsedRule(this.gateway,desc);
 
    cRule.expression ="2,4;8*10";
-   cRule.update(); 
+   cRule.update().then(()=>{
+     // get
+    fetch(`/composed-rules/${cRule.id}`, {
+      headers: API.headers(),
+    }).then((res) => {
+      console.log(res.json);
+      
+      return res.json();
+    });
+  }); 
+   
+ 
     
    //cRule.delete();
 

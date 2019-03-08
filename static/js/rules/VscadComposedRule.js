@@ -9,7 +9,7 @@ const RuleUtils = require('./RuleUtils');
 
 /* { 
   "id": 1,
-  "enab ed":true,
+  "enabled":true,
   "name": "Rule Name",
   "rules": [],
   "expresion":"[r1 ; r3 , r2] | r4"
@@ -59,7 +59,8 @@ ComposedRule.prototype.update = function() {
     body: JSON.stringify(desc),
   };
   fetchOptions.headers['Content-Type'] = 'application/json';
-
+  console.log("updating with body",desc);
+  
   let request = null;
   if (typeof this.id !== 'undefined') {
     request = fetch(`/composed-rules/${encodeURIComponent(this.id)}`, fetchOptions);
@@ -97,6 +98,7 @@ ComposedRule.prototype.delete = function() {
  */
 ComposedRule.prototype.toDescription = function() {
   return {
+    id: this.id,
     enabled: this.enabled,
     name: this.name,
     rules: this.rules,

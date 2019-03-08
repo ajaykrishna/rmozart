@@ -46,11 +46,6 @@ VscadDatabase.prototype.getRules = function() {
         const updatePromises = [];
         for (const row of rows) {
           let desc = JSON.parse(row.description);
-          const updatedDesc = DatabaseMigrate.migrate(desc);
-          if (updatedDesc) {
-            desc = updatedDesc;
-            updatePromises.push(this.updateRule(row.id, desc));
-          }
           rules[row.id] = desc;
         }
         Promise.all(updatePromises).then(() => {

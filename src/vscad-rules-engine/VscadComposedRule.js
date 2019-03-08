@@ -3,8 +3,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.*
  */
-const effects = require('../rules-engine/effects');
-const triggers = require('../rules-engine/triggers');
 const Events = require('../rules-engine/Events');
 
 const DEBUG = false || (process.env.NODE_ENV === 'test');
@@ -29,31 +27,7 @@ class ComposedRule {
     this.expression = expression;
   }
 
-  /**
-   * Begin executing the ComposedRule
-   */
-  async start() {
-    this.trigger.on(Events.STATE_CHANGED, this.onTriggerStateChanged);
-    await this.trigger.start();
-    if (DEBUG) {
-      console.debug('Rule.start', this.name);
-    }
-  }
-
-  /**
-   * On a state changed event, pass the state forward to the rule's effect
-   * @param {State} state
-   */
-  onTriggerStateChanged(state) {
-    if (!this.enabled) {
-      return;
-    }
-    if (DEBUG) {
-      console.debug('Rule.onTriggerStateChanged', this.name, state);
-    }
-    this.effect.setState(state);
-  }
-
+ 
   /**
    * @return {RuleDescription}
    */
@@ -93,7 +67,7 @@ class ComposedRule {
 ComposedRule.fromDescription = function(desc) {
   const expression = desc.expression
   const rules = desc.rules;
-  const composedRule = new ComposedRule(desc.enabled);
+  const composedRule = new ComposedRule(desc.enabled,rules,expression);
   if (desc.hasOwnProperty('id')) {
     composedRule.id = desc.id;
   }
