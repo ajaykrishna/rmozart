@@ -35,7 +35,7 @@ VscadDatabase.prototype.open = function() {
 VscadDatabase.prototype.getRules = function() {
   return new Promise((resolve, reject) => {
     db.db.all(
-      'SELECT id, description FROM compsedRules',
+      'SELECT id, description FROM composedRules',
       [],
       (err, rows) => {
         if (err) {
@@ -68,7 +68,7 @@ VscadDatabase.prototype.getRules = function() {
  */
 VscadDatabase.prototype.createRule = function(desc) {
   return db.run(
-    'INSERT INTO compsedRules (description) VALUES (?)',
+    'INSERT INTO composedRules (description) VALUES (?)',
     [JSON.stringify(desc)]
   ).then((res) => {
     return parseInt(res.lastID);
@@ -83,7 +83,7 @@ VscadDatabase.prototype.createRule = function(desc) {
  */
 VscadDatabase.prototype.updateRule = function(id, desc) {
   return db.run(
-    'UPDATE compsedRules SET description = ? WHERE id = ?',
+    'UPDATE composedRules SET description = ? WHERE id = ?',
     [JSON.stringify(desc), id]
   );
 };
@@ -94,7 +94,7 @@ VscadDatabase.prototype.updateRule = function(id, desc) {
  * @return {Promise}
  */
 VscadDatabase.prototype.deleteRule = function(id) {
-  return db.run('DELETE FROM compsedRules WHERE id = ?', [id]);
+  return db.run('DELETE FROM composedRules WHERE id = ?', [id]);
 };
 
 module.exports = new VscadDatabase();

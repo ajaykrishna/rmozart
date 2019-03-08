@@ -56,7 +56,7 @@ index.get('/:id', async (req, res) => {
     res.send(rule.toDescription());
   } catch (e) {
     res.status(404).send(
-      new APIError('Engine failed to get rule', e).toString());
+      new APIError('Engine failed to get simple rule', e).toString());
   }
 });
 

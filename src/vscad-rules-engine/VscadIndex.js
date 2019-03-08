@@ -9,7 +9,7 @@ const PromiseRouter = require('express-promise-router');
 const APIError = require('../rules-engine/APIError');
 const Database = require('./VscadDatabase');
 const Engine = require('./VscadEngine');
-const Rule = require('./vscadComposedRule');
+const Rule = require('./VscadComposedRule');
 
 const index = PromiseRouter();
 const engine = new Engine();
@@ -21,15 +21,7 @@ const engine = new Engine();
  * @param {Function} next
  */
 function parseRuleFromBody(req, res, next) {
-  if (!req.body.trigger) {
-    res.status(400).send(new APIError('No trigger provided').toString());
-    return;
-  }
-  if (!req.body.effect) {
-    res.status(400).send(new APIError('No effect provided').toString());
-    return;
-  }
-
+ 
   let rule = null;
   try {
     rule = Rule.fromDescription(req.body);
@@ -56,7 +48,7 @@ index.get('/:id', async function(req, res) {
     res.send(rule.toDescription());
   } catch (e) {
     res.status(404).send(
-      new APIError('Engine failed to get rule', e).toString());
+      new APIError('Engine failed to get  composed rule', e).toString());
   }
 });
 

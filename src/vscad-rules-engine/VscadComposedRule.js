@@ -8,19 +8,25 @@ const triggers = require('../rules-engine/triggers');
 const Events = require('../rules-engine/Events');
 
 const DEBUG = false || (process.env.NODE_ENV === 'test');
-
+/*
+{
+  "enabled":true,
+  "id": 1,
+  "name": "Rule Name",
+  "rules": [],
+  "expresion":"[r1 ; r3 , r2] | r4"
+}
+*/
 class ComposedRule {
   /**
    * @param {boolean} enabled
    * @param {Trigger} trigger
    * @param {Effect} effect
    */
-  constructor(enabled, trigger, effect) {
+  constructor(enabled, rules, expression) {
     this.enabled = enabled;
-    this.trigger = trigger;
-    this.effect = effect;
-
-    this.onTriggerStateChanged = this.onTriggerStateChanged.bind(this);
+    this.rules = rules;
+    this.expression = expression;
   }
 
   /**
@@ -54,8 +60,8 @@ class ComposedRule {
   toDescription() {
     const desc = {
       enabled: this.enabled,
-      trigger: this.trigger.toDescription(),
-      effect: this.effect.toDescription(),
+      rules : this.rules,
+      expression : this.expression
     };
     if (this.hasOwnProperty('id')) {
       desc.id = this.id;
@@ -85,9 +91,9 @@ class ComposedRule {
  * @return {ComposedRule}
  */
 ComposedRule.fromDescription = function(desc) {
-  const trigger = triggers.fromDescription(desc.trigger);
-  const effect = effects.fromDescription(desc.effect);
-  const composedRule = new ComposedRule(desc.enabled, trigger, effect);
+  const expression = desc.expression
+  const rules = desc.rules;
+  const composedRule = new ComposedRule(desc.enabled);
   if (desc.hasOwnProperty('id')) {
     composedRule.id = desc.id;
   }

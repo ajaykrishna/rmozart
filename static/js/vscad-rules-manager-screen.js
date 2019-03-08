@@ -9,6 +9,8 @@ const Gateway = require('./rules/Gateway');
 const VscadRuleCardItem = require('./rules/VscadRuleCardItem');
 const page = require('page');
 const VscadRulePropertyBlock = require('./rules/VscadRulePropertyBlock');
+const VscadCompsedRule = require('./rules/VscadComposedRule');
+const VscadConectorBlock = require('./rules/VscadConectorBlock');
 'use strict';
 
 // eslint-disable-next-line no-unused-vars
@@ -20,6 +22,18 @@ const VscadRulesScreen = {
     this.ruleArea = document.getElementById('rules-area');
     this.testButton = document.getElementById('test-button');
     this.gateway = new Gateway();
+    this.conectors = {};
+
+    this.conectors["after"] = document.getElementById("part-after");
+    this.conectors["and"] = document.getElementById("part-and");
+    this.conectors["or"] = document.getElementById("part-or");
+    this.conectors["other"] = document.getElementById("part-other");
+    
+    for(var key in this.conectors){
+     this.conectors[key].addEventListener('click', (event)=>{
+        this.onConectorBlockDown(event,key);
+      });
+    }
     this.nextId = 0;
 
     this.testButton.addEventListener('click',()=>{
@@ -29,7 +43,28 @@ const VscadRulesScreen = {
       page('/rules/new');
     });
   },
- 
+ testApi:function testApi(){
+   console.log("testing");
+   
+   // creation
+    var cRule = new VscadCompsedRule(this.gateway);
+    cRule.update(); 
+
+// get
+  rulePromise = fetch(`/composed-rules/1`, {
+    headers: API.headers(),
+  }).then((res) => {
+    console.log(res.json);
+    
+    return res.json();
+  });
+
+   cRule.expression ="2,4;8*10";
+   cRule.update(); 
+    
+   //cRule.delete();
+
+ },
   /**
    * @return {Promise<Array<RuleDescription>>}
    */
@@ -72,6 +107,16 @@ const VscadRulesScreen = {
       )
     this.nextId += 1;
     this.rulesList.appendChild(ruleElt);
+  },
+  onConectorBlockDown: function(event,type) {
+    console.log(type);
+    const deviceRect = event.target.getBoundingClientRect();
+
+    const x = deviceRect.left;
+    const y = deviceRect.top;
+    const newBlock = new VscadConectorBlock(this.ruleArea,type);
+    newBlock.snapToGrid(x, y);
+    newBlock.draggable.onDown(event);
   },
 
   show: function() {

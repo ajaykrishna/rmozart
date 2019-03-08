@@ -206,12 +206,14 @@ function getOptions() {
  */
 function rulesEngineConfigure(server) {
   const rulesEngine = require('./rules-engine/index.js');
+  const composedrulesEngine = require('./vscad-rules-engine/VscadIndex.js');
   let protocol = 'https';
   if (server instanceof http.Server) {
     protocol = 'http';
   }
   const gatewayHref = `${protocol}://127.0.0.1:${server.address().port}`;
   rulesEngine.configure(gatewayHref);
+  composedrulesEngine.configure(gatewayHref);
 }
 
 function createApp() {

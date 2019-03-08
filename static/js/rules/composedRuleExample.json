@@ -1,5 +1,5 @@
 {
-  "composed":true,
+  "enabled":true,
   "id": 1,
   "name": "Rule Name",
   "rules": [],

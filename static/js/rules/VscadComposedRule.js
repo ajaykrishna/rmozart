@@ -6,7 +6,15 @@
 
 const API = require('../api');
 const RuleUtils = require('./RuleUtils');
-const TimeTriggerBlock = require('./TimeTriggerBlock');
+
+/* { 
+  "id": 1,
+  "enab ed":true,
+  "name": "Rule Name",
+  "rules": [],
+  "expresion":"[r1 ; r3 , r2] | r4"
+}
+*/
 
 /**
  * Model of a Rule loaded from the Rules Engine
@@ -25,13 +33,11 @@ function ComposedRule(gateway, desc, onUpdate) {
     if (desc.name) {
       this.name = desc.name;
     } else {
-      this.name = 'Rule Name';
+      this.name = 'Composed Rule';
     }
-    this.trigger = desc.trigger;
-    this.effect = desc.effect;
-  } else {
-    this.enabled = true;
-  }
+    this.rules = desc.rules;
+    this.expression = desc.expression;
+  } 
 }
 
 /**
@@ -90,195 +96,14 @@ ComposedRule.prototype.delete = function() {
  * @return {RuleDescription?} description or null if not a valid rule
  */
 ComposedRule.prototype.toDescription = function() {
-  if (!this.trigger || !this.effect) {
-    return null;
-  }
   return {
     enabled: this.enabled,
     name: this.name,
-    trigger: this.trigger,
-    effect: this.effect,
+    rules: this.rules,
+    expression: this.expression,
   };
 };
 
-/**
- * Convert a trigger's decsription to a human-readable string
- * @param {Trigger} trigger
- * @param {boolean} html - whether to generate an interface
- * @return {String?}
- */
-ComposedRule.prototype.singleTriggerToHumanRepresentation = 
-function(trigger, html) {
-  if (!trigger) {
-    return null;
-  }
-
-  if (trigger.type === 'MultiTrigger') {
-    let triggerStr = '';
-    for (let i = 0; i < trigger.triggers.length; i++) {
-      if (i > 0) {
-        if (trigger.triggers.length > 2) {
-          triggerStr += ',';
-        }
-        triggerStr += ' ';
-        if (i === trigger.triggers.length - 1) {
-          if (html) {
-            const andSelected = trigger.op === 'AND' ? 'selected' : '';
-            const orSelected = trigger.op === 'OR' ? 'selected' : '';
-
-            const selectHTML = `
-              <span class="triangle-select-container">
-                <select class="triangle-select rule-trigger-select">
-                  <option ${andSelected}>and</option>
-                  <option ${orSelected}>or</option>
-                </select>
-              </span>
-            `;
-            triggerStr += selectHTML;
-          } else {
-            triggerStr += trigger.op === 'AND' ? 'and ' : 'or ';
-          }
-        }
-      }
-      const singleStr =
-        this.singleTriggerToHumanRepresentation(trigger.triggers[i], html);
-      if (!singleStr) {
-        return null;
-      }
-      triggerStr += singleStr;
-    }
-    return triggerStr;
-  }
-
-  if (trigger.type === 'TimeTrigger') {
-    return `the time of day is ${
-      TimeTriggerBlock.utcToLocal(trigger.time)}`;
-  }
-
-  if (trigger.type === 'EventTrigger') {
-    const triggerThing = this.gateway.things.filter(
-      RuleUtils.byThing(trigger.thing)
-    )[0];
-    if (!triggerThing) {
-      return null;
-    }
-    return `${triggerThing.name} event "${trigger.label}" occurs`;
-  }
-
-  const triggerThing = this.gateway.things.filter(
-    RuleUtils.byProperty(trigger.property)
-  )[0];
-  if (!triggerThing) {
-    return null;
-  }
-
-  const triggerProp = triggerThing.properties[trigger.property.id];
-  if (!triggerProp) {
-    return null;
-  }
-
-  let triggerStr = `${triggerThing.name} `;
-  if (trigger.type === 'BooleanTrigger') {
-    triggerStr += 'is ';
-    if (!trigger.onValue) {
-      triggerStr += 'not ';
-    }
-
-    if (trigger.property.id === 'on' || triggerProp.name === 'on') {
-      triggerStr += 'on';
-    } else {
-      triggerStr += trigger.label;
-    }
-  } else if (trigger.type === 'LevelTrigger') {
-    triggerStr += `${trigger.label} is `;
-    if (trigger.levelType === 'LESS') {
-      triggerStr += 'less than ';
-    } else if (trigger.levelType === 'EQUAL') {
-      triggerStr += 'equal to ';
-    } else {
-      triggerStr += 'greater than ';
-    }
-    triggerStr += trigger.value;
-  } else if (trigger.type === 'EqualityTrigger') {
-    triggerStr += `${trigger.label} is ${trigger.value}`;
-  } else {
-    console.error('Unknown trigger type', trigger);
-    return null;
-  }
-
-  return triggerStr;
-};
-
-/**
- * Convert an effect's description to a human-readable string
- * @param {Effect} effect
- * @return {String?}
- */
-ComposedRule.prototype.singleEffectToHumanRepresentation = function(effect) {
-  if (!effect) {
-    return null;
-  }
-  if (effect.type === 'MultiEffect') {
-    let effectStr = '';
-    for (let i = 0; i < effect.effects.length; i++) {
-      if (i > 0) {
-        if (effect.effects.length > 2) {
-          effectStr += ',';
-        }
-        effectStr += ' ';
-        if (i === effect.effects.length - 1) {
-          effectStr += 'and ';
-        }
-      }
-      const singleStr =
-        this.singleEffectToHumanRepresentation(effect.effects[i]);
-      if (!singleStr) {
-        return null;
-      }
-      effectStr += singleStr;
-    }
-    return effectStr;
-  }
-
-  if (effect.type === 'NotificationEffect') {
-    return `notify with message "${effect.message}"`;
-  }
-  if (effect.type === 'ActionEffect') {
-    const effectThing = this.gateway.things.filter(
-      RuleUtils.byThing(effect.thing)
-    )[0];
-    if (!effectThing) {
-      return null;
-    }
-    return `do ${effectThing.name} action "${effect.label}"`;
-  }
-
-  const effectThing = this.gateway.things.filter(
-    RuleUtils.byProperty(effect.property)
-  )[0];
-  if (!effectThing) {
-    return null;
-  }
-
-  const effectProp = effectThing.properties[effect.property.id];
-  if (!effectProp) {
-    return null;
-  }
-
-  let effectStr = '';
-  if (effectProp.name === 'on' || effect.property.id === 'on') {
-    effectStr = `turn ${effectThing.name} `;
-    if (effect.value) {
-      effectStr += 'on';
-    } else {
-      effectStr += 'off';
-    }
-  } else {
-    effectStr += `set ${effectThing.name} ${effect.label} to `;
-    effectStr += effect.value;
-  }
-  return effectStr;
-};
 /**
  * Convert the rule's description to human-readable plain text
  * @return {String}
@@ -301,75 +126,27 @@ ComposedRule.prototype.toHumanInterface = function() {
  * @return {String}
  */
 ComposedRule.prototype.toHumanRepresentation = function(html) {
-  let triggerStr = '???';
-  let effectStr = '???';
-
-  if (this.trigger) {
-    triggerStr =
-      this.singleTriggerToHumanRepresentation(this.trigger, html) ||
-      triggerStr;
-  }
-  if (this.effect) {
-    effectStr =
-      this.singleEffectToHumanRepresentation(this.effect) ||
-      effectStr;
-  }
-
-  const effectExists = this.effect && this.effect.effects &&
-    this.effect.effects.length > 0;
-  let permanent = true; // Default to permanent
-  if (effectExists) {
-    for (const effect of this.effect.effects) {
-      if (effect.type === 'SetEffect') {
-        permanent = true;
-        break;
-      }
-      if (effect.type === 'PulseEffect') {
-        permanent = false;
-        break;
-      }
-    }
-  }
-  let predicate = permanent ? 'If' : 'While';
-  if (html) {
-    const permSelected = permanent ? 'selected' : '';
-    const tempSelected = permanent ? '' : 'selected';
-    predicate = `<span class="triangle-select-container">
-      <select class="triangle-select rule-effect-select">
-        <option ${permSelected}>If</option>
-        <option ${tempSelected}>While</option>
-      </select>
-    </span>`;
-  }
-
-  return `${predicate} ${triggerStr}, ${effectStr}`;
+  return `to human non disponible `;
 };
 
 /**
- * Set the trigger of the Rule, updating the server model if valid
+ * Set the  rules used in the composed rule, updating the server model if valid
  * @return {Promise}
  */
-ComposedRule.prototype.setTrigger = function(trigger) {
-  this.trigger = trigger;
+ComposedRule.prototype.setRules = function(rules) {
+  this.rules = rules;
   return this.update();
 };
 
 /**
- * Set the effect of the Rule, updating the server model if valid
+ * Set the expression of the  composed Rule, updating the server model if valid
  * @return {Promise}
  */
-ComposedRule.prototype.setEffect = function(effect) {
-  this.effect = effect;
+ComposedRule.prototype.setExpression = function(expression) {
+  this.expression = expression;
   return this.update();
 };
 
-/**
- * Whether the rule is a valid, functioning rule
- * @return {boolean}
- */
-ComposedRule.prototype.valid = function() {
-  return !!(this.singleTriggerToHumanRepresentation(this.trigger, false) &&
-    this.singleEffectToHumanRepresentation(this.effect, false));
-};
+
 
 module.exports = ComposedRule;
