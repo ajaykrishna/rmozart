@@ -11,6 +11,7 @@ const page = require('page');
 const VscadRulePropertyBlock = require('./rules/VscadRulePropertyBlock');
 const VscadCompsedRule = require('./rules/VscadComposedRule');
 const VscadConectorBlock = require('./rules/VscadConectorBlock');
+const Constants = require('./constants');
 'use strict';
 
 // eslint-disable-next-line no-unused-vars
@@ -22,26 +23,44 @@ const VscadRulesScreen = {
     this.ruleArea = document.getElementById('rules-area');
     this.testButton = document.getElementById('test-button');
     this.gateway = new Gateway();
+    this.ComposedRuleBlocks = [];
     this.conectors = {};
 
     this.conectors["after"] = document.getElementById("part-after");
+    this.conectors["after"].addEventListener('click', (event)=>this.onConectorBlockDown(event,"THEN"));
     this.conectors["and"] = document.getElementById("part-and");
+    this.conectors["and"].addEventListener('click', (event)=>this.onConectorBlockDown(event,"AND"));
     this.conectors["or"] = document.getElementById("part-or");
-    this.conectors["other"] = document.getElementById("part-other");
-    
-    for(var key in this.conectors){
-     this.conectors[key].addEventListener('click', (event)=>{
-        this.onConectorBlockDown(event,key);
-      });
-    }
+    this.conectors["or"].addEventListener('click', (event)=>this.onConectorBlockDown(event,"OR"));
+    this.conectors["group"] = document.getElementById("part-other");
+    this.conectors["group"].addEventListener('click', (event)=>this.onConectorBlockDown(event,"group"));
+
     this.nextId = 0;
 
     this.testButton.addEventListener('click',()=>{
-      this.testApi();
+      this.testCompile();
     });
     this.createRuleButton.addEventListener('click', () => {
       page('/rules/new');
     });
+  },
+  testCompile:function(){
+     
+      //  console.log(block instanceof VscadRulePropertyBlock)  
+      
+     
+      this.ComposedRuleBlocks.sort((a,b)=>{return b.y-a.y});
+      // we do the loop backwards to avoid problems with splice
+      for (let i = this.ComposedRuleBlocks.length-1; i >= 0; i--) {
+        const block = this.ComposedRuleBlocks[i];
+        if(block && block.role !== "removed"){
+          //  expresion += block.text;  
+          console.log(block.getText());
+          
+        } 
+      }
+      
+
   },
  testApi:function testApi(){
    console.log("testing");
@@ -50,8 +69,7 @@ const VscadRulesScreen = {
     return res.json();
   }).then((fetchedRules) => {
     for (const ruleDesc of fetchedRules) {
-      console.log(ruleDesc);
-      
+      console.log(ruleDesc);  
     }
   });
    const desc ={
@@ -130,16 +148,33 @@ const VscadRulesScreen = {
     const x = deviceRect.left;
     const y = deviceRect.top;
     const newBlock = new VscadConectorBlock(this.ruleArea,type);
+    newBlock.text = Constants.COMMANDS[type];
     newBlock.snapToGrid(x, y);
-    newBlock.draggable.onDown(event);
+    newBlock.vscadDraggable.onDown(event);
+    this.ComposedRuleBlocks.push(newBlock);
   },
 
-  show: function() {
+  show: function(composedRuleId) {
     document.getElementById('speech-wrapper').classList.remove('assistant');
-
     this.gateway.readThings().then(() => {
       return this.readRules();
     });
+
+    let rulePromise = Promise.resolve(null);
+    if (composedRuleId !== 'new') {
+      rulePromise = fetch(`/composed-rules/${encodeURIComponent(composedRuleId)}`, {
+        headers: API.headers(),
+      }).then((res) => {
+        return res.json();
+      });
+    }
+    rulePromise.then((ruleDesc)=>{
+      this.cRule = new VscadCompsedRule(this.gateway,ruleDesc);
+      this.cRule.update();
+    });
+
+    
+
   },
   onDeviceBlockDown: function(event,desc,gateway) {
 
@@ -149,8 +184,10 @@ const VscadRulesScreen = {
     const y = deviceRect.top;
     const newBlock = new VscadRulePropertyBlock(
       this.ruleArea,desc,gateway);
+    newBlock.text = desc.id;
     newBlock.snapToGrid(x, y);
-    newBlock.draggable.onDown(event);
+    newBlock.vscadDraggable.onDown(event);
+    this.ComposedRuleBlocks.push(newBlock);
   },
 
 

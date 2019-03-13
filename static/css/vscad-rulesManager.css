@@ -213,10 +213,19 @@
   position: absolute;
   background: #ffcf8a;
   z-index:99;
-  width: 4.2rem;
-  height: 4.2rem;
+  display: block;
   border-radius: 1rem;
   }
+  .rule-conector-container .rule-part-container{
+    position: initial;
+  }
+  .rule-conector-container .rule-conector-container{
+    background: #127088;
+    z-index:99;
+    position: initial;
+    margin-left: 4.2rem;
+    border-radius: 1rem;
+    }
   .rule-conector-container h3{
  color: #305067;
   }

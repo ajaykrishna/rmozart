@@ -119,3 +119,4 @@ exports.LogSeverity = {
   ERROR: 3,
   PROMPT: 4,
 };
+

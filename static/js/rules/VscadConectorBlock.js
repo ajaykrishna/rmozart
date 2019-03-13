@@ -1,4 +1,4 @@
-const Draggable = require('./Draggable');
+const VscadDraggable = require('./VscadDraggable');
 
 /**
  * An element representing a component of a rule.  Drag-and-dropped within
@@ -15,7 +15,6 @@ const Draggable = require('./Draggable');
 function VscadConectorBlock(ruleArea, name) {
   this.role = '';
   this.rulePart = null;
-  console.log("creating",name);
   
   this.elt = document.createElement('div');
   this.elt.classList.add('rule-conector-container');
@@ -34,14 +33,29 @@ function VscadConectorBlock(ruleArea, name) {
   this.onDown = this.onDown.bind(this);
   this.onMove = this.onMove.bind(this);
   this.onUp = this.onUp.bind(this);
+  this.children = []; 
 
   this.ruleArea.appendChild(this.elt);
-  this.draggable = new Draggable(this.elt, this.onDown, this.onMove, this.onUp);
-
+  this.vscadDraggable = new VscadDraggable(this.elt, this.onDown, this.onMove, this.onUp);
+  this.elt.addEventListener("mouseup",()=>{
+    let dragging  = this.ruleArea.dragging
+      if(dragging.elt !== null && dragging.elt !== this.elt){
+        dragging.parent = this;
+        this.elt.append(dragging.elt);
+        this.children.push(dragging);
+        dragging.snapToGrid(40,40);
+      }
+      else{
+        this.returnToRuleArea(dragging);
+      }
+    })
   const dragHint = document.getElementById('drag-hint');
   this.flexDir = window.getComputedStyle(dragHint).flexDirection;
 }
-
+VscadConectorBlock.prototype.returnToRuleArea = function(child) {
+  this.ruleArea.append(child.elt)
+  this.children.splice(1,this.children.lastIndexOf(child))
+  }
 /**
  * On mouse down during a drag
  */
@@ -54,12 +68,23 @@ VscadConectorBlock.prototype.onDown = function() {
   this.resetState = {
     transform: this.elt.style.transform,
   };
-
+  this.ruleArea.dragging = this;
+  if(this.parent){
+    this.parent.returnToRuleArea(this);
+  }
   const deleteArea = document.getElementById('rules-side-menu');
   deleteArea.classList.add('delete-active');
   this.elt.classList.add('dragging');
   this.ruleArea.classList.add('drag-location-hint');
 };
+VscadConectorBlock.prototype.getText = function(){
+  var returnText = "( ";
+  this.children.forEach(child => {
+    returnText += child.getText()+this.text;
+  });
+  returnText += ")"
+  return returnText;
+}
 
 /**
  * On mouse move during a drag
@@ -104,8 +129,9 @@ VscadConectorBlock.prototype.snapToGrid = function(relX, relY) {
   if (y < grid / 2) {
     y = grid / 2;
   }
-
-  this.elt.style.transform = `translate(${x-(grid/2)}px,${y-(grid/2)}px)`;
+  this.x = x;
+  this.y = y;
+  this.elt.style.transform = `translate(${x}px,${y}px)`;
 };
 
 /**
@@ -121,6 +147,7 @@ VscadConectorBlock.prototype.onUp = function(clientX, clientY) {
     this.remove();
     
   } 
+  this.ruleArea.dragging = null;
 
 };
 
@@ -207,6 +234,9 @@ VscadConectorBlock.prototype.snapToCenter = function(index, length) {
  * Remove the VscadConectorBlock from the DOM and from its associated rule
  */
 VscadConectorBlock.prototype.remove = function() {
+      this.children.forEach(child => {
+        child.remove();
+      });
   this.ruleArea.removeChild(this.elt);
   this.rulePart = null;
   this.role = 'removed';
