@@ -15,16 +15,17 @@ const VscadDraggable = require('./VscadDraggable');
 function VscadConectorBlock(ruleArea, name) {
   this.role = '';
   this.rulePart = null;
-  
+  this.name = name;
   this.elt = document.createElement('div');
   this.elt.classList.add('rule-conector-container');
 
   this.elt.innerHTML = `
-  <div class="rule-conector">
-  <h3 class="rule-conector-name">
-      ${name}
-      </h3>
-      </div>`;
+    <div class="empty-space"></div>
+    <h3 class="rule-conector-name">${name}</h3>
+    <div class="next-hint">
+      <div class="empty-space"></div>
+    </div>
+  `;
 
   this.VscadConectorBlock = this.elt.querySelector('.rule-conector');;
 
@@ -37,24 +38,64 @@ function VscadConectorBlock(ruleArea, name) {
 
   this.ruleArea.appendChild(this.elt);
   this.vscadDraggable = new VscadDraggable(this.elt, this.onDown, this.onMove, this.onUp);
-  this.elt.addEventListener("mouseup",()=>{
+  this.elt.addEventListener("mouseup",(event)=>{
+    
+    
+    
     let dragging  = this.ruleArea.dragging
+  
       if(dragging.elt !== null && dragging.elt !== this.elt){
-        dragging.parent = this;
-        this.elt.append(dragging.elt);
-        this.children.push(dragging);
-        dragging.snapToGrid(40,40);
-      }
-      else{
-        this.returnToRuleArea(dragging);
-      }
+        this.addDraggedAsChild(dragging);
+        this.ruleArea.dragging = null;
+       }
+       else if (dragging.elt !== this.elt){
+         this.returnChildToRuleArea(dragging);
+       }
+      
     })
   const dragHint = document.getElementById('drag-hint');
   this.flexDir = window.getComputedStyle(dragHint).flexDirection;
 }
-VscadConectorBlock.prototype.returnToRuleArea = function(child) {
+VscadConectorBlock.prototype.returnChildToRuleArea = function(child) {
+  // deletes the h3 that comes after
+  if(child.parent!==null ){
+    child.elt.nextElementSibling.remove();
+  }
+  //puts the elment in the rule area and deletes the old from this elt
   this.ruleArea.append(child.elt)
-  this.children.splice(1,this.children.lastIndexOf(child))
+  child.parent = null;
+  for (let i = 0; i < this.children.length; i++) {
+      const currentChild = this.children[i];
+      if(currentChild === child){
+        this.children.splice(i,1);
+      }
+    }
+    if(this.children.length == 0){
+      let nElt = document.createElement('h3');
+      nElt.innerHTML = this.name;
+      nElt.classList.add("rule-conector-name");
+      this.elt.insertBefore(nElt,this.elt.lastElementChild);
+      this.elt.querySelector('.non-visible').classList.remove('non-visible')
+    }
+  }
+
+VscadConectorBlock.prototype.addDraggedAsChild = function(child) {
+    child.parent = this;
+    child.snapToGrid(0,0);
+    
+    if(this.children.length === 0) {
+      this.elt.insertBefore(child.elt,this.elt.firstElementChild.nextSibling);  
+      this.elt.querySelector('.empty-space').classList.add('non-visible')
+    }
+    else {
+      this.elt.insertBefore(child.elt,this.elt.lastElementChild);
+      let nElt = document.createElement('h3');
+      nElt.innerHTML = this.name;
+      nElt.classList.add("rule-conector-name");
+      this.elt.insertBefore(nElt,this.elt.lastElementChild);
+    }
+     
+    this.children.push(child);
   }
 /**
  * On mouse down during a drag
@@ -70,7 +111,7 @@ VscadConectorBlock.prototype.onDown = function() {
   };
   this.ruleArea.dragging = this;
   if(this.parent){
-    this.parent.returnToRuleArea(this);
+    this.parent.returnChildToRuleArea(this);
   }
   const deleteArea = document.getElementById('rules-side-menu');
   deleteArea.classList.add('delete-active');
@@ -79,9 +120,10 @@ VscadConectorBlock.prototype.onDown = function() {
 };
 VscadConectorBlock.prototype.getText = function(){
   var returnText = "( ";
-  this.children.forEach(child => {
-    returnText += child.getText()+this.text;
-  });
+  for (let i = 0; i < this.children.length; i++) {
+    const child = this.children[i];
+    returnText += child.getText()+ (i != this.children.length-1 ? this.text : "");
+  }
   returnText += ")"
   return returnText;
 }
@@ -90,30 +132,6 @@ VscadConectorBlock.prototype.getText = function(){
  * On mouse move during a drag
  */
 VscadConectorBlock.prototype.onMove = function(clientX, clientY, relX, relY) {
-  const ruleAreaRect = this.ruleArea.getBoundingClientRect();
-  const deleteArea = document.getElementById('rules-side-menu');
-  const deleteAreaWidth = deleteArea.getBoundingClientRect().width;
-  if (clientX > window.innerWidth-deleteAreaWidth) {
-    this.VscadConectorBlock.classList.remove('trigger');
-    this.VscadConectorBlock.classList.remove('effect');
-  } else if (this.flexDir === 'row') {
-    if (relX < ruleAreaRect.width / 2) {
-      this.VscadConectorBlock.classList.add('trigger');
-      this.VscadConectorBlock.classList.remove('effect');
-    } else {
-      this.VscadConectorBlock.classList.remove('trigger');
-      this.VscadConectorBlock.classList.add('effect');
-    }
-  } else if (this.flexDir === 'column') {
-    if (relY < ruleAreaRect.height / 2) {
-      this.VscadConectorBlock.classList.add('trigger');
-      this.VscadConectorBlock.classList.remove('effect');
-    } else {
-      this.VscadConectorBlock.classList.remove('trigger');
-      this.VscadConectorBlock.classList.add('effect');
-    }
-  }
-
   this.snapToGrid(relX, relY);
 };
 
@@ -124,11 +142,10 @@ VscadConectorBlock.prototype.onMove = function(clientX, clientY, relX, relY) {
  */
 VscadConectorBlock.prototype.snapToGrid = function(relX, relY) {
   const grid = 40;
-  const x = Math.floor((relX - grid / 2) / grid) * grid + grid / 2;
-  let y = Math.floor((relY - grid / 2) / grid) * grid + grid / 2;
-  if (y < grid / 2) {
-    y = grid / 2;
-  }
+  let x = this.ruleArea.scrollTop + Math.floor((relX - grid / 2) / grid) * grid + grid / 2;
+  let y = this.ruleArea.scrollLeft + Math.floor((relY - grid / 2) / grid) * grid + grid / 2;
+  if (y < 0) {y = 0;}
+  if (x < 0) {x = 0;}
   this.x = x;
   this.y = y;
   this.elt.style.transform = `translate(${x}px,${y}px)`;
@@ -237,7 +254,12 @@ VscadConectorBlock.prototype.remove = function() {
       this.children.forEach(child => {
         child.remove();
       });
-  this.ruleArea.removeChild(this.elt);
+      if(this.parent){
+        this.parent.removeChild(this.elt);
+      }else{
+        this.ruleArea.removeChild(this.elt);
+      }
+  
   this.rulePart = null;
   this.role = 'removed';
 };

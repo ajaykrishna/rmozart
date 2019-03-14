@@ -63,7 +63,7 @@ VscadRuleBlock.prototype.onDown = function() {
   this.ruleArea.classList.add('drag-location-hint');
   this.ruleArea.dragging = this;
   if(this.parent){
-    this.parent.returnToRuleArea(this);
+    this.parent.returnChildToRuleArea(this);
   }
 };
 

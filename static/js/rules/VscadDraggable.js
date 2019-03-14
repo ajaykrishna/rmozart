@@ -74,7 +74,7 @@ class VscadDraggable {
       const coords = this.getClientCoords(event);
       this.afterUp(coords.clientX, coords.clientY);
     }
-    event.stopPropagation();
+    event.stopImmediatePropagation();
   }
 }
 

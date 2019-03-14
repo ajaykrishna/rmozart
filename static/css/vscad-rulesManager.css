@@ -45,6 +45,7 @@
   position: relative;
   background: url('../optimized-images/background.png');
   flex: 1;
+  overflow: auto;
 }
 
 #rules-area.drag-location-hint > #drag-hint {
@@ -209,26 +210,35 @@
   width: 8.2rem;
   height: 8.2rem;
 }
+.empty-space{
+  width: 28.2rem;
+  height: 8.2rem;
+  border-radius: 1rem;
+  background: #00000042;
+}
+.non-visible{
+  height: 0px;
+}
 .rule-conector-container{
   position: absolute;
   background: #ffcf8a;
   z-index:99;
-  display: block;
+  padding: 1rem;
+  display: grid;
   border-radius: 1rem;
   }
-  .rule-conector-container .rule-part-container{
-    position: initial;
-  }
-  .rule-conector-container .rule-conector-container{
-    background: #127088;
-    z-index:99;
-    position: initial;
-    margin-left: 4.2rem;
-    border-radius: 1rem;
-    }
-  .rule-conector-container h3{
- color: #305067;
-  }
+.rule-conector-container .rule-part-container{
+  position: initial;
+}
+.rule-conector-container .rule-conector-container{
+  background: #127088;
+  z-index:99;
+  position: initial;
+  border-radius: 1rem;
+}
+.rule-conector-container h3{
+  color: #305067;
+}
 
 #rules-manager-view .rule-part-icon {
   margin: 1.7rem;
