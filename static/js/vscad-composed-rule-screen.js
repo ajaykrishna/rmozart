@@ -25,15 +25,49 @@ const VscadRulesScreen = {
     this.gateway = new Gateway();
     this.ComposedRuleBlocks = [];
     this.conectors = {};
+    // tittle bariables and the editin functionalities
+    this.view = document.getElementById('rules-manager-view');
+    this.ruleNameCustomize = this.view.querySelector('.rule-name-customize')
+    this.ruleName = this.view.querySelector('.rule-name');
 
+    const selectRuleName = () => {
+      // Select all of ruleName, https://stackoverflow.com/questions/6139107/
+      const range = document.createRange();
+      range.selectNodeContents(this.ruleName);
+      const selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+    };
+
+    this.ruleNameCustomize.addEventListener('click', selectRuleName);
+    this.ruleName.addEventListener('dblclick', (event) => {
+      event.preventDefault();
+      selectRuleName();
+    });
+    
+    this.ruleName.contentEditable = true;
+    this.ruleName.addEventListener('keypress', (event) => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        this.ruleName.blur();
+      }
+    });
+
+    this.ruleName.addEventListener('blur', () => {
+      this.cRule.name = this.ruleName.textContent;
+      this.cRule.update();
+      this.onPresentationChange();
+    });
+
+// connector buttons
     this.conectors["after"] = document.getElementById("part-after");
-    this.conectors["after"].addEventListener('click', (event)=>this.onConectorBlockDown(event,"THEN"));
+    this.conectors["after"].addEventListener('mousedown', (event)=>this.onConectorBlockDown(event,"THEN"));
     this.conectors["and"] = document.getElementById("part-and");
-    this.conectors["and"].addEventListener('click', (event)=>this.onConectorBlockDown(event,"AND"));
+    this.conectors["and"].addEventListener('mousedown', (event)=>this.onConectorBlockDown(event,"AND"));
     this.conectors["or"] = document.getElementById("part-or");
-    this.conectors["or"].addEventListener('click', (event)=>this.onConectorBlockDown(event,"OR"));
+    this.conectors["or"].addEventListener('mousedown', (event)=>this.onConectorBlockDown(event,"OR"));
     this.conectors["group"] = document.getElementById("part-other");
-    this.conectors["group"].addEventListener('click', (event)=>this.onConectorBlockDown(event,"group"));
+    this.conectors["group"].addEventListener('mousedown', (event)=>this.onConectorBlockDown(event,"group"));
 
     this.nextId = 0;
 
@@ -48,17 +82,21 @@ const VscadRulesScreen = {
      
       //  console.log(block instanceof VscadRulePropertyBlock)  
       
-     
-      this.ComposedRuleBlocks.sort((a,b)=>{return b.y-a.y});
+      var longest = ""
       // we do the loop backwards to avoid problems with splice
       for (let i = this.ComposedRuleBlocks.length-1; i >= 0; i--) {
         const block = this.ComposedRuleBlocks[i];
         if(block && block.role !== "removed"){
           //  expresion += block.text;  
-          console.log(block.getText());
-          
+          if(longest.length < block.getText().length)
+            longest = block.getText();
         } 
       }
+      this.cRule.setExpression(longest);
+      this.cRule.setRules(this.cRule.getRulesFromExpression());
+      
+      // faltan las rules
+      console.log(this.cRule.toDescription());
       
 
   },
@@ -153,7 +191,7 @@ const VscadRulesScreen = {
     newBlock.vscadDraggable.onDown(event);
     this.ComposedRuleBlocks.push(newBlock);
   },
-
+ 
   show: function(composedRuleId) {
     document.getElementById('speech-wrapper').classList.remove('assistant');
     this.gateway.readThings().then(() => {
@@ -171,9 +209,14 @@ const VscadRulesScreen = {
     rulePromise.then((ruleDesc)=>{
       this.cRule = new VscadCompsedRule(this.gateway,ruleDesc);
       this.cRule.update();
+      this.prepareVisual(ruleDesc);
     });
 
     
+
+  },
+  prepareVisual: function(desc){
+    this.ruleName.textContent = desc.name;
 
   },
   onDeviceBlockDown: function(event,desc,gateway) {
@@ -187,6 +230,9 @@ const VscadRulesScreen = {
     newBlock.text = desc.id;
     newBlock.snapToGrid(x, y);
     newBlock.vscadDraggable.onDown(event);
+    
+   
+    
     this.ComposedRuleBlocks.push(newBlock);
   },
 

@@ -74,8 +74,6 @@ class Engine {
     }
     rule.id = ruleId;
     await Database.updateRule(ruleId, rule.toDescription());
-
-    this.rules[ruleId].stop();
     this.rules[ruleId] = rule;
   }
 
@@ -90,7 +88,6 @@ class Engine {
         new Error(`Rule ${ruleId} already does not exist`));
     }
     return Database.deleteRule(ruleId).then(() => {
-      this.rules[ruleId].stop();
       delete this.rules[ruleId];
     });
   }

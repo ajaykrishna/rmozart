@@ -40,6 +40,7 @@ function ComposedRule(gateway, desc, onUpdate) {
   } 
 }
 
+
 /**
  * Validate and save the rule
  * @return {Promise}
@@ -74,7 +75,13 @@ ComposedRule.prototype.update = function() {
   }
   return request;
 };
-
+ComposedRule.prototype.getRulesFromExpression = function(){
+var output ={}
+  this.expression.match(/\d+/g).forEach(function(e){
+      output[e]=true
+  })
+  return Object.keys(output);
+}
 /**
  * Delete the rule
  * @return {Promise}
@@ -91,19 +98,18 @@ ComposedRule.prototype.delete = function() {
 
   return fetch(`/composed-rules/${encodeURIComponent(this.id)}`, fetchOptions);
 };
-
 /**
  * Convert this rule into a serialized description
  * @return {RuleDescription?} description or null if not a valid rule
  */
 ComposedRule.prototype.toDescription = function() {
   return {
-    id: this.id,
-    enabled: this.enabled,
-    name: this.name,
-    rules: this.rules,
-    expression: this.expression,
-  };
+    enabled : true,
+    id : this.id,
+    name :  this.name,
+    rules :  this.rules,
+    expresion: this.expression
+  } ;
 };
 
 /**

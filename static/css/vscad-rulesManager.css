@@ -231,7 +231,7 @@
   position: initial;
 }
 .rule-conector-container .rule-conector-container{
-  background: #127088;
+  border: 5px solid #00000014;
   z-index:99;
   position: initial;
   border-radius: 1rem;
@@ -275,4 +275,43 @@
 
 #create-rule-hint {
   font-size: 1.6rem;
+}
+
+#rules-manager-view .title-bar .rule-info {
+  padding: 0;
+  display: -webkit-inline-box;
+  height: 100%;
+}
+#rules-manager-view .title-bar .rule-info > p {
+  font-size: 1.6rem;
+  margin-top: 0.8rem;
+  color: #DAE3EB;
+}
+
+#rules-manager-view  .title-bar .rule-info h1 {
+  margin: 0;
+  font-size: 1.6rem;
+  font-family: 'Open Sans', sans-serif;
+  font-weight: normal;
+  color: white;
+}
+
+#rules-manager-view  .title-bar .rule-delete-dialog {
+  display: block;
+  width: 48rem;
+}
+
+#rules-manager-view .title-bar .rule-delete-dialog > p {
+  font-size: 2rem;
+}
+
+#rules-manager-view > .title-bar {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 9.6rem;
+  padding-left: 9.6rem;
+  display: flex;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+  z-index: 10;
+  background: #46769C;
 }

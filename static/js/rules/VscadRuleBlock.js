@@ -93,7 +93,7 @@ VscadRuleBlock.prototype.onMove = function(clientX, clientY, relX, relY) {
  */
 VscadRuleBlock.prototype.snapToGrid = function(relX, relY) {
   const grid = 40;
-  const x = Math.floor((relX - grid / 2) / grid) * grid + grid / 2;
+  let x = Math.floor((relX - grid / 2) / grid) * grid + grid / 2;
   let y = Math.floor((relY - grid / 2) / grid) * grid + grid / 2;
   if (y < grid / 2) {y = 0;}
   if (x < grid / 2) {x = 0;}

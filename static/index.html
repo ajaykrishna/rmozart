@@ -511,13 +511,36 @@
       </div>
     </section>
 
-    
-    <!--  vscad Rules manager view -->
+    <!-- composed rules manager view -->
+    <section data-view="composed-rules" id="composed-rules-view" class="hidden">
+        <div class="title-bar">
+          <h3 class="rules-header">Rules manager</h3>
+        </div>
+        <div id="rules">
+          <div id="create-rule-hint" class="hidden">
+            No rules created. Click the plus button to create a rule.
+          </div>
+        </div>
+        <button id="create-rule-button" class="icon-button"></button>
+      </section>
+      
+    <!--  vscad composed Rule  view -->
     <section data-view="rules" id="rules-manager-view" class="hidden">
       <div class="title-bar">
-        <button id="test-button"> TEST API </button>
-        <h3 class="rules-header">Rules manager</h3>
-      </div>
+          <a href="/composed-rules" class="back-button icon-button"></a>
+          <div class="rule-info">
+            <h1>
+              <span class="rule-name">Rule Name</span>
+              <img src="/optimized-images/customize-16.svg" alt="Customize Rule Name" class="rule-name-customize"/>
+            </h1>
+            <p>Rule Description</p>
+            <button id="test-button"> TEST API </button>
+          </div>
+          <button id="delete-button">
+            <img src="/optimized-images/delete-16.svg" alt="Delete" width="40" height="40"/>
+          </button>
+        </div>
+     
      <div id="area-wraper">
         <div id="rules-side-menu" >
           <div id="delete-area">
