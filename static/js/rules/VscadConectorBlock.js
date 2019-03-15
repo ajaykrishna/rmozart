@@ -142,8 +142,8 @@ VscadConectorBlock.prototype.onMove = function(clientX, clientY, relX, relY) {
  */
 VscadConectorBlock.prototype.snapToGrid = function(relX, relY) {
   const grid = 40;
-  let x = this.ruleArea.scrollTop + Math.floor((relX - grid / 2) / grid) * grid + grid / 2;
-  let y = this.ruleArea.scrollLeft + Math.floor((relY - grid / 2) / grid) * grid + grid / 2;
+  let x =   Math.floor(((relX - this.ruleArea.scrollTop)- grid / 2) / grid) * grid + grid / 2;
+  let y =   Math.floor(((relY -this.ruleArea.scrollLeft) - grid / 2) / grid) * grid + grid / 2;
   if (y < 0) {y = 0;}
   if (x < 0) {x = 0;}
   this.x = x;

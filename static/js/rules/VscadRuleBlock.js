@@ -95,9 +95,9 @@ VscadRuleBlock.prototype.snapToGrid = function(relX, relY) {
   const grid = 40;
   const x = Math.floor((relX - grid / 2) / grid) * grid + grid / 2;
   let y = Math.floor((relY - grid / 2) / grid) * grid + grid / 2;
-  if (y < grid / 2) {
-    y = grid / 2;
-  }
+  if (y < grid / 2) {y = 0;}
+  if (x < grid / 2) {x = 0;}
+
  this.x = x;
  this.y = y;
   this.elt.style.transform = `translate(${x}px,${y}px)`;
