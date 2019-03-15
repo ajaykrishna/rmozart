@@ -38,7 +38,6 @@ let RuleScreen;
 // eslint-disable-next-line prefer-const
 let Speech;
 
-
 const shaka = require('shaka-player/dist/shaka-player.compiled');
 const MobileDragDrop = require('mobile-drag-drop/index.min');
 const ScrollBehavior = require('mobile-drag-drop/scroll-behaviour.min');

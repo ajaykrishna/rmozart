@@ -71,15 +71,42 @@ const VscadRulesScreen = {
 
     this.nextId = 0;
 
-    this.testButton.addEventListener('click',()=>{
-      this.testCompile();
-    });
+    // this.testButton.addEventListener('click',()=>{
+    //   this.testCompile();
+    // });
     this.createRuleButton.addEventListener('click', () => {
       page('/rules/new');
     });
   },
   testCompile:function(){
-     
+    const fetchOptions = 
+      {
+        method: "POST", // *GET, POST, PUT, DELETE, etc.
+        //mode: "cors", // no-cors, cors, *same-origin
+        cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+        //credentials: "same-origin", // include, *same-origin, omit
+        headers: {
+            "Content-Type": "application/json",
+            // "Content-Type": "application/x-www-form-urlencoded",
+        },
+        redirect: "follow", // manual, *follow, error
+        referrer: "no-referrer", // no-referrer, *client
+        body: JSON.stringify({
+          enabled: true,
+          expression: "( 1 | 3 | 1 | ( 3))",
+          id: 1,
+          name: "Rue me1",
+          rules: ["1", "3"]
+        }), // body data type must match "Content-Type" header
+    }
+      
+    ;
+
+    // const req = new XMLHttpRequest();
+    // req.open('PUT', '10.138.2.6/composed', false); 
+    // req.send(null)
+
+    fetch('http://10.138.2.6:8080/compose',fetchOptions)
       //  console.log(block instanceof VscadRulePropertyBlock)  
       
       var longest = ""
@@ -136,6 +163,8 @@ const VscadRulesScreen = {
    //cRule.delete();
 
  },
+ 
+
   /**
    * @return {Promise<Array<RuleDescription>>}
    */
