@@ -9,8 +9,8 @@ const Gateway = require('./rules/Gateway');
 const VscadRuleCardItem = require('./rules/VscadRuleCardItem');
 const page = require('page');
 const VscadRulePropertyBlock = require('./rules/VscadRulePropertyBlock');
-const VscadCompsedRule = require('./rules/VscadComposedRule');
-const VscadConectorBlock = require('./rules/VscadConectorBlock');
+const VscadComposedRule = require('./rules/VscadComposedRule');
+const VscadConnectorBlock = require('./rules/VscadConnectorBlock');
 const Constants = require('./constants');
 'use strict';
 
@@ -24,7 +24,7 @@ const VscadRulesScreen = {
     this.testButton = document.getElementById('test-button');
     this.gateway = new Gateway();
     this.ComposedRuleBlocks = [];
-    this.conectors = {};
+    this.connectors = {};
     // tittle bariables and the editin functionalities
     this.view = document.getElementById('rules-manager-view');
     this.ruleNameCustomize = this.view.querySelector('.rule-name-customize')
@@ -60,14 +60,14 @@ const VscadRulesScreen = {
     });
 
 // connector buttons
-    this.conectors["after"] = document.getElementById("part-after");
-    this.conectors["after"].addEventListener('mousedown', (event)=>this.onConectorBlockDown(event,"THEN"));
-    this.conectors["and"] = document.getElementById("part-and");
-    this.conectors["and"].addEventListener('mousedown', (event)=>this.onConectorBlockDown(event,"AND"));
-    this.conectors["or"] = document.getElementById("part-or");
-    this.conectors["or"].addEventListener('mousedown', (event)=>this.onConectorBlockDown(event,"OR"));
-    this.conectors["group"] = document.getElementById("part-other");
-    this.conectors["group"].addEventListener('mousedown', (event)=>this.onConectorBlockDown(event,"group"));
+    this.connectors["after"] = document.getElementById("part-after");
+    this.connectors["after"].addEventListener('mousedown', (event)=>this.onconnectorBlockDown(event,"THEN"));
+    this.connectors["and"] = document.getElementById("part-and");
+    this.connectors["and"].addEventListener('mousedown', (event)=>this.onconnectorBlockDown(event,"AND"));
+    this.connectors["or"] = document.getElementById("part-or");
+    this.connectors["or"].addEventListener('mousedown', (event)=>this.onconnectorBlockDown(event,"OR"));
+    this.connectors["group"] = document.getElementById("part-other");
+    this.connectors["group"].addEventListener('mousedown', (event)=>this.onconnectorBlockDown(event,"group"));
 
     this.nextId = 0;
 
@@ -114,7 +114,7 @@ const VscadRulesScreen = {
       for (let i = this.ComposedRuleBlocks.length-1; i >= 0; i--) {
         const block = this.ComposedRuleBlocks[i];
         if(block && block.role !== "removed"){
-          //  expresion += block.text;  
+          //  expression += block.text;  
           if(longest.length < block.getText().length)
             longest = block.getText();
         } 
@@ -141,10 +141,10 @@ const VscadRulesScreen = {
     enabled:true,
     name : "Rule Name",
     rules : [],
-    expresion :"[r1 ; r3 , r2] | r4"
+    expression :"[r1 ; r3 , r2] | r4"
    }
    // creation
-    var cRule = new VscadCompsedRule(this.gateway,desc);
+    var cRule = new VscadComposedRule(this.gateway,desc);
 
    cRule.expression ="2,4;8*10";
    cRule.update().then(()=>{
@@ -208,13 +208,13 @@ const VscadRulesScreen = {
     this.nextId += 1;
     this.rulesList.appendChild(ruleElt);
   },
-  onConectorBlockDown: function(event,type) {
+  onconnectorBlockDown: function(event,type) {
     console.log(type);
     const deviceRect = event.target.getBoundingClientRect();
 
     const x = deviceRect.left;
     const y = deviceRect.top;
-    const newBlock = new VscadConectorBlock(this.ruleArea,type);
+    const newBlock = new VscadConnectorBlock(this.ruleArea,type);
     newBlock.text = Constants.COMMANDS[type];
     newBlock.snapToGrid(x, y);
     newBlock.vscadDraggable.onDown(event);
@@ -236,7 +236,7 @@ const VscadRulesScreen = {
       });
     }
     rulePromise.then((ruleDesc)=>{
-      this.cRule = new VscadCompsedRule(this.gateway,ruleDesc);
+      this.cRule = new VscadComposedRule(this.gateway,ruleDesc);
       this.cRule.update();
       this.prepareVisual(ruleDesc);
     });

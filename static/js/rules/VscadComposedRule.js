@@ -12,7 +12,7 @@ const RuleUtils = require('./RuleUtils');
   "enabled":true,
   "name": "Rule Name",
   "rules": [],
-  "expresion":"[r1 ; r3 , r2] | r4"
+  "expression":"[r1 ; r3 , r2] | r4"
 }
 */
 
@@ -108,7 +108,7 @@ ComposedRule.prototype.toDescription = function() {
     id : this.id,
     name :  this.name,
     rules :  this.rules,
-    expresion: this.expression
+    expression: this.expression
   } ;
 };
 

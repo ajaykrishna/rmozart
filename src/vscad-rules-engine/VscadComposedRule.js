@@ -12,7 +12,7 @@ const DEBUG = false || (process.env.NODE_ENV === 'test');
   "id": 1,
   "name": "Rule Name",
   "rules": [],
-  "expresion":"[r1 ; r3 , r2] | r4"
+  "expression":"[r1 ; r3 , r2] | r4"
 }
 */
 class ComposedRule {

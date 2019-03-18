@@ -219,7 +219,7 @@
 .non-visible{
   height: 0px;
 }
-.rule-conector-container{
+.rule-connector-container{
   position: absolute;
   background: #ffcf8a;
   z-index:99;
@@ -227,16 +227,16 @@
   display: grid;
   border-radius: 1rem;
   }
-.rule-conector-container .rule-part-container{
+.rule-connector-container .rule-part-container{
   position: initial;
 }
-.rule-conector-container .rule-conector-container{
+.rule-connector-container .rule-connector-container{
   border: 5px solid #00000014;
   z-index:99;
   position: initial;
   border-radius: 1rem;
 }
-.rule-conector-container h3{
+.rule-connector-container h3{
   color: #305067;
 }
 

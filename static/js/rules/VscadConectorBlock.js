@@ -12,22 +12,22 @@ const VscadDraggable = require('./VscadDraggable');
  * @param {number} x
  * @param {number} y
  */
-function VscadConectorBlock(ruleArea, name) {
+function VscadConnectorBlock(ruleArea, name) {
   this.role = '';
   this.rulePart = null;
   this.name = name;
   this.elt = document.createElement('div');
-  this.elt.classList.add('rule-conector-container');
+  this.elt.classList.add('rule-connector-container');
 
   this.elt.innerHTML = `
     <div class="empty-space"></div>
-    <h3 class="rule-conector-name">${name}</h3>
+    <h3 class="rule-connector-name">${name}</h3>
     <div class="next-hint">
       <div class="empty-space"></div>
     </div>
   `;
 
-  this.VscadConectorBlock = this.elt.querySelector('.rule-conector');;
+  this.VscadConnectorBlock = this.elt.querySelector('.rule-connector');;
 
   this.ruleArea = ruleArea;
 
@@ -56,7 +56,7 @@ function VscadConectorBlock(ruleArea, name) {
   const dragHint = document.getElementById('drag-hint');
   this.flexDir = window.getComputedStyle(dragHint).flexDirection;
 }
-VscadConectorBlock.prototype.returnChildToRuleArea = function(child) {
+VscadConnectorBlock.prototype.returnChildToRuleArea = function(child) {
   // deletes the h3 that comes after
   if(child.parent!==null ){
     child.elt.nextElementSibling.remove();
@@ -73,13 +73,13 @@ VscadConectorBlock.prototype.returnChildToRuleArea = function(child) {
     if(this.children.length == 0){
       let nElt = document.createElement('h3');
       nElt.innerHTML = this.name;
-      nElt.classList.add("rule-conector-name");
+      nElt.classList.add("rule-connector-name");
       this.elt.insertBefore(nElt,this.elt.lastElementChild);
       this.elt.querySelector('.non-visible').classList.remove('non-visible')
     }
   }
 
-VscadConectorBlock.prototype.addDraggedAsChild = function(child) {
+VscadConnectorBlock.prototype.addDraggedAsChild = function(child) {
     child.parent = this;
     child.snapToGrid(0,0);
     
@@ -91,7 +91,7 @@ VscadConectorBlock.prototype.addDraggedAsChild = function(child) {
       this.elt.insertBefore(child.elt,this.elt.lastElementChild);
       let nElt = document.createElement('h3');
       nElt.innerHTML = this.name;
-      nElt.classList.add("rule-conector-name");
+      nElt.classList.add("rule-connector-name");
       this.elt.insertBefore(nElt,this.elt.lastElementChild);
     }
      
@@ -100,7 +100,7 @@ VscadConectorBlock.prototype.addDraggedAsChild = function(child) {
 /**
  * On mouse down during a drag
  */
-VscadConectorBlock.prototype.onDown = function() {
+VscadConnectorBlock.prototype.onDown = function() {
   const openSelector = this.elt.querySelector('.open');
   if (openSelector) {
     openSelector.classList.remove('open');
@@ -118,7 +118,7 @@ VscadConectorBlock.prototype.onDown = function() {
   this.elt.classList.add('dragging');
   this.ruleArea.classList.add('drag-location-hint');
 };
-VscadConectorBlock.prototype.getText = function(){
+VscadConnectorBlock.prototype.getText = function(){
   var returnText = "( ";
   for (let i = 0; i < this.children.length; i++) {
     const child = this.children[i];
@@ -131,7 +131,7 @@ VscadConectorBlock.prototype.getText = function(){
 /**
  * On mouse move during a drag
  */
-VscadConectorBlock.prototype.onMove = function(clientX, clientY, relX, relY) {
+VscadConnectorBlock.prototype.onMove = function(clientX, clientY, relX, relY) {
   this.snapToGrid(relX, relY);
 };
 
@@ -140,7 +140,7 @@ VscadConectorBlock.prototype.onMove = function(clientX, clientY, relX, relY) {
  * @param {number} relX - x coordinate relative to ruleArea
  * @param {number} relY - y coordinate relative to ruleArea
  */
-VscadConectorBlock.prototype.snapToGrid = function(relX, relY) {
+VscadConnectorBlock.prototype.snapToGrid = function(relX, relY) {
   const grid = 40;
   let x =   Math.floor(((relX - this.ruleArea.scrollTop)- grid / 2) / grid) * grid + grid / 2;
   let y =   Math.floor(((relY -this.ruleArea.scrollLeft) - grid / 2) / grid) * grid + grid / 2;
@@ -154,7 +154,7 @@ VscadConectorBlock.prototype.snapToGrid = function(relX, relY) {
 /**
  * On mouse up during a drag
  */
-VscadConectorBlock.prototype.onUp = function(clientX, clientY) {
+VscadConnectorBlock.prototype.onUp = function(clientX, clientY) {
   this.elt.classList.remove('dragging');
 
   const deleteArea = document.getElementById('operators-side-menu');
@@ -169,16 +169,16 @@ VscadConectorBlock.prototype.onUp = function(clientX, clientY) {
 };
 
 /**
- * Reset the VscadConectorBlock to before the current drag started
+ * Reset the VscadConnectorBlock to before the current drag started
  */
-VscadConectorBlock.prototype.reset = function() {
+VscadConnectorBlock.prototype.reset = function() {
   this.elt.style.transform = this.resetState.transform;
   if (this.role === 'trigger') {
-    this.VscadConectorBlock.classList.add('trigger');
-    this.VscadConectorBlock.classList.remove('effect');
+    this.VscadConnectorBlock.classList.add('trigger');
+    this.VscadConnectorBlock.classList.remove('effect');
   } else if (this.role === 'effect') {
-    this.VscadConectorBlock.classList.remove('trigger');
-    this.VscadConectorBlock.classList.add('effect');
+    this.VscadConnectorBlock.classList.remove('trigger');
+    this.VscadConnectorBlock.classList.add('effect');
   } else {
     this.remove();
   }
@@ -187,14 +187,14 @@ VscadConectorBlock.prototype.reset = function() {
 /**
  * Initialize based on an existing partial rule
  */
-VscadConectorBlock.prototype.setRulePart = function(rulePart) {
+VscadConnectorBlock.prototype.setRulePart = function(rulePart) {
   this.rulePart = rulePart;
   if (rulePart.trigger) {
     this.role = 'trigger';
-    this.VscadConectorBlock.classList.add('trigger');
+    this.VscadConnectorBlock.classList.add('trigger');
   } else if (rulePart.effect) {
     this.role = 'effect';
-    this.VscadConectorBlock.classList.add('effect');
+    this.VscadConnectorBlock.classList.add('effect');
   }
 };
 
@@ -206,7 +206,7 @@ VscadConectorBlock.prototype.setRulePart = function(rulePart) {
  * @param {number?} index - Centered relative to a list
  * @param {number?} length
  */
-VscadConectorBlock.prototype.snapToCenter = function(index, length) {
+VscadConnectorBlock.prototype.snapToCenter = function(index, length) {
   if (!this.role) {
     return;
   }
@@ -248,9 +248,9 @@ VscadConectorBlock.prototype.snapToCenter = function(index, length) {
 };
 
 /**
- * Remove the VscadConectorBlock from the DOM and from its associated rule
+ * Remove the VscadConnectorBlock from the DOM and from its associated rule
  */
-VscadConectorBlock.prototype.remove = function() {
+VscadConnectorBlock.prototype.remove = function() {
       this.children.forEach(child => {
         child.remove();
       });
@@ -264,4 +264,4 @@ VscadConectorBlock.prototype.remove = function() {
   this.role = 'removed';
 };
 
-module.exports = VscadConectorBlock;
+module.exports = VscadConnectorBlock;
