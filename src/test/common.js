@@ -1,18 +1,19 @@
 /*
- * Things Gateway common test setup.
+ * WebThings Gateway common test setup.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-/* globals expect */
+/* globals expect, jest */
 
 process.env.NODE_ENV = 'test';
 
 const Database = require('../db');
 const Actions = require('../models/actions');
 const Events = require('../models/events');
+const Logs = require('../models/logs');
 const mDNSserver = require('../mdns-server');
 const Things = require('../models/things');
 const UserProfile = require('../user-profile');
@@ -126,6 +127,7 @@ afterEach(async () => {
 });
 
 afterAll(async () => {
+  Logs.close();
   await addonManager.unloadAddons();
   servers.https.close();
   servers.http.close();
@@ -136,6 +138,9 @@ afterAll(async () => {
   ]);
   removeTestManifest();
 });
+
+// Some tests take really long if Travis is having a bad day
+jest.setTimeout(60000);
 
 module.exports = {
   mockAdapter,

@@ -1627,6 +1627,7 @@ const SettingsScreen = {
   showExperimentSettings: function() {
     this.experimentSettings.classList.remove('hidden');
     this.showExperimentCheckbox('assistant', 'assistant-experiment-checkbox');
+    this.showExperimentCheckbox('logs', 'logs-experiment-checkbox');
   },
 
   /**
@@ -1820,7 +1821,7 @@ const SettingsScreen = {
   showDeveloperSettings: function() {
     this.developerSettings.classList.remove('hidden');
 
-    document.getElementById('view-logs').href = `/logs?jwt=${API.jwt}`;
+    document.getElementById('view-internal-logs').href = `/internal-logs?jwt=${API.jwt}`;
     const sshCheckbox = document.getElementById('enable-ssh-checkbox');
 
     fetch('/settings/system/ssh', {

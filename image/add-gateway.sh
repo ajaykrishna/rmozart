@@ -11,7 +11,7 @@ SCRIPT_NAME=$(basename $0)
 VERBOSE=0
 REMOVE_BASE_AFTER_UNZIP=0
 
-GATEWAY_VERSION='0.7.0'
+GATEWAY_VERSION='0.8.0'
 V8_VERSION='57'
 ARCHITECTURE='linux-arm'
 PYTHON_VERSIONS='2.7,3.5'
@@ -24,7 +24,7 @@ ADDON_LIST_URL='https://api.mozilla-iot.org:8443/addons'
 #
 
 usage() {
-  echo "Usage: ${SCRIPT_NAME} [-v] [-o openzwave-tarball] [-g gateway-tarall] BASE_IMAGE"
+  echo "Usage: ${SCRIPT_NAME} [-v] [-g gateway-tarball] BASE_IMAGE"
 }
 
 ###########################################################################
@@ -52,9 +52,6 @@ main() {
     case $opt in
       g)
         GATEWAY_TARBALL=${OPTARG}
-        ;;
-      o)
-        OPENZWAVE_TARBALL=${OPTARG}
         ;;
       r)
         REMOVE_BASE_AFTER_UNZIP=1
@@ -84,7 +81,6 @@ main() {
   if [ "${VERBOSE}" == "1" ]; then
     echo "             Base Image: ${BASE_IMAGE}"
     echo "        Gateway tarball: ${GATEWAY_TARBALL}"
-    echo "     Open-ZWave tarball: ${OPENZWAVE_TARBALL}"
     echo "Remove base after unzip: ${REMOVE_BASE_AFTER_UNZIP}"
   fi
 
@@ -95,11 +91,6 @@ main() {
 
   if [ ! -z "${GATEWAY_TARBALL}" -a ! -f "${GATEWAY_TARBALL}" ]; then
     echo "Gateway tarball '${GATEWAY_TARBALL}' not found".
-    exit 1
-  fi
-
-  if [ ! -z "${OPENZWAVE_TARBALL}" -a ! -f "${OPENZWAVE_TARBALL}" ]; then
-    echo "Open-ZWave tarball '${OPENZWAVE_TARBALL}' not found".
     exit 1
   fi
 
@@ -188,12 +179,6 @@ main() {
   fi
   ROOT_MOUNTED=1
 
-  if [ ! -z "${OPENZWAVE_TARBALL}" ]; then
-    # Copy in the Open-ZWave files
-    echo "Adding Open-ZWave files from ${OPENZWAVE_TARBALL} to image"
-    sudo tar xf ${OPENZWAVE_TARBALL} -C ${ROOT_MOUNTPOINT}
-  fi
-
   if [ ! -z "${GATEWAY_TARBALL}" ]; then
     # Copy in the gateway files
     echo "Adding gateway files from ${GATEWAY_TARBALL} to image"
@@ -225,37 +210,7 @@ main() {
 
     sudo touch ${MOZILLA_IOT_DIR}/gateway/.post_upgrade_complete
 
-    # Setup things so that the filesystem gets resized
-    # on the next boot.
-
-    sudo sh -c "cat > '${ETC_DIR}/init.d/resize2fs_once'" <<'END'
-#!/bin/sh
-### BEGIN INIT INFO
-# Provides:          resize2fs_once
-# Required-Start:
-# Required-Stop:
-# Default-Start: 3
-# Default-Stop:
-# Short-Description: Resize the root filesystem to fill partition
-# Description:
-### END INIT INFO
-. /lib/lsb/init-functions
-case "$1" in
-  start)
-    log_daemon_msg "Starting resize2fs_once"
-    ROOT_DEV=$(findmnt / -o source -n) &&
-    resize2fs $ROOT_DEV &&
-    update-rc.d resize2fs_once remove &&
-    rm /etc/init.d/resize2fs_once &&
-    log_end_msg $?
-    ;;
-  *)
-    echo "Usage: $0 start" >&2
-    exit 3
-    ;;
-esac
-END
-    sudo chmod +x "${ETC_DIR}/init.d/resize2fs_once"
+    # Setup things so that the filesystem gets resized on the next boot.
     sudo ln -s "../init.d/resize2fs_once" "${ETC_DIR}/rc3.d/S01resize2fs_once"
 
     if ! grep -q 'init_resize.sh' ${CMDLINE} ; then

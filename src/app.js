@@ -1,5 +1,5 @@
 /*
- * Things Gateway App.
+ * WebThings Gateway App.
  *
  * Back end main script.
  *
@@ -7,6 +7,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
+
+'use strict';
 
 // Set up the user profile.
 const UserProfile = require('./user-profile');
@@ -35,6 +37,7 @@ const addonManager = require('./addon-manager');
 const Constants = require('./constants');
 const db = require('./db');
 const mDNSserver = require('./mdns-server');
+const Logs = require('./models/logs');
 const platform = require('./platform');
 const Router = require('./router');
 const TunnelService = require('./ssltunnel');
@@ -45,8 +48,9 @@ const {WiFiSetupApp, isWiFiConfigured} = require('./wifi-setup');
 // This is then used in other places (like src/addons/plugin/ipc.js)
 require('./app-instance');
 
-// Open the database
+// Open the databases
 db.open();
+Logs.open();
 
 const servers = {};
 servers.http = http.createServer();
@@ -54,6 +58,27 @@ const httpApp = createGatewayApp(servers.http);
 
 servers.https = createHttpsServer();
 let httpsApp = null;
+
+let updaterInterval = null;
+if (process.env.NODE_ENV !== 'test') {
+  // Start the updater
+  updaterInterval = setInterval(
+    () => {
+      platform.update().then((res) => {
+        if (res.rebootRequired) {
+          // TODO: schedule reboot: platform.restartSystem()
+        }
+
+        if (res.gatewayRestartRequired) {
+          platform.restartGateway();
+        }
+      }).catch((e) => {
+        console.error('Failed to update:', e);
+      });
+    },
+    24 * 60 * 60 * 1000
+  );
+}
 
 /**
  * Creates an HTTPS server object, if successful. If there are no public and
@@ -364,6 +389,12 @@ if (config.get('cli')) {
     addonManager.unloadAddons();
     mDNSserver.server.cleanup();
     TunnelService.stop();
+
+    if (updaterInterval !== null) {
+      clearInterval(updaterInterval);
+      updaterInterval = null;
+    }
+
     process.exit(0);
   });
 }

@@ -32,8 +32,10 @@ const Menu = {
     this.items['rules-manager'] =
     [document.getElementById('rules-manager-menu-item')];
     this.items.rule = [document.getElementById('rules-menu-item')];
+    this.items.logs = [document.getElementById('logs-menu-item')];
     this.currentItem = 'things';
     this.getExperimentSetting('assistant');
+    this.getExperimentSetting('logs');
   },
 
   /**

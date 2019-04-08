@@ -1,5 +1,8 @@
+'use strict';
+
 import { URL } from 'url';
 import {Scope, ClientId, ClientRegistry} from '../oauth-types';
+const config = require('config');
 const Database = require('../db');
 
 
@@ -70,19 +73,37 @@ class OAuthClients {
 
 let oauthClients = new OAuthClients();
 
-oauthClients.register(
-  new ClientRegistry(new URL('http://127.0.0.1:31338/callback'), 'test',
-                     'Test OAuth Client', 'super secret', '/things:readwrite')
-);
+if (config.get('oauthTestClients')) {
+  oauthClients.register(
+    new ClientRegistry(new URL('http://127.0.0.1:31338/callback'), 'test',
+                       'Test OAuth Client', 'super secret', '/things:readwrite')
+  );
 
-oauthClients.register(
-  new ClientRegistry(new URL('http://127.0.0.1:31338/bonus-entry'), 'test',
-                     'Test OAuth Client', 'other secret', '/things:readwrite')
-);
+  oauthClients.register(
+    new ClientRegistry(new URL('http://127.0.0.1:31338/bonus-entry'), 'test',
+                       'Test OAuth Client', 'other secret', '/things:readwrite')
+  );
+
+  oauthClients.register(
+    new ClientRegistry(new URL('http://localhost:8888/callback'), 'mycroft',
+                       'Mycroft', 'bDaQN6yDgI0GlvJL2UVcIAb4M8c', '/things:readwrite')
+  );
+}
 
 oauthClients.register(
   new ClientRegistry(new URL('https://gateway.localhost/oauth/local-token-service'), 'local-token',
                      'Local Token Service', 'super secret',
                      '/things:readwrite')
 );
+
+oauthClients.register(
+  new ClientRegistry(new URL('https://api.mycroft.ai/v1/auth/callback'), 'mycroft',
+                     'Mycroft', 'bDaQN6yDgI0GlvJL2UVcIAb4M8c', '/things:readwrite')
+);
+
+oauthClients.register(
+  new ClientRegistry(new URL('https://api-test.mycroft.ai/v1/auth/callback'), 'mycroft',
+                     'Mycroft', 'bDaQN6yDgI0GlvJL2UVcIAb4M8c', '/things:readwrite')
+);
+
 export default oauthClients;

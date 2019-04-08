@@ -26,8 +26,10 @@ self.addEventListener('fetch', (event) => {
   }
 
   const url = new URL(event.request.url);
-  if (url.origin !== location.origin || url.pathname.endsWith('.map') ||
-      url.pathname.endsWith('floorplan.svg')) {
+  if (url.origin !== location.origin ||
+      url.pathname.endsWith('.map') ||
+      url.pathname.endsWith('floorplan.svg') ||
+      url.pathname.startsWith('/logs/files/')) {
     return;
   }
 
@@ -47,7 +49,10 @@ self.addEventListener('fetch', (event) => {
 self.addEventListener('push', (event) => {
   const payload = event.data ? event.data.text() : '';
 
-  event.waitUntil(self.registration.showNotification('Mozilla IoT Gateway', {
-    body: payload,
-  }));
+  event.waitUntil(
+    self.registration.showNotification(
+      'Mozilla WebThings Gateway',
+      {body: payload}
+    )
+  );
 });

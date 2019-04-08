@@ -1,91 +1,150 @@
 /**
  * Logs Controller.
  *
- * Allows user to download current set of logs.
+ * Manages HTTP requests to /logs.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-const AddonManager = require('../addon-manager');
-const archiver = require('archiver');
-const express = require('express');
-const fs = require('fs');
-const path = require('path');
-const jwtMiddleware = require('../jwt-middleware');
-const UserProfile = require('../user-profile');
-const Utils = require('../utils');
+'use strict';
+
+const PromiseRouter = require('express-promise-router');
 const WebSocket = require('ws');
 
-const LogsController = express.Router();
+const Constants = require('../constants');
+const Logs = require('../models/logs');
+
+const LogsController = PromiseRouter();
 
 /**
- * Generate an index of log files.
+ * Get a list of all currently logged properties
  */
-LogsController.get('/', async (request, response) => {
-  const jwt = jwtMiddleware.extractJWTHeader(request) ||
-    jwtMiddleware.extractJWTQS(request);
-  const files = fs.readdirSync(UserProfile.logDir)
-    .filter((f) => !f.startsWith('.'));
-  files.sort();
-
-  let content =
-    '<!DOCTYPE html>' +
-    '<html lang="en">' +
-    '<head>' +
-    '<meta charset="utf-8">' +
-    '<title>Things Gateway - Logs</title>' +
-    '</head>' +
-    '<body>' +
-    '<ul>';
-
-  for (const name of files) {
-    if (fs.lstatSync(path.join(UserProfile.logDir, name)).isFile()) {
-      content +=
-        `${'<li>' +
-        `<a href="/logs/files/${encodeURIComponent(name)}?jwt=${jwt}">`}${
-          Utils.escapeHtml(name)
-        }</a>` +
-        `</li>`;
-    }
-  }
-
-  content +=
-    '</ul>' +
-    '</body>' +
-    '</html>';
-
-  response.send(content);
+LogsController.get('/.schema', async (request, response) => {
+  const schema = await Logs.getSchema();
+  response.status(200).json(schema);
 });
 
 /**
- * Static handler for log files.
+ * Register a new metric
  */
-LogsController.use('/files', express.static(UserProfile.logDir));
+LogsController.post('/', async (request, response) => {
+  const descr = request.body.descr;
+  const maxAge = request.body.maxAge;
+  if (!descr || typeof maxAge !== 'number') {
+    response.status(400).send('Invalid descr or maxAge property');
+    return;
+  }
+  let normalizedDescr = '';
+  switch (descr.type) {
+    case 'property':
+      normalizedDescr = Logs.propertyDescr(descr.thing, descr.property);
+      break;
+    case 'action':
+      normalizedDescr = Logs.actionDescr(descr.thing, descr.action);
+      break;
+    case 'event':
+      normalizedDescr = Logs.eventDescr(descr.thing, descr.event);
+      break;
+    default:
+      response.status(400).send('Invalid descr type');
+      return;
+  }
+
+  try {
+    await Logs.registerMetric(normalizedDescr, maxAge);
+    response.status(200).send({
+      descr: normalizedDescr,
+    });
+  } catch (e) {
+    response.status(500).send(`Internal error: ${e}`);
+  }
+});
 
 /**
- * Handle request for logs.zip.
+ * Get all the values of the currently logged properties
  */
-LogsController.get('/zip', async (request, response) => {
-  const archive = archiver('zip');
+LogsController.get('/', async (request, response) => {
+  // if (request.jwt.payload.role !== Constants.USER_TOKEN) {
+  //   if (!request.jwt.payload.scope) {
+  //     response.status(400).send('Token must contain scope');
+  //   } else {
+  //     const scope = request.jwt.payload.scope;
+  //     if (scope.indexOf(' ') === -1 && scope.indexOf('/') == 0 &&
+  //       scope.split('/').length == 2 &&
+  //       scope.split(':')[0] === Constants.THINGS_PATH) {
+  //       Things.getThingDescriptions(request.get('Host'), request.secure)
+  //         .then((things) => {
+  //           response.status(200).json(things);
+  //         });
+  //     } else {
+  //       // Get hrefs of things in scope
+  //       const paths = scope.split(' ');
+  //       const hrefs = new Array(0);
+  //       for (const path of paths) {
+  //         const parts = path.split(':');
+  //         hrefs.push(parts[0]);
+  //       }
+  //       Things.getListThingDescriptions(hrefs,
+  //                                       request.get('Host'),
+  //                                       request.secure)
+  //         .then((things) => {
+  //           response.status(200).json(things);
+  //         });
+  //     }
+  //   }
+  // } else
+  const logs = await Logs.getAll(request.query.start, request.query.end);
+  response.status(200).json(logs);
+});
 
-  archive.on('error', (err) => {
-    response.status(500).send(err.message);
-  });
+/**
+ * Get a historical list of the values of all a Thing's properties
+ */
+LogsController.get(`${Constants.THINGS_PATH}/:thingId`, async (request, response) => {
+  const id = request.params.thingId;
+  try {
+    const logs = await Logs.get(id, request.query.start, request.query.end);
+    response.status(200).json(logs);
+  } catch (error) {
+    console.error(`Error getting logs for thing with id ${id}`);
+    console.error(`Error: ${error}`);
+    response.status(404).send(error);
+  }
+});
 
-  response.attachment('logs.zip');
+const singlePropertyPath =
+  `${Constants.THINGS_PATH}/:thingId${Constants.PROPERTIES_PATH}/:propertyName`;
+/**
+ * Get a historical list of the values of a Thing's property
+ */
+LogsController.get(singlePropertyPath, async (request, response) => {
+  const thingId = request.params.thingId;
+  const propertyName = request.params.propertyName;
+  try {
+    const values = await Logs.getProperty(thingId, propertyName,
+                                          request.query.start,
+                                          request.query.end);
+    response.status(200).json(values || []);
+  } catch (err) {
+    response.status(404).send(err);
+  }
+});
 
-  archive.pipe(response);
-  fs.readdirSync(
-    UserProfile.logDir
-  ).map((f) => {
-    const fullPath = path.join(UserProfile.logDir, f);
-    if (!f.startsWith('.') && fs.lstatSync(fullPath).isFile()) {
-      archive.file(fullPath, {name: path.join('logs', f)});
-    }
-  });
-  archive.finalize();
+LogsController.delete(singlePropertyPath, async (request, response) => {
+  const thingId = request.params.thingId;
+  const propertyName = request.params.propertyName;
+  const normalizedDescr = Logs.propertyDescr(thingId, propertyName);
+
+  try {
+    await Logs.unregisterMetric(normalizedDescr);
+    response.status(200).send({
+      descr: normalizedDescr,
+    });
+  } catch (e) {
+    response.status(500).send(`Internal error: ${e}`);
+  }
 });
 
 LogsController.ws('/', (websocket) => {
@@ -101,23 +160,26 @@ LogsController.ws('/', (websocket) => {
     }
   }, 30 * 1000);
 
-  const onLog = (message) => {
-    websocket.send(JSON.stringify(message), (err) => {
-      if (err) {
-        console.error(`WebSocket sendMessage failed: ${err}`);
-      }
-    });
-  };
-
-  AddonManager.pluginServer.on('log', onLog);
+  function streamMetric(metrics) {
+    try {
+      websocket.send(JSON.stringify(metrics), (_err) => {});
+    } catch (_e) {
+      // Just don't let it crash anything
+    }
+  }
 
   const cleanup = () => {
-    AddonManager.pluginServer.removeListener('log', onLog);
     clearInterval(heartbeat);
   };
+
+  Logs.streamAll(streamMetric).then(() => {
+    cleanup();
+    // Eventually send dynamic property value updates for the graphs to update
+    // in real time
+    websocket.close();
+  });
 
   websocket.on('error', cleanup);
   websocket.on('close', cleanup);
 });
-
 module.exports = LogsController;

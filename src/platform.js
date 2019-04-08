@@ -6,6 +6,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+'use strict';
+
 const child_process = require('child_process');
 const dynamicRequire = require('./dynamic-require');
 const fs = require('fs');
@@ -153,6 +155,7 @@ const wrappedMethods = [
   'restartGateway',
   'restartSystem',
   'scanWirelessNetworks',
+  'update',
 ];
 
 for (const method of wrappedMethods) {

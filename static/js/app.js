@@ -1,5 +1,5 @@
 /**
- * Things Gateway App.
+ * WebThings Gateway App.
  *
  * Front end main script.
  *
@@ -36,6 +36,8 @@ let VscadComposedRuleScreen;
 // eslint-disable-next-line prefer-const
 let RuleScreen;
 // eslint-disable-next-line prefer-const
+let LogsScreen;
+// eslint-disable-next-line prefer-const
 let Speech;
 
 const shaka = require('shaka-player/dist/shaka-player.compiled');
@@ -66,7 +68,7 @@ const App = {
   PING_INTERVAL: 20 * 1000,
 
   /**
-   * Start Things Gateway app.
+   * Start WebThings Gateway app.
    */
   init: function() {
     // Load the shaka player polyfills
@@ -92,6 +94,8 @@ const App = {
     VscadComposedRuleScreen.init();
     RuleScreen.init();
 
+    LogsScreen.init();
+
     this.views = [];
     this.views.things = document.getElementById('things-view');
     this.views.floorplan = document.getElementById('floorplan-view');
@@ -100,6 +104,7 @@ const App = {
     this.views['rules-manager'] = document.getElementById('rules-manager-view');
     this.views.rule = document.getElementById('rule-view');
     this.views.assistant = document.getElementById('assistant-view');
+    this.views.logs = document.getElementById('logs-view');
     this.currentView = 'things';
     this.menuButton = document.getElementById('menu-button');
     this.menuButton.addEventListener('click', Menu.toggle.bind(Menu));
@@ -127,7 +132,7 @@ const App = {
   },
 
   initWebSocket() {
-    const path = `${this.ORIGIN.replace(/^http/, 'ws')}/logs?jwt=${API.jwt}`;
+    const path = `${this.ORIGIN.replace(/^http/, 'ws')}/internal-logs?jwt=${API.jwt}`;
     this.messageSocket = new WebSocket(path);
 
     this.messageSocket.addEventListener('open', () => {
@@ -240,6 +245,20 @@ const App = {
   showRule: function(context) {
     RuleScreen.show(context.params.rule);
     this.selectView('rule');
+  },
+
+  showLogs: function(context) {
+    if (context.params.thingId) {
+      const descr = {
+        thing: context.params.thingId,
+        property: context.params.propId,
+        type: 'property',
+      };
+      LogsScreen.show(descr);
+    } else {
+      LogsScreen.show();
+    }
+    this.selectView('logs');
   },
 
   selectView: function(view) {
@@ -374,6 +393,7 @@ FloorplanScreen = require('./views/floorplan');
 Router = require('./router');
 RulesScreen = require('./views/rules-screen');
 RuleScreen = require('./views/rule-screen');
+LogsScreen = require('./views/logs-screen');
 VscadComposedRuleScreen = require('./vscad-composed-rule-screen');
 Speech = require('./speech');
 

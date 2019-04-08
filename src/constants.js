@@ -1,5 +1,5 @@
 /*
- * Things Gateway Constants.
+ * WebThings Gateway Constants.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -31,6 +31,7 @@ exports.RULES_PATH = '/rules';
 exports.COMPOSED_RULES_PATH = '/composed-rules';
 exports.OAUTH_PATH = '/oauth';
 exports.OAUTHCLIENTS_PATH = '/authorizations';
+exports.INTERNAL_LOGS_PATH = '/internal-logs';
 exports.LOGS_PATH = '/logs';
 exports.PUSH_PATH = '/push';
 exports.PING_PATH = '/ping';
