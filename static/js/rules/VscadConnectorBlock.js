@@ -18,6 +18,7 @@ function VscadConnectorBlock(ruleArea, name) {
   this.name = name;
   this.elt = document.createElement('div');
   this.elt.classList.add('rule-connector-container');
+ 
 
   this.elt.innerHTML = `
     <div class="empty-space"></div>
@@ -39,11 +40,8 @@ function VscadConnectorBlock(ruleArea, name) {
   this.ruleArea.appendChild(this.elt);
   this.vscadDraggable = new VscadDraggable(this.elt, this.onDown, this.onMove, this.onUp);
   this.elt.addEventListener("mouseup",(event)=>{
-    
-    
-    
     let dragging  = this.ruleArea.dragging
-  
+    if(dragging){
       if(dragging.elt !== null && dragging.elt !== this.elt){
         this.addDraggedAsChild(dragging);
         this.ruleArea.dragging = null;
@@ -51,7 +49,7 @@ function VscadConnectorBlock(ruleArea, name) {
        else if (dragging.elt !== this.elt){
          this.returnChildToRuleArea(dragging);
        }
-      
+      } 
     })
   const dragHint = document.getElementById('drag-hint');
   this.flexDir = window.getComputedStyle(dragHint).flexDirection;

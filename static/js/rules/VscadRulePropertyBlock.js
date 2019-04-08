@@ -12,9 +12,7 @@ const RuleUtils = require('./RuleUtils');
  * @param {Rule} rule
  * @param {ThingDescription} thing
  */
-function VscadRulePropertyBlock(ruleArea,desc,gateway) {
-  console.log("des",desc);
-  
+function VscadRulePropertyBlock(ruleArea,desc,gateway) {  
   let iconTrigger = '/optimized-images/thing-icons/thing.svg';
 
   if (desc.trigger) {

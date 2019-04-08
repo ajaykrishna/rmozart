@@ -10,11 +10,26 @@
   overflow: auto;
 }
 
-#rules-manager-view h3 {
+#rules-manager-view  .dragging h3 {
   font-family: 'Open Sans', sans-serif;
   font-weight: normal;
   font-size: large;
 }
+#rules-manager-view  .rule-part-block  h3 {
+  font-family: 'Open Sans', sans-serif;
+  font-weight: normal;
+  font-size: large;
+  line-height: 4rem;
+  font-size: 11px;
+ 
+}
+#rules-manager-view h3 {
+  font-family: 'Open Sans', sans-serif;
+  font-weight: normal;
+  font-size: large;
+ 
+}
+
 
 #operators-side-menu{
 
@@ -206,29 +221,65 @@
   font-size: 2rem;
 }
 
-#rules-manager-view .rule-part-block {
+#rules-manager-view  .rule-part-block {
+  width: 4.1rem;
+  height: 4.1rem;
+}
+#rules-manager-view  .rule-part-info {
+  width: 10rem;
+  height: 4.1rem;
+}
+#rules-manager-view .dragging .rule-part-info {
+  width: 20rem;
+  height: 8.2rem;
+}
+#rules-manager-view .dragging .rule-part-block {
   width: 8.2rem;
   height: 8.2rem;
 }
-.empty-space{
+#rules-manager-view .rule .rule-part-block {
+  width: 8.2rem;
+  height: 8.2rem;
+}
+.rule-connector-name{
+  margin: 0 .5em;
+}
+.dragging .empty-space{
   width: 28.2rem;
   height: 8.2rem;
   border-radius: 1rem;
   background: #00000042;
 }
+.grid-style{
+  display: grid;
+}
+.flex-style{
+  display: flex;
+}
+.empty-space{
+  width: 14.1rem;
+  height: 4.1rem;
+  border-radius: .5rem;
+  background: #00000042;
+}
 .non-visible{
   height: 0px;
+  width: 0px;
+}
+.dragging .non-visible{
+  height: 0px;
+  width: 0px;
 }
 .rule-connector-container{
   position: absolute;
   background: #ffcf8a;
   z-index:99;
   padding: 1rem;
-  display: grid;
   border-radius: 1rem;
   }
 .rule-connector-container .rule-part-container{
   position: initial;
+  display: flex;
 }
 .rule-connector-container .rule-connector-container{
   border: 5px solid #00000014;
@@ -243,6 +294,14 @@
 #rules-manager-view .rule-part-icon {
   margin: 1.7rem;
   padding: 0;
+  width: 2.4rem;
+  height: 2.4rem;
+}
+#rules-manager-view .dragging .rule-part-icon {
+  margin: 1.7rem;
+  padding: 0;
+  width: 4rem;
+  height: 4rem;
 }
 
 #create-rule-button {

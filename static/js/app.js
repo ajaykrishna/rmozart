@@ -268,8 +268,8 @@ const App = {
     }
     this.views[this.currentView].classList.remove('selected');
     this.views[view].classList.add('selected');
-    Menu.selectItem(view);
     this.currentView = view;
+    Menu.selectItem(view);
   },
 
   showMenuButton: function() {

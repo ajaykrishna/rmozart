@@ -60,7 +60,7 @@ ComposedRule.prototype.update = function() {
     body: JSON.stringify(desc),
   };
   fetchOptions.headers['Content-Type'] = 'application/json';
-  console.log("updating with body",desc);
+  //console.log("updating with body",desc);
   
   let request = null;
   if (typeof this.id !== 'undefined') {

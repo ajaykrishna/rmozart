@@ -123,7 +123,7 @@ const VscadRulesScreen = {
       this.cRule.setRules(this.cRule.getRulesFromExpression());
       
       // faltan las rules
-      console.log(this.cRule.toDescription());
+      //console.log(this.cRule.toDescription());
       
 
   },
@@ -202,7 +202,7 @@ const VscadRulesScreen = {
       return;
     }
     ruleElt.addEventListener('mousedown',(event)=>{
-      this.onDeviceBlockDown(event,desc,this.gateway).bind(this)
+      this.onDeviceBlockDown(event,desc,this.gateway);
     }
       )
     this.nextId += 1;
@@ -217,6 +217,11 @@ const VscadRulesScreen = {
     const newBlock = new VscadConnectorBlock(this.ruleArea,type);
     newBlock.text = Constants.COMMANDS[type];
     newBlock.snapToGrid(x, y);
+    if(type == "AND")
+    newBlock.elt.classList.add('grid-style');
+    else
+    newBlock.elt.classList.add('flex-style');
+ 
     newBlock.vscadDraggable.onDown(event);
     this.ComposedRuleBlocks.push(newBlock);
   },
