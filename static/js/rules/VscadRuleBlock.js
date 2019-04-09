@@ -40,6 +40,22 @@ function VscadRuleBlock(ruleArea, name, icon) {
   this.ruleArea.appendChild(this.elt);
   this.vscadDraggable = new VscadDraggable(this.elt, this.onDown, this.onMove, this.onUp);
 
+  this.elt.addEventListener("mouseup",(event)=>{
+    let dragging  = this.ruleArea.dragging
+    if(dragging){
+
+      if(dragging.elt !== null && dragging.elt !== this.elt){
+        if(this.parent){
+          this.parent.addAsChildBefore(dragging,this); 
+          this.parent.returnChildToRuleArea(this);
+          dragging.addAsChild(this)
+        }    
+       this.ruleArea.dragging = null;
+       }
+      
+      } 
+    })
+
   const dragHint = document.getElementById('drag-hint');
   this.flexDir = window.getComputedStyle(dragHint).flexDirection;
 }

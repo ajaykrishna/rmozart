@@ -51,17 +51,11 @@ function VscadRuleCardItem(gateway, elt, id, desc) {
   }
 
   this.elt.innerHTML = `
-    <div class="rule-preview">
-      <div class="rule-part-block trigger">
-        <img class="rule-part-icon" src="${iconTrigger}"/>
-      </div>
-      <div class="rule-part-block effect">
-        <img class="rule-part-icon" src="${iconEffect}"/>
-      </div>
+    <div class="rule-part-block trigger">
+     <img class="rule-part-icon" src="${iconTrigger}"/>
     </div>
     <div class="rule-info">
       <h3>${invalidWarning}${Utils.escapeHtml(this.rule.name)}</h3>
-      <p>${Utils.escapeHtml(this.rule.toHumanDescription())}</p>
     </div>
   `;
 

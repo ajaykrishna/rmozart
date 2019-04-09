@@ -217,7 +217,7 @@ const VscadRulesScreen = {
     const newBlock = new VscadConnectorBlock(this.ruleArea,type);
     newBlock.text = Constants.COMMANDS[type];
     newBlock.snapToGrid(x, y);
-    if(type == "AND")
+    if(type == "AND" || type == "OR")
     newBlock.elt.classList.add('grid-style');
     else
     newBlock.elt.classList.add('flex-style');

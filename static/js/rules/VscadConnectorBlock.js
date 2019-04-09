@@ -42,8 +42,19 @@ function VscadConnectorBlock(ruleArea, name) {
   this.elt.addEventListener("mouseup",(event)=>{
     let dragging  = this.ruleArea.dragging
     if(dragging){
+
       if(dragging.elt !== null && dragging.elt !== this.elt){
-        this.addDraggedAsChild(dragging);
+        //if you move the mouse fast in of yu can try to put the dragin object into himself , this cheks if the element is not contained into himsef
+        var isOwnParent = false;
+        var tempParent = this.parent;
+        while(tempParent!=null && !isOwnParent){
+          isOwnParent = (dragging == tempParent)
+          tempParent = tempParent.parent;
+        }
+        if(!isOwnParent){
+          this.addAsChild(dragging);
+        }
+          
         this.ruleArea.dragging = null;
        }
        else if (dragging.elt !== this.elt){
@@ -77,12 +88,30 @@ VscadConnectorBlock.prototype.returnChildToRuleArea = function(child) {
     }
   }
 
-VscadConnectorBlock.prototype.addDraggedAsChild = function(child) {
+VscadConnectorBlock.prototype.addAsChild = function(child) {
     child.parent = this;
     child.snapToGrid(0,0);
     
     if(this.children.length === 0) {
       this.elt.insertBefore(child.elt,this.elt.firstElementChild.nextSibling);  
+      this.elt.querySelector('.empty-space').classList.add('non-visible')
+    }
+    else {
+      this.elt.insertBefore(child.elt,this.elt.lastElementChild);
+      let nElt = document.createElement('h3');
+      nElt.innerHTML = this.name;
+      nElt.classList.add("rule-connector-name");
+      this.elt.insertBefore(nElt,this.elt.lastElementChild);
+    }
+     
+    this.children.push(child);
+  }
+  VscadConnectorBlock.prototype.addAsChildBefore = function(child,sibling) {
+    child.parent = this;
+    child.snapToGrid(0,0);
+    
+    if(this.children.length === 0) {
+      this.elt.insertBefore(child.elt,sibling);  
       this.elt.querySelector('.empty-space').classList.add('non-visible')
     }
     else {
@@ -158,7 +187,7 @@ VscadConnectorBlock.prototype.onUp = function(clientX, clientY) {
   const deleteArea = document.getElementById('operators-side-menu');
   const deleteAreaWidth = deleteArea.getBoundingClientRect().width;
   
-  if (clientX > window.innerWidth-deleteAreaWidth) {
+  if (clientX < deleteAreaWidth) {
     this.remove();
     
   } 
