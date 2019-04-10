@@ -18,13 +18,15 @@ function VscadConnectorBlock(ruleArea, name) {
   this.name = name;
   this.elt = document.createElement('div');
   this.elt.classList.add('rule-connector-container');
- 
+
 
   this.elt.innerHTML = `
     <div class="empty-space"></div>
-    <h3 class="rule-connector-name">${name}</h3>
-    <div class="next-hint">
-      <div class="empty-space"></div>
+    <div class="hint-holder">
+      <h3 class="rule-connector-name">${name}</h3>
+      <div class="next-hint">
+        <div class="empty-space"></div>
+      </div>
     </div>
   `;
 
@@ -35,99 +37,132 @@ function VscadConnectorBlock(ruleArea, name) {
   this.onDown = this.onDown.bind(this);
   this.onMove = this.onMove.bind(this);
   this.onUp = this.onUp.bind(this);
-  this.children = []; 
+  this.children = [];
 
   this.ruleArea.appendChild(this.elt);
   this.vscadDraggable = new VscadDraggable(this.elt, this.onDown, this.onMove, this.onUp);
-  this.elt.addEventListener("mouseup",(event)=>{
-    let dragging  = this.ruleArea.dragging
-    if(dragging){
+  this.elt.addEventListener("mouseup", (event) => {
+    let dragging = this.ruleArea.dragging
+    if (dragging) {
 
-      if(dragging.elt !== null && dragging.elt !== this.elt){
+      if (dragging.elt !== null && dragging.elt !== this.elt) {
         //if you move the mouse fast in of yu can try to put the dragin object into himself , this cheks if the element is not contained into himsef
         var isOwnParent = false;
         var tempParent = this.parent;
-        while(tempParent!=null && !isOwnParent){
+        while (tempParent != null && !isOwnParent) {
           isOwnParent = (dragging == tempParent)
           tempParent = tempParent.parent;
         }
-        if(!isOwnParent){
+        if (!isOwnParent) {
           this.addAsChild(dragging);
         }
-          
+
         this.ruleArea.dragging = null;
-       }
-       else if (dragging.elt !== this.elt){
-         this.returnChildToRuleArea(dragging);
-       }
-      } 
-    })
+      } else if (dragging.elt !== this.elt) {
+        this.returnChildToRuleArea(dragging);
+      }
+    }
+  })
   const dragHint = document.getElementById('drag-hint');
   this.flexDir = window.getComputedStyle(dragHint).flexDirection;
 }
-VscadConnectorBlock.prototype.returnChildToRuleArea = function(child) {
-  // deletes the h3 that comes after
-  if(child.parent!==null ){
-    child.elt.nextElementSibling.remove();
-  }
-  //puts the elment in the rule area and deletes the old from this elt
-  this.ruleArea.append(child.elt)
-  child.parent = null;
+VscadConnectorBlock.prototype.returnChildToRuleArea = function (child) {
+
   for (let i = 0; i < this.children.length; i++) {
-      const currentChild = this.children[i];
-      if(currentChild === child){
-        this.children.splice(i,1);
+    const currentChild = this.children[i];
+    if (currentChild === child) {
+      this.children.splice(i, 1);
+
+      if (this.children.length == 0) {
+        this.elt.querySelector('.non-visible').classList.remove('non-visible')
+      } else {
+        if (child.parent !== null) {
+          if (i == 0)
+            child.elt.nextElementSibling.remove();
+          else
+            // deletes the h3 that comes before
+            child.elt.previousElementSibling.remove();
+
+        }
+        if (this.children.length == 1) {
+          this.elt.querySelector('.hint-holder').classList.remove('non-visible')
+        }
       }
+  
     }
-    if(this.children.length == 0){
-      let nElt = document.createElement('h3');
-      nElt.innerHTML = this.name;
-      nElt.classList.add("rule-connector-name");
-      this.elt.insertBefore(nElt,this.elt.lastElementChild);
-      this.elt.querySelector('.non-visible').classList.remove('non-visible')
-    }
+
   }
 
-VscadConnectorBlock.prototype.addAsChild = function(child) {
-    child.parent = this;
-    child.snapToGrid(0,0);
+  //puts the elment in the rule area and deletes the old from this elt
+  this.ruleArea.append(child.elt)
+  child.parent = this.ruleArea;
+}
+
+VscadConnectorBlock.prototype.addAsChild = function (child) {
+  child.parent = this;
+  child.snapToGrid(0, 0);
+  if(child instanceof VscadConnectorBlock && child.name == this.name && child.children){
+    while(child.children.length>0) {
+      var element = child.children[0];
+      child.returnChildToRuleArea(element);
+      this.addAsChild(element);
+    };
+    child.remove()
+    }else{
+      if (this.children.length === 0) {
+        this.elt.insertBefore(child.elt, this.elt.firstElementChild.nextSibling);
+        this.elt.querySelector('.empty-space').classList.add('non-visible')
+      } else {
+        if (this.children.length === 1) {
+          this.elt.querySelector('.hint-holder').classList.add('non-visible')
+        }
+        let nElt = document.createElement('h3');
+        nElt.innerHTML = this.name;
+        nElt.classList.add("rule-connector-name");
+        this.elt.insertBefore(nElt, this.elt.lastElementChild);
+        this.elt.insertBefore(child.elt, this.elt.lastElementChild);
+      }
     
-    if(this.children.length === 0) {
-      this.elt.insertBefore(child.elt,this.elt.firstElementChild.nextSibling);  
-      this.elt.querySelector('.empty-space').classList.add('non-visible')
+      this.children.push(child);
     }
-    else {
-      this.elt.insertBefore(child.elt,this.elt.lastElementChild);
-      let nElt = document.createElement('h3');
-      nElt.innerHTML = this.name;
-      nElt.classList.add("rule-connector-name");
-      this.elt.insertBefore(nElt,this.elt.lastElementChild);
-    }
-     
-    this.children.push(child);
-  }
-  VscadConnectorBlock.prototype.addAsChildBefore = function(child,sibling) {
-    child.parent = this;
-    child.snapToGrid(0,0);
+  
+
+  
+}
+VscadConnectorBlock.prototype.addAsChildBefore = function (child, sibling) {
+  child.parent = this;
+  child.snapToGrid(0, 0);
+  if(child instanceof VscadConnectorBlock && child.name == this.name && child.children){
+    while(child.children.length>0) {
+      var element = child.children[0];
+      child.returnChildToRuleArea(element);
+      this.addAsChild(element);
+    };
+    child.remove()
+    }else{
+      if (this.children.length === 0) {
+        this.elt.insertBefore(child.elt, this.elt.firstElementChild.nextSibling);
+        this.elt.querySelector('.empty-space').classList.add('non-visible')
+      } else {
+        if (this.children.length === 1) {
+          this.elt.querySelector('.hint-holder').classList.add('non-visible')
+        }
+        let nElt = document.createElement('h3');
+        nElt.innerHTML = this.name;
+        nElt.classList.add("rule-connector-name");
+        this.elt.insertBefore(nElt, this.elt.lastElementChild);
+        this.elt.insertBefore(child.elt, this.elt.lastElementChild);
+      }
     
-    if(this.children.length === 0) {
-      this.elt.insertBefore(child.elt,sibling);  
-      this.elt.querySelector('.empty-space').classList.add('non-visible')
+      this.children.push(child);
     }
-    else {
-      this.elt.insertBefore(child.elt,this.elt.lastElementChild);
-      let nElt = document.createElement('h3');
-      nElt.innerHTML = this.name;
-      nElt.classList.add("rule-connector-name");
-      this.elt.insertBefore(nElt,this.elt.lastElementChild);
-    }
-     
-    this.children.push(child);
-  }
+  
+
+}
 /**
  * On mouse down during a drag
  */
-VscadConnectorBlock.prototype.onDown = function() {
+VscadConnectorBlock.prototype.onDown = function () {
   const openSelector = this.elt.querySelector('.open');
   if (openSelector) {
     openSelector.classList.remove('open');
@@ -137,7 +172,7 @@ VscadConnectorBlock.prototype.onDown = function() {
     transform: this.elt.style.transform,
   };
   this.ruleArea.dragging = this;
-  if(this.parent){
+  if (this.parent) {
     this.parent.returnChildToRuleArea(this);
   }
   const deleteArea = document.getElementById('rules-side-menu');
@@ -145,11 +180,11 @@ VscadConnectorBlock.prototype.onDown = function() {
   this.elt.classList.add('dragging');
   this.ruleArea.classList.add('drag-location-hint');
 };
-VscadConnectorBlock.prototype.getText = function(){
+VscadConnectorBlock.prototype.getText = function () {
   var returnText = "( ";
   for (let i = 0; i < this.children.length; i++) {
     const child = this.children[i];
-    returnText += child.getText()+ (i != this.children.length-1 ? this.text : "");
+    returnText += child.getText() + (i != this.children.length - 1 ? this.text : "");
   }
   returnText += ")"
   return returnText;
@@ -158,7 +193,7 @@ VscadConnectorBlock.prototype.getText = function(){
 /**
  * On mouse move during a drag
  */
-VscadConnectorBlock.prototype.onMove = function(clientX, clientY, relX, relY) {
+VscadConnectorBlock.prototype.onMove = function (clientX, clientY, relX, relY) {
   this.snapToGrid(relX, relY);
 };
 
@@ -167,12 +202,16 @@ VscadConnectorBlock.prototype.onMove = function(clientX, clientY, relX, relY) {
  * @param {number} relX - x coordinate relative to ruleArea
  * @param {number} relY - y coordinate relative to ruleArea
  */
-VscadConnectorBlock.prototype.snapToGrid = function(relX, relY) {
+VscadConnectorBlock.prototype.snapToGrid = function (relX, relY) {
   const grid = 40;
-  let x =   Math.floor(((relX - this.ruleArea.scrollTop)- grid / 2) / grid) * grid + grid / 2;
-  let y =   Math.floor(((relY -this.ruleArea.scrollLeft) - grid / 2) / grid) * grid + grid / 2;
-  if (y < 0) {y = 0;}
-  if (x < 0) {x = 0;}
+  let x = Math.floor(((relX - this.ruleArea.scrollTop) - grid / 2) / grid) * grid + grid / 2;
+  let y = Math.floor(((relY - this.ruleArea.scrollLeft) - grid / 2) / grid) * grid + grid / 2;
+  if (y < 0) {
+    y = 0;
+  }
+  if (x < 0) {
+    x = 0;
+  }
   this.x = x;
   this.y = y;
   this.elt.style.transform = `translate(${x}px,${y}px)`;
@@ -181,16 +220,16 @@ VscadConnectorBlock.prototype.snapToGrid = function(relX, relY) {
 /**
  * On mouse up during a drag
  */
-VscadConnectorBlock.prototype.onUp = function(clientX, clientY) {
+VscadConnectorBlock.prototype.onUp = function (clientX, clientY) {
   this.elt.classList.remove('dragging');
 
   const deleteArea = document.getElementById('operators-side-menu');
   const deleteAreaWidth = deleteArea.getBoundingClientRect().width;
-  
+
   if (clientX < deleteAreaWidth) {
     this.remove();
-    
-  } 
+
+  }
   this.ruleArea.dragging = null;
 
 };
@@ -198,7 +237,7 @@ VscadConnectorBlock.prototype.onUp = function(clientX, clientY) {
 /**
  * Reset the VscadConnectorBlock to before the current drag started
  */
-VscadConnectorBlock.prototype.reset = function() {
+VscadConnectorBlock.prototype.reset = function () {
   this.elt.style.transform = this.resetState.transform;
   if (this.role === 'trigger') {
     this.VscadConnectorBlock.classList.add('trigger');
@@ -214,7 +253,7 @@ VscadConnectorBlock.prototype.reset = function() {
 /**
  * Initialize based on an existing partial rule
  */
-VscadConnectorBlock.prototype.setRulePart = function(rulePart) {
+VscadConnectorBlock.prototype.setRulePart = function (rulePart) {
   this.rulePart = rulePart;
   if (rulePart.trigger) {
     this.role = 'trigger';
@@ -233,7 +272,7 @@ VscadConnectorBlock.prototype.setRulePart = function(rulePart) {
  * @param {number?} index - Centered relative to a list
  * @param {number?} length
  */
-VscadConnectorBlock.prototype.snapToCenter = function(index, length) {
+VscadConnectorBlock.prototype.snapToCenter = function (index, length) {
   if (!this.role) {
     return;
   }
@@ -277,16 +316,16 @@ VscadConnectorBlock.prototype.snapToCenter = function(index, length) {
 /**
  * Remove the VscadConnectorBlock from the DOM and from its associated rule
  */
-VscadConnectorBlock.prototype.remove = function() {
-      this.children.forEach(child => {
-        child.remove();
-      });
-      if(this.parent){
-        this.parent.removeChild(this.elt);
-      }else{
-        this.ruleArea.removeChild(this.elt);
-      }
-  
+VscadConnectorBlock.prototype.remove = function () {
+  this.children.forEach(child => {
+    child.remove();
+  });
+  if (this.parent!=null) {
+    this.parent.removeChild(this.elt);
+  } else {
+    this.ruleArea.removeChild(this.elt);
+  }
+
   this.rulePart = null;
   this.role = 'removed';
 };

@@ -253,6 +253,15 @@
   width: 4.1rem;
   height: 4.1rem;
 }
+#rules-manager-view  .rule-part-info .rule-part-name {
+  font-size: 15px;
+  line-height: 3.6rem;
+  font-weight: 400;
+}
+.hint-holder{
+  display: inherit;
+  overflow: hidden;
+}
 #rules-manager-view  .rule-part-info {
   width: 10rem;
   height: 4.1rem;
@@ -312,12 +321,14 @@
 .rule-connector-container .rule-part-container{
   position: initial;
   display: flex;
+  margin: auto;
 }
 .rule-connector-container .rule-connector-container{
   border: 5px solid #00000014;
   z-index:99;
   position: initial;
   border-radius: 1rem;
+  margin: auto;
 }
 .rule-connector-container h3{
   color: #305067;

@@ -43,15 +43,16 @@ function VscadRuleBlock(ruleArea, name, icon) {
   this.elt.addEventListener("mouseup",(event)=>{
     let dragging  = this.ruleArea.dragging
     if(dragging){
-
       if(dragging.elt !== null && dragging.elt !== this.elt){
         if(this.parent){
           this.parent.addAsChildBefore(dragging,this); 
-          this.parent.returnChildToRuleArea(this);
-          dragging.addAsChild(this)
-        }    
+          if (!(dragging instanceof VscadRuleBlock)){
+              this.parent.returnChildToRuleArea(this);
+              dragging.addAsChild(this)
+            }
+       }            
        this.ruleArea.dragging = null;
-       }
+      }
       
       } 
     })
