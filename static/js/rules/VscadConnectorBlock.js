@@ -69,7 +69,7 @@ VscadConnectorBlock.prototype.returnChildToRuleArea = function (child) {
     if (currentChild === child) {
       this.children.splice(i, 1);
 
-      if (this.children.length == 0) {
+      if (this.children.length === 0) {
         this.elt.querySelector('.non-visible').classList.remove('non-visible')
       } else {
         if (child.parent !== null) {
@@ -81,7 +81,7 @@ VscadConnectorBlock.prototype.returnChildToRuleArea = function (child) {
             child.elt.previousElementSibling.remove();
 
         }
-        if (this.children.length == 1) {
+        if (this.children.length === 1) {
           this.elt.querySelector('.hint-holder').classList.remove('non-visible')
         }
       }
@@ -136,7 +136,18 @@ VscadConnectorBlock.prototype.addAsChild = function (child, sibling) {
         }
        
       }
-    
+      if(sibling)
+      {
+        for (let i = 0; i < this.children.length; i++) {
+          const currentChild = this.children[i];
+          if (currentChild === sibling) {
+            this.children.splice(i, 0,child);
+            i = this.children.length;
+          }
+        }
+      
+      }
+      else
       this.children.push(child);
     }
   
