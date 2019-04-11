@@ -12,6 +12,8 @@ const VscadDraggable = require('./VscadDraggable');
  * @param {number} x
  * @param {number} y
  */
+
+
 function VscadConnectorBlock(ruleArea, name) {
   this.role = '';
   this.rulePart = null;
@@ -46,14 +48,8 @@ function VscadConnectorBlock(ruleArea, name) {
     if (dragging) {
 
       if (dragging.elt !== null && dragging.elt !== this.elt) {
-        //if you move the mouse fast in of yu can try to put the dragin object into himself , this cheks if the element is not contained into himsef
-        var isOwnParent = false;
-        var tempParent = this.parent;
-        while (tempParent != null && !isOwnParent) {
-          isOwnParent = (dragging == tempParent)
-          tempParent = tempParent.parent;
-        }
-        if (!isOwnParent) {
+       
+        if (!this.isOwnParent(dragging)) {
           this.addAsChild(dragging);
         }
 
@@ -77,7 +73,8 @@ VscadConnectorBlock.prototype.returnChildToRuleArea = function (child) {
         this.elt.querySelector('.non-visible').classList.remove('non-visible')
       } else {
         if (child.parent !== null) {
-          if (i == 0)
+          // if we are deleting the firs element of the list
+          if (!child.elt.previousElementSibling.previousElementSibling)
             child.elt.nextElementSibling.remove();
           else
             // deletes the h3 that comes before
@@ -97,7 +94,16 @@ VscadConnectorBlock.prototype.returnChildToRuleArea = function (child) {
   this.ruleArea.append(child.elt)
   child.parent = this.ruleArea;
 }
-
+VscadConnectorBlock.prototype.isOwnParent = function (dragging) {
+ //if you move the mouse fast in of yu can try to put the dragin object into himself , this cheks if the element is not contained into himsef
+ var isOwnParent = false;
+ var tempParent = this;
+ while (tempParent != null && !isOwnParent) {
+   isOwnParent = (dragging == tempParent)
+   tempParent = tempParent.parent;
+ }
+ return isOwnParent;
+ }
 
 VscadConnectorBlock.prototype.addAsChild = function (child, sibling) {
   child.parent = this;
@@ -120,8 +126,15 @@ VscadConnectorBlock.prototype.addAsChild = function (child, sibling) {
         let nElt = document.createElement('h3');
         nElt.innerHTML = this.name;
         nElt.classList.add("rule-connector-name");
-        this.elt.insertBefore(nElt, this.elt.lastElementChild);
-        this.elt.insertBefore(child.elt, this.elt.lastElementChild);
+        // if we sended a sibling we dd the element before it, else we add the element at the end
+        if(sibling){
+          this.elt.insertBefore(child.elt, sibling.elt);
+          this.elt.insertBefore(nElt, sibling.elt);
+        }else{
+          this.elt.insertBefore(nElt, this.elt.lastElementChild);
+          this.elt.insertBefore(child.elt, this.elt.lastElementChild);
+        }
+       
       }
     
       this.children.push(child);
@@ -142,7 +155,7 @@ VscadConnectorBlock.prototype.onDown = function () {
     transform: this.elt.style.transform,
   };
   this.ruleArea.dragging = this;
-  if (this.parent) {
+  if(this.parent && this.parent.returnChildToRuleArea){
     this.parent.returnChildToRuleArea(this);
   }
   const deleteArea = document.getElementById('rules-side-menu');

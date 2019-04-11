@@ -44,9 +44,9 @@ function VscadRuleBlock(ruleArea, name, icon) {
     let dragging  = this.ruleArea.dragging
     if(dragging){
       if(dragging.elt !== null && dragging.elt !== this.elt){
-        if(this.parent){
+        if(this.parent &&  !this.parent.isOwnParent(dragging) ){
           this.parent.addAsChild(dragging,this); 
-          if (!(dragging instanceof VscadRuleBlock)){
+          if (!(dragging instanceof VscadRuleBlock )&& this.parent.name != dragging.name){
               this.parent.returnChildToRuleArea(this);
               dragging.addAsChild(this)
             }
@@ -79,7 +79,7 @@ VscadRuleBlock.prototype.onDown = function() {
   this.elt.classList.add('dragging');
   this.ruleArea.classList.add('drag-location-hint');
   this.ruleArea.dragging = this;
-  if(this.parent){
+  if(this.parent && this.parent.returnChildToRuleArea){
     this.parent.returnChildToRuleArea(this);
   }
 };

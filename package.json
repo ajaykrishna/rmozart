@@ -141,7 +141,7 @@
     ],
     "testMatch": [
       "**/test/**/*-test.(ts|tsx|js)"
-    ], 
+    ],
     "transform": {
       "^.+\\.tsx?$": "ts-jest"
     },
