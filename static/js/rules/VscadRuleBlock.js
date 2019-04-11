@@ -45,7 +45,7 @@ function VscadRuleBlock(ruleArea, name, icon) {
     if(dragging){
       if(dragging.elt !== null && dragging.elt !== this.elt){
         if(this.parent){
-          this.parent.addAsChildBefore(dragging,this); 
+          this.parent.addAsChild(dragging,this); 
           if (!(dragging instanceof VscadRuleBlock)){
               this.parent.returnChildToRuleArea(this);
               dragging.addAsChild(this)

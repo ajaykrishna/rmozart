@@ -98,38 +98,8 @@ VscadConnectorBlock.prototype.returnChildToRuleArea = function (child) {
   child.parent = this.ruleArea;
 }
 
-VscadConnectorBlock.prototype.addAsChild = function (child) {
-  child.parent = this;
-  child.snapToGrid(0, 0);
-  if(child instanceof VscadConnectorBlock && child.name == this.name && child.children){
-    while(child.children.length>0) {
-      var element = child.children[0];
-      child.returnChildToRuleArea(element);
-      this.addAsChild(element);
-    };
-    child.remove()
-    }else{
-      if (this.children.length === 0) {
-        this.elt.insertBefore(child.elt, this.elt.firstElementChild.nextSibling);
-        this.elt.querySelector('.empty-space').classList.add('non-visible')
-      } else {
-        if (this.children.length === 1) {
-          this.elt.querySelector('.hint-holder').classList.add('non-visible')
-        }
-        let nElt = document.createElement('h3');
-        nElt.innerHTML = this.name;
-        nElt.classList.add("rule-connector-name");
-        this.elt.insertBefore(nElt, this.elt.lastElementChild);
-        this.elt.insertBefore(child.elt, this.elt.lastElementChild);
-      }
-    
-      this.children.push(child);
-    }
-  
 
-  
-}
-VscadConnectorBlock.prototype.addAsChildBefore = function (child, sibling) {
+VscadConnectorBlock.prototype.addAsChild = function (child, sibling) {
   child.parent = this;
   child.snapToGrid(0, 0);
   if(child instanceof VscadConnectorBlock && child.name == this.name && child.children){
@@ -137,7 +107,7 @@ VscadConnectorBlock.prototype.addAsChildBefore = function (child, sibling) {
       var element = child.children[0];
       child.returnChildToRuleArea(element);
       this.addAsChild(element);
-    };
+    }
     child.remove()
     }else{
       if (this.children.length === 0) {
@@ -320,12 +290,9 @@ VscadConnectorBlock.prototype.remove = function () {
   this.children.forEach(child => {
     child.remove();
   });
-  if (this.parent!=null) {
-    this.parent.removeChild(this.elt);
-  } else {
-    this.ruleArea.removeChild(this.elt);
+  if (this.elt.parentNode) {
+    this.elt.parentNode.removeChild(this.elt);
   }
-
   this.rulePart = null;
   this.role = 'removed';
 };
