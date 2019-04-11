@@ -25,7 +25,8 @@ class LogsScreen {
     this.end = new Date(Date.now());
     this.refreshThings = this.refreshThings.bind(this);
     this.onWindowResize = this.onWindowResize.bind(this);
-    this.toggleCreateLog = this.toggleCreateLog.bind(this);
+    this.showCreateLog = this.showCreateLog.bind(this);
+    this.hideCreateLog = this.hideCreateLog.bind(this);
     this.onCreateLogDeviceSelect = this.onCreateLogDeviceSelect.bind(this);
     this.onCreateLog = this.onCreateLog.bind(this);
     this.hideRemoveDialog = this.hideRemoveDialog.bind(this);
@@ -46,14 +47,14 @@ class LogsScreen {
     this.createLogSaveButton.addEventListener('click', this.onCreateLog);
 
     this.createLogButton = document.querySelector('.create-log-button');
-    this.createLogButton.addEventListener('click', this.toggleCreateLog);
+    this.createLogButton.addEventListener('click', this.showCreateLog);
     this.createLogRetentionNumber =
       document.querySelector('.create-log-retention-duration-number');
     this.createLogRetentionUnit =
       document.querySelector('.create-log-retention-duration-unit');
     this.createLogBackButton =
       document.getElementById('create-log-back-button');
-    this.createLogBackButton.addEventListener('click', this.toggleCreateLog);
+    this.createLogBackButton.addEventListener('click', this.hideCreateLog);
 
     this.logsContainer = this.view.querySelector('.logs');
     this.logsHeader = document.querySelector('.logs-header');
@@ -113,7 +114,6 @@ class LogsScreen {
     fetch(`/logs/.schema`, {headers: API.headers()}).then((res) => {
       return res.json();
     }).then((schema) => {
-      this.logsContainer.innerHTML = '';
       for (const id in this.logs) {
         const log = this.logs[id];
         if (log.elt.parentNode) {
@@ -226,8 +226,14 @@ class LogsScreen {
     }
   }
 
-  toggleCreateLog() {
-    this.createLogScreen.classList.toggle('hidden');
+  showCreateLog() {
+    this.createLogScreen.classList.remove('hidden');
+    App.hideOverflowButton();
+  }
+
+  hideCreateLog() {
+    this.createLogScreen.classList.add('hidden');
+    this.reload();
   }
 
   async onCreateLog() {
@@ -264,9 +270,8 @@ class LogsScreen {
     });
 
     if (res.ok) {
-      this.toggleCreateLog();
       this.createLogHint.classList.add('hidden');
-      this.reload();
+      this.hideCreateLog();
       return;
     }
 
