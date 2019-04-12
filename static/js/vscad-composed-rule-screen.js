@@ -5,6 +5,7 @@
  */
 
 const API = require('./api');
+const BpmnJS = require('bpmn-js').default;
 const Gateway = require('./rules/Gateway');
 const VscadRuleCardItem = require('./rules/VscadRuleCardItem');
 const page = require('page');
@@ -12,6 +13,7 @@ const VscadRulePropertyBlock = require('./rules/VscadRulePropertyBlock');
 const VscadComposedRule = require('./rules/VscadComposedRule');
 const VscadConnectorBlock = require('./rules/VscadConnectorBlock');
 const Constants = require('./constants');
+
 'use strict';
 
 // eslint-disable-next-line no-unused-vars
@@ -72,12 +74,50 @@ const VscadRulesScreen = {
     this.nextId = 0;
 
     this.testButton.addEventListener('click',()=>{
-       this.testCompile();
+       this.testDiagram();
      });
     this.createRuleButton.addEventListener('click', () => {
       page('/rules/new');
     });
   },
+  testDiagram : function(){
+    
+      var xhttp = new XMLHttpRequest();
+      
+      xhttp.open("GET", "../p0027.bpmn", false);
+      xhttp.send();
+      if (xhttp.readyState === 4)
+      this.showDiagram(xhttp.response);
+    
+  },
+  showDiagram:function (bpmnXML){
+    var bpmnViewer =  new BpmnJS({
+      container: '#canvas'
+    });
+   
+      // import diagram
+      bpmnViewer.importXML(bpmnXML, function(err) {
+        if (err) {
+          return console.error('could not import BPMN 2.0 diagram', err);
+        }
+        // access viewer components
+        var canvas = bpmnViewer.get('canvas');
+        var overlays = bpmnViewer.get('overlays');
+        // zoom to fit full viewport
+        canvas.zoom('fit-viewport');
+        // attach an overlay to a node
+        overlays.add('SCAN_OK', 'note', {
+          position: {
+            bottom: 0,
+            right: 0
+          },
+          html: '<div class="diagram-note">Mixed up the labels?</div>'
+        });
+        // add marker
+        canvas.addMarker('SCAN_OK', 'needs-discussion');
+      });
+  },
+   
   testCompile:function(){
     // const fetchOptions = 
     //   {
