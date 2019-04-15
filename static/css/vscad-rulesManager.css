@@ -30,11 +30,20 @@
   font-size: large;
  
 }
- #canvas {
+#diagram-view{
   width: 100%;
-  height: 100%;
-  padding: 0;
-  margin: 0;
+height: 100%;
+margin: auto;
+background: #09070782;
+}
+ #canvas {
+  width: 70%;
+height: 60%;
+margin: auto;
+background: #cecece;
+border-radius: 21px;
+padding: 3rem;
+
 }
 .diagram-note {
   background-color: rgba(66, 180, 21, 0.7);
@@ -50,9 +59,12 @@
 .needs-discussion:not(.djs-connection) .djs-visual > :nth-child(1) {
   stroke: rgba(66, 180, 21, 0.7) !important; /* color elements as red */
 }
-
+.viewport{
+  width: 100%;
+  height: 100%;
+}
 .operator-menu-item{
-  background:#ffcf8a;
+  background:#cecece;
 }
 .operator-menu-item h3{
   padding: 3rem;
@@ -334,7 +346,7 @@
 }
 .rule-connector-container{
   position: absolute;
-  background: #ffcf8a;
+  background: #cecece;
   z-index:21;
   padding: 1rem;
   border-radius: 1rem;

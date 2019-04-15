@@ -24,9 +24,11 @@ const VscadRulesScreen = {
     this.rulesList = document.getElementById('rules-side-menu');
     this.ruleArea = document.getElementById('rules-area');
     this.testButton = document.getElementById('test-button');
+    this.diagramView = document.getElementById('diagram-view');
     this.gateway = new Gateway();
     this.ComposedRuleBlocks = [];
     this.connectors = {};
+    this.diagramLoaded = false;
     // tittle bariables and the editin functionalities
     this.view = document.getElementById('rules-manager-view');
     this.ruleNameCustomize = this.view.querySelector('.rule-name-customize')
@@ -40,7 +42,10 @@ const VscadRulesScreen = {
       selection.removeAllRanges();
       selection.addRange(range);
     };
-
+    this.diagramView.addEventListener('click',()=>{
+      this.diagramView.classList.remove('selected');
+      this.diagramView.style.display = "none"
+    })
     this.ruleNameCustomize.addEventListener('click', selectRuleName);
     this.ruleName.addEventListener('dblclick', (event) => {
       event.preventDefault();
@@ -74,6 +79,8 @@ const VscadRulesScreen = {
     this.nextId = 0;
 
     this.testButton.addEventListener('click',()=>{
+      this.diagramView.classList.add('selected');
+      this.diagramView.style.display = "flex";
        this.testDiagram();
      });
     this.createRuleButton.addEventListener('click', () => {
@@ -81,14 +88,13 @@ const VscadRulesScreen = {
     });
   },
   testDiagram : function(){
-    
-      var xhttp = new XMLHttpRequest();
-      
-      xhttp.open("GET", "../p0027.bpmn", false);
+    if(!this.diagramLoaded){
+      var xhttp = new XMLHttpRequest();  
+      xhttp.open("GET", "../OnlineOrderingSimpleV8.bpmn", false);
       xhttp.send();
       if (xhttp.readyState === 4)
       this.showDiagram(xhttp.response);
-    
+    }
   },
   showDiagram:function (bpmnXML){
     var bpmnViewer =  new BpmnJS({
@@ -102,20 +108,21 @@ const VscadRulesScreen = {
         }
         // access viewer components
         var canvas = bpmnViewer.get('canvas');
-        var overlays = bpmnViewer.get('overlays');
+        //var overlays = bpmnViewer.get('overlays');
         // zoom to fit full viewport
         canvas.zoom('fit-viewport');
         // attach an overlay to a node
-        overlays.add('SCAN_OK', 'note', {
-          position: {
-            bottom: 0,
-            right: 0
-          },
-          html: '<div class="diagram-note">Mixed up the labels?</div>'
-        });
-        // add marker
-        canvas.addMarker('SCAN_OK', 'needs-discussion');
+      //   overlays.add('SCAN_OK', 'note', {
+      //     position: {
+      //       bottom: 0,
+      //       right: 0
+      //     },
+      //     html: '<div class="diagram-note">Mixed up the labels?</div>'
+      //   });
+      //   // add marker
+      //   canvas.addMarker('SCAN_OK', 'needs-discussion');
       });
+      this.diagramLoaded = true;
   },
    
   testCompile:function(){
