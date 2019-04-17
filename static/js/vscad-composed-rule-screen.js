@@ -25,6 +25,11 @@ const VscadRulesScreen = {
     this.ruleArea = document.getElementById('rules-area');
     this.testButton = document.getElementById('test-button');
     this.diagramView = document.getElementById('diagram-view');
+    
+    this.diagramButton = document.getElementById('diagram-button');
+    this.verificationButton = document.getElementById('verification-button');
+    this.saveButton = document.getElementById('save-button');
+    
     this.gateway = new Gateway();
     this.ComposedRuleBlocks = [];
     this.connectors = {};
@@ -78,10 +83,13 @@ const VscadRulesScreen = {
 
     this.nextId = 0;
 
-    this.testButton.addEventListener('click',()=>{
+    this.diagramButton.addEventListener('click',()=>{
       this.diagramView.classList.add('selected');
       this.diagramView.style.display = "flex";
        this.testDiagram();
+     });
+     this.saveButton.addEventListener('click',()=>{
+       this.saveRule();
      });
     this.createRuleButton.addEventListener('click', () => {
       page('/rules/new');
@@ -100,29 +108,16 @@ const VscadRulesScreen = {
     var bpmnViewer =  new BpmnJS({
       container: '#canvas'
     });
-   
       // import diagram
-      bpmnViewer.importXML(bpmnXML, function(err) {
-        if (err) {
-          return console.error('could not import BPMN 2.0 diagram', err);
-        }
-        // access viewer components
-        var canvas = bpmnViewer.get('canvas');
-        //var overlays = bpmnViewer.get('overlays');
-        // zoom to fit full viewport
-        canvas.zoom('fit-viewport');
-        // attach an overlay to a node
-      //   overlays.add('SCAN_OK', 'note', {
-      //     position: {
-      //       bottom: 0,
-      //       right: 0
-      //     },
-      //     html: '<div class="diagram-note">Mixed up the labels?</div>'
-      //   });
-      //   // add marker
-      //   canvas.addMarker('SCAN_OK', 'needs-discussion');
-      });
-      this.diagramLoaded = true;
+    bpmnViewer.importXML(bpmnXML, function(err) {
+      if (err)  return console.error('could not import BPMN 2.0 diagram', err);
+      // access viewer components
+      var canvas = bpmnViewer.get('canvas');
+      // zoom to fit full viewport
+      canvas.zoom('fit-viewport');
+  
+    });
+    this.diagramLoaded = true;
   },
    
   testCompile:function(){
@@ -148,22 +143,20 @@ const VscadRulesScreen = {
     // }
       
     // ;
-
-  
+  },
+    saveRule:function(){
       var longest = ""
-      // we do the loop backwards to avoid problems with splice
       for (let i = this.ComposedRuleBlocks.length-1; i >= 0; i--) {
         const block = this.ComposedRuleBlocks[i];
         if(block && block.role !== "removed"){
-          //  expression += block.text;  
           if(longest.length < block.getText().length)
             longest = block.getText();
         } 
       }
       console.log(longest);
       
-      // this.cRule.setExpression(longest);
-      // this.cRule.setRules(this.cRule.getRulesFromExpression());
+      this.cRule.setExpression(longest);
+      this.cRule.setRules(this.cRule.getRulesFromExpression());
       
       // faltan las rules
       //console.log(this.cRule.toDescription());
@@ -223,11 +216,8 @@ const VscadRulesScreen = {
         this.addVscadRuleCardItem(ruleDesc);
       }
 
-      if (fetchedRules.length === 0) {
-        this.createRuleHint.classList.remove('hidden');
-      } else {
-        this.createRuleHint.classList.add('hidden');
-      }
+      this.fetchedRules = fetchedRules;
+      this.prepareVisual(this.cRule.toDescription(),this.gateway,this.fetchedRules);
     });
   },
   /**
@@ -273,7 +263,7 @@ const VscadRulesScreen = {
     document.getElementById('speech-wrapper').classList.remove('assistant');
     this.gateway.readThings().then(() => {
       return this.readRules();
-    });
+    })
 
     let rulePromise = Promise.resolve(null);
     if (composedRuleId !== 'new') {
@@ -286,16 +276,37 @@ const VscadRulesScreen = {
     rulePromise.then((ruleDesc)=>{
       this.cRule = new VscadComposedRule(this.gateway,ruleDesc);
       this.cRule.update();
-      this.prepareVisual(ruleDesc);
+      this.prepareVisual(this.cRule.toDescription(),this.gateway,this.fetchedRules);
     });
 
     
 
   },
-  prepareVisual: function(desc){
-    this.ruleName.textContent = desc.name;
+  prepareVisual: function(desc,gateway,fetchedRules){
 
-  },
+    if(desc && gateway && fetchedRules){
+      var usedRules = {};
+      // get all the used rules 
+      for (var ruleDesc of fetchedRules) {
+        if(desc.rules.includes(String(ruleDesc.id))){
+         usedRules[String(ruleDesc.id)] = ruleDesc;
+        }
+      }
+      Object.keys(usedRules).forEach((key)=> {
+        var ruleDesc = usedRules[key];
+         const newBlock = new VscadRulePropertyBlock(
+           this.ruleArea,ruleDesc,gateway);
+         newBlock.text = ruleDesc.id;
+         newBlock.snapToGrid(20, 20);
+         this.ComposedRuleBlocks.push(newBlock); 
+      });
+        
+       
+      // sets the name i the titel
+       this.ruleName.textContent = desc.name;
+     
+    }
+    },
   onDeviceBlockDown: function(event,desc,gateway) {
 
     const deviceRect = event.target.getBoundingClientRect();
