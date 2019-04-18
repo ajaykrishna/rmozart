@@ -12,7 +12,7 @@ const page = require('page');
 const VscadRulePropertyBlock = require('./rules/VscadRulePropertyBlock');
 const VscadComposedRule = require('./rules/VscadComposedRule');
 const VscadConnectorBlock = require('./rules/VscadConnectorBlock');
-const Constants = require('./constants');
+
 
 'use strict';
 
@@ -217,7 +217,8 @@ const VscadRulesScreen = {
       }
 
       this.fetchedRules = fetchedRules;
-      this.prepareVisual(this.cRule.toDescription(),this.gateway,this.fetchedRules);
+      if(this.ComposedRuleBlocks.length<=0)
+        this.prepareVisual(this.cRule.toDescription(),this.gateway,this.fetchedRules);
     });
   },
   /**
@@ -248,12 +249,9 @@ const VscadRulesScreen = {
     const x = deviceRect.left;
     const y = deviceRect.top;
     const newBlock = new VscadConnectorBlock(this.ruleArea,type);
-    newBlock.text = Constants.COMMANDS[type];
+   
     newBlock.snapToGrid(x, y);
-    if(type == "AND" || type == "OR")
-    newBlock.elt.classList.add('grid-style');
-    else
-    newBlock.elt.classList.add('flex-style');
+  
  
     newBlock.vscadDraggable.onDown(event);
     this.ComposedRuleBlocks.push(newBlock);
@@ -274,17 +272,20 @@ const VscadRulesScreen = {
       });
     }
     rulePromise.then((ruleDesc)=>{
+      if(this.ComposedRuleBlocks.length<=0){
       this.cRule = new VscadComposedRule(this.gateway,ruleDesc);
       this.cRule.update();
       this.prepareVisual(this.cRule.toDescription(),this.gateway,this.fetchedRules);
+      }
     });
 
     
 
   },
   prepareVisual: function(desc,gateway,fetchedRules){
-
-    if(desc && gateway && fetchedRules){
+    console.log(desc);
+    
+    if(desc.expression && gateway && fetchedRules){
       var usedRules = {};
       // get all the used rules 
       for (var ruleDesc of fetchedRules) {
@@ -292,20 +293,67 @@ const VscadRulesScreen = {
          usedRules[String(ruleDesc.id)] = ruleDesc;
         }
       }
-      Object.keys(usedRules).forEach((key)=> {
-        var ruleDesc = usedRules[key];
-         const newBlock = new VscadRulePropertyBlock(
-           this.ruleArea,ruleDesc,gateway);
-         newBlock.text = ruleDesc.id;
-         newBlock.snapToGrid(20, 20);
-         this.ComposedRuleBlocks.push(newBlock); 
-      });
-        
-       
-      // sets the name i the titel
+      
+      var parts = desc.expression.split(" ")
+       var newBlock = this.getBlockOf(parts.slice(1,parts.length-1), usedRules);
+      this.ComposedRuleBlocks.push(newBlock);
+       newBlock.snapToGrid(20,20)
+         
+      // sets the name on the titel
        this.ruleName.textContent = desc.name;
      
     }
+    },
+    getBlockOf: function(parts, usedRules){
+      
+      var i = 0;
+   
+      
+      const block = new VscadConnectorBlock(this.ruleArea)
+      while(i<parts.length){
+        var part = parts[i];
+        if(part == "("){
+          var j = i+1;
+          var count =1;
+         while(parts[j] != ")" && count == 1){
+           if(parts[j] != ")") count--;
+           if(parts[j] != "(") count ++;
+          j++;
+         } 
+
+         block.addAsChild(this.getBlockOf(parts.slice(i+1,j),usedRules));
+         i = j;
+        }
+        else if(isNaN(Number(part))){
+          if(!block.name)
+            switch (part) {
+              case ";":
+                block.setName("THEN");
+                break;
+              case "|":
+                block.setName("AND"); 
+                  break;
+              case "+": 
+                    block.setName("OR");
+                break;
+            
+              default:
+                break;
+            }
+        }
+        else{
+          var ruleDesc = usedRules[part];
+         var newBlock = new VscadRulePropertyBlock(
+           this.ruleArea,ruleDesc,this.gateway);
+           newBlock.text = ruleDesc.id;
+          block.addAsChild(newBlock);
+          
+        }
+        
+        i++;
+      }
+     
+      return block;
     },
   onDeviceBlockDown: function(event,desc,gateway) {
 

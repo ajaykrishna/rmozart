@@ -1,4 +1,5 @@
 const VscadDraggable = require('./VscadDraggable');
+const Constants = require('../constants');
 
 /**
  * An element representing a component of a rule.  Drag-and-dropped within
@@ -17,11 +18,14 @@ const VscadDraggable = require('./VscadDraggable');
 function VscadConnectorBlock(ruleArea, name) {
   this.role = '';
   this.rulePart = null;
-  this.name = name;
+  
   this.elt = document.createElement('div');
   this.elt.classList.add('rule-connector-container');
 
+ 
 
+if(name){
+this.setName(name);
   this.elt.innerHTML = `
     <div class="empty-space"></div>
     <div class="hint-holder">
@@ -31,6 +35,18 @@ function VscadConnectorBlock(ruleArea, name) {
       </div>
     </div>
   `;
+}
+  else{
+    this.elt.innerHTML = `
+    <div class="empty-space"></div>
+    <div class="hint-holder">
+      <div class="next-hint">
+        <div class="empty-space"></div>
+      </div>
+    </div>
+  `;
+
+  }
 
   this.VscadConnectorBlock = this.elt.querySelector('.rule-connector');;
 
@@ -61,6 +77,14 @@ function VscadConnectorBlock(ruleArea, name) {
   })
   const dragHint = document.getElementById('drag-hint');
   this.flexDir = window.getComputedStyle(dragHint).flexDirection;
+}
+VscadConnectorBlock.prototype.setName = function(name){
+  this.name = name;
+  this.text = Constants.COMMANDS[name];
+  if(name == "AND" || name == "OR")
+  this.elt.classList.add('grid-style');
+  else
+  this.elt.classList.add('flex-style');
 }
 VscadConnectorBlock.prototype.returnChildToRuleArea = function (child) {
 
@@ -180,7 +204,7 @@ VscadConnectorBlock.prototype.getText = function () {
     const child = this.children[i];
     returnText += child.getText() + (i != this.children.length - 1 ? this.text : "");
   }
-  returnText += ")"
+  returnText += " )"
   return returnText;
 }
 
