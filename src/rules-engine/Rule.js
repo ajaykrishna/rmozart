@@ -5,7 +5,7 @@
  */
 
 'use strict';
-
+const fetch = require('node-fetch');
 const effects = require('./effects');
 const triggers = require('./triggers');
 const Events = require('./Events');
@@ -45,6 +45,12 @@ class Rule {
     if (!this.enabled) {
       return;
     }
+//TEST  
+        console.log("test should work",this.id,(this.parentRule)? "parent":"no parent");    
+        if(this.parentRule && state.on){
+          this.parentRule.notifyActivation(this.id)
+        }  
+//TEST
     if (DEBUG) {
       console.debug('Rule.onTriggerStateChanged', this.name, state);
     }

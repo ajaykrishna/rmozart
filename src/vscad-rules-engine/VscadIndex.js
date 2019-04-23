@@ -52,6 +52,19 @@ index.get('/:id', async function(req, res) {
   }
 });
 
+index.post('/notify/:id', async function(req, res) {
+  try {
+    console.log("entering");
+    
+    const id = parseInt(req.params.id);
+    const rule = await engine.getRule(id);
+    res.send("regla activada"+id);
+  } catch (e) {
+    res.status(404).send(
+      new APIError('Engine failed to get  composed rule', e).toString());
+  }
+});
+
 index.post('/', parseRuleFromBody, async function(req, res) {
   const ruleId = await engine.addRule(req.rule);
   res.send({id: ruleId});

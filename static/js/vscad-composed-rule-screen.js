@@ -51,6 +51,10 @@ const VscadRulesScreen = {
       this.diagramView.classList.remove('selected');
       this.diagramView.style.display = "none"
     })
+    this.testButton.addEventListener('click',()=>{
+      this.testCompile();
+    })
+    
     this.ruleNameCustomize.addEventListener('click', selectRuleName);
     this.ruleName.addEventListener('dblclick', (event) => {
       event.preventDefault();
@@ -121,27 +125,30 @@ const VscadRulesScreen = {
   },
    
   testCompile:function(){
-    // const fetchOptions = 
-    //   {
-    //     method: "POST", // *GET, POST, PUT, DELETE, etc.
-    //     //mode: "cors", // no-cors, cors, *same-origin
-    //     cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-    //     //credentials: "same-origin", // include, *same-origin, omit
-    //     headers: {
-    //         "Content-Type": "application/json",
-    //         // "Content-Type": "application/x-www-form-urlencoded",
-    //     },
-    //     redirect: "follow", // manual, *follow, error
-    //     referrer: "no-referrer", // no-referrer, *client
-    //     body: JSON.stringify({
-    //       enabled: true,
-    //       expression: "( 1 | 3 | 1 | ( 3))",
-    //       id: 1,
-    //       name: "Rue me1",
-    //       rules: ["1", "3"]
-    //     }), // body data type must match "Content-Type" header
-    // }
-      
+    const fetchOptions = 
+      {
+        method: "POST", // *GET, POST, PUT, DELETE, etc.
+        //mode: "cors", // no-cors, cors, *same-origin
+        cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+        //credentials: "same-origin", // include, *same-origin, omit
+        headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/xml",
+            // "Content-Type": "application/x-www-form-urlencoded",
+        },
+       
+        redirect: "follow", // manual, *follow, error
+        referrer: "no-referrer", // no-referrer, *client
+        body: JSON.stringify(this.cRule.toDescription()), // body data type must match "Content-Type" header
+    }
+    fetch('http://10.138.2.9:8080/workflow', fetchOptions).then((res)=>{
+      console.log(res);
+      res.text().then(text =>{
+        console.log(text);
+        this.showDiagram(text);
+      })
+    
+    });
     // ;
   },
     saveRule:function(){

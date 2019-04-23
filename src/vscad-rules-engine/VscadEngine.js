@@ -6,7 +6,8 @@
 
 
   const Database = require('./VscadDatabase');
-const Rule = require('./VscadComposedRule');
+  const Rule = require('./VscadComposedRule');
+ 
 
 /**
  * An engine for running and managing list of rules
@@ -16,9 +17,10 @@ class Engine {
    * Get a list of all current rules
    * @return {Promise<Array<Rule>>} rules
    */
+ 
   getRules() {
     let rulesPromise = Promise.resolve(this.rules);
-
+// TODO  get the atual rules so we can activate the next
     if (!this.rules) {
       rulesPromise = Database.getRules().then(async (ruleDescs) => {
         this.rules = {};
