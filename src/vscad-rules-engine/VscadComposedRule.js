@@ -72,7 +72,7 @@ this.index = 0;
       console.debug('Rule.stop', this.name);
     }
   }
-  // TEST
+  //TEST
   notifyActivation(id){
   console.log( "son is calling "+ id);
   // loop to turn off all the active rules

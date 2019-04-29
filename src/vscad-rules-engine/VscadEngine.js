@@ -12,7 +12,7 @@
 /**
  * An engine for running and managing list of rules
  */
-class Engine {
+class VscadEngine {
   /**
    * Get a list of all current rules
    * @return {Promise<Array<Rule>>} rules
@@ -95,4 +95,4 @@ class Engine {
   }
 }
 
-module.exports = Engine;
+module.exports = VscadEngine;

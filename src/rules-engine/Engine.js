@@ -4,62 +4,40 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.*
  */
 
-'use strict';
+ //'use strict';
 
 const Database = require('./Database');
 const Rule = require('./Rule');
-const VscadEngine = require('../vscad-rules-engine/VscadEngine');
-
-
 /**
  * An engine for running and managing list of rules
  */
-class Engine {
+class Engine  {
+ 
   /**
    * Get a list of all current rules
    * @return {Promise<Array<Rule>>} rules
    */
   getRules() {
     let rulesPromise = Promise.resolve(this.rules);
-    //test
-    var vscadEngine = new VscadEngine();
-    vscadEngine.getRules().then(() => {
-      vscadEngine.getRule(1).then((rule) => {
-        this.CRule = rule
-        this.CRule.normalEngine = this;
-        console.log(toString(this.CRule.toDescription()));
-        //test
-
-
-        if (!this.rules) {
-          rulesPromise = Database.getRules().then(async (ruleDescs) => {
-            this.rules = {};
-            for (const ruleId in ruleDescs) {
-              ruleDescs[ruleId].id = parseInt(ruleId);
-              this.rules[ruleId] = Rule.fromDescription(ruleDescs[ruleId]);
-              // TEST
-              console.log("pasing rule to other");
-              this.rules[ruleId].parentRule = this.CRule;
-              //TEST
-              await this.rules[ruleId].start();
-
-            }
-            return this.rules;
-          });
+    if (!this.rules) {
+      rulesPromise = Database.getRules().then(async (ruleDescs) => {
+        this.rules = {};
+        for (const ruleId in ruleDescs) {
+          ruleDescs[ruleId].id = parseInt(ruleId);
+          this.rules[ruleId] = Rule.fromDescription(ruleDescs[ruleId]);
+          this.rules[ruleId].parent = this.MasterEngine; // test
+          await this.rules[ruleId].start();
         }
-
-        //TEST
-      })
-    });
-    //TEST
+        return this.rules;
+      });
+    }
 
     return rulesPromise.then((rules) => {
       return Object.keys(rules).map((ruleId) => {
         return rules[ruleId];
       })
     });
-
-   
+ 
   }
 
   /**
@@ -120,6 +98,10 @@ class Engine {
       this.rules[ruleId].stop();
       delete this.rules[ruleId];
     });
+  }
+  testComunication(){
+    console.log('succes');
+    
   }
 }
 
