@@ -55,6 +55,10 @@ const VscadRulesScreen = {
       this.testCompile();
     })
     
+    this.verificationButton.addEventListener('click',()=>{
+      this.requestVerify();
+    })
+    
     this.ruleNameCustomize.addEventListener('click', selectRuleName);
     this.ruleName.addEventListener('dblclick', (event) => {
       event.preventDefault();
@@ -124,7 +128,7 @@ const VscadRulesScreen = {
     this.diagramLoaded = true;
   },
    
-  testCompile:function(){
+  requestDiagram:function(){
     const fetchOptions = 
       {
         method: "POST", // *GET, POST, PUT, DELETE, etc.
@@ -150,6 +154,79 @@ const VscadRulesScreen = {
     
     });
     // ;
+  },
+     
+  requestVerify:function(cRule){
+
+
+    fetch(`/rules`, {headers: API.headers(),}).then((res) => {
+      return res.json();
+    }).then((res) => {
+      var info = {}
+      info.expression = this.cRule.expression;
+      info.objects = [];
+      info.rules = [];
+
+      var usedRules = [];
+      var usedObjects = {};
+      //get te used rules
+      res.forEach(rule => {
+         if(this.cRule.rules.includes(`${rule.id}`))
+          usedRules.push(rule);
+      });
+      // 
+      usedRules.forEach(rule => {
+        var tempRule = {}
+        tempRule.id = rule.id;
+        tempRule.type = rule.trigger.op;
+        tempRule.events = []
+        tempRule.actions = []
+        rule.trigger.triggers.forEach(trigger => {
+          if(trigger.property){
+            tempRule.actions.push(`${trigger.property.thing}|${trigger.property.id}`)
+            usedObjects[trigger.property.thing] = true;
+          }else{ 
+            tempRule.actions.push(`${trigger.type}|${Object.keys(trigger)[1]}`)
+            usedObjects[trigger.type] = true;
+          }
+        });
+        rule.effect.effects.forEach(effect => {
+          if(effect.property){
+            tempRule.events.push(`${effect.property.thing}|${effect.property.id}`)
+            usedObjects[effect.property.thing] = true;
+          }else{
+            tempRule.events.push(`${effect.type}|${Object.keys(effect)[1]}`)
+            usedObjects[effect.type] = true;
+          }
+         
+        });
+        info.rules.push(tempRule);
+     });
+
+     info.objects = Object.keys(usedObjects);
+      console.log('final info ', info);
+      
+    });
+   
+  
+    // const fetchOptions = 
+    //   {
+    //     method: "POST",
+    //     headers: {
+    //         "Content-Type": "application/json",
+    //         "Accept": "application/xml",
+    //     },
+    //     redirect: "follow", 
+    //     referrer: "no-referrer", 
+    //     body: JSON.stringify(this.cRule.toDescription()),
+    // }
+    // fetch('http://10.138.2.9:8080/workflow', fetchOptions).then((res)=>{
+    //   console.log(res);
+    //   res.text().then(text =>{
+    //     console.log(text);
+    //   })
+    // });
+  
   },
     saveRule:function(){
       var longest = ""
