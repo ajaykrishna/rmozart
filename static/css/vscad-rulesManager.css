@@ -16,7 +16,49 @@
   margin: 2em;
   right: 0px;
 }
-
+.counter{
+  width: 2rem;
+  height: 2rem;
+  background: #accce3;
+  border-radius: 30%;
+  text-align: center;
+  margin-left: 1rem;
+  font-weight: 900;
+  font-size: 14px;
+  font-style: normal;
+}
+.rule-part-info .counter{
+transform: translate(6.9rem,-5rem);
+}
+#validation-dialog{
+  display: block;
+  margin: auto;
+  text-align: right;
+  background: #76a6c8;
+  width: 30%;
+  border-radius: 10px;
+}
+#confirm-button{
+  padding: .5rem 1rem;
+  border-radius: 5px;
+  border: solid 0px #325065;
+  color: white;
+  background: #618eae;
+  margin-right: 2rem;
+}
+#noti-header{
+  text-align: left;
+    background: azure;
+    margin: 0;
+    padding: 2rem;
+    font-size: x-large;
+    border-radius: 10px 10px 0px 0px;
+}
+#noti-message{
+  text-align: left;
+  padding: 2rem;
+  font-size: medium;
+}
 .buttons {
   box-shadow: 0px 5px 11px -2px rgba(0, 0, 0, 0.18), 
               0px 4px 12px -7px rgba(0, 0, 0, 0.15);

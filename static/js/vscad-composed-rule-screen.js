@@ -50,6 +50,8 @@ const VscadRulesScreen = {
     this.diagramView.addEventListener('click',()=>{
       this.diagramView.classList.remove('selected');
       this.diagramView.style.display = "none"
+      this.hiddeVerification();
+      this.hiddeDiagram();
     })
     this.testButton.addEventListener('click',()=>{
       this.testCompile();
@@ -104,6 +106,9 @@ const VscadRulesScreen = {
     });
   },
   testDiagram : function(){
+    var  diagram = document.getElementById('canvas');
+    diagram.style.display = "flex"
+
     if(!this.diagramLoaded){
       var xhttp = new XMLHttpRequest();  
       xhttp.open("GET", "../OnlineOrderingSimpleV8.bpmn", false);
@@ -112,8 +117,31 @@ const VscadRulesScreen = {
       this.showDiagram(xhttp.response);
     }
   },
+  showVerification:function(response){
+    // {"status":false,"message":"Deadlock found in the composition"}
+    
+    this.diagramView.classList.add('selected');
+    this.diagramView.style.display = "flex";
+    this.hiddeDiagram()
+   var  alertDialog = document.getElementById('validation-dialog');
+    alertDialog.style.display = "block"
+
+    alertDialog.querySelector("#noti-header").textContent = response.status?"Verifyed":"Problem found";
+    alertDialog.querySelector("#noti-message").textContent = response.message;
+    alertDialog.querySelector("#confirm-button")
+     
+  },
+  hiddeVerification:function(){
+   var alertDialog = document.getElementById('validation-dialog');
+    alertDialog.style.display = "none";
+  },
+  hiddeDiagram(){
+    var  diagram = document.getElementById('canvas');
+    diagram.style.display = "none"
+  },
   showDiagram:function (bpmnXML){
-    var bpmnViewer =  new BpmnJS({
+   
+    var bpmnViewer = new BpmnJS({
       container: '#canvas'
     });
       // import diagram
@@ -177,7 +205,7 @@ const VscadRulesScreen = {
       // 
       usedRules.forEach(rule => {
         var tempRule = {}
-        tempRule.id = rule.id;
+        tempRule.id =  rule.id.toString();
         tempRule.type = rule.trigger.op;
         tempRule.events = []
         tempRule.actions = []
@@ -205,28 +233,24 @@ const VscadRulesScreen = {
 
      info.objects = Object.keys(usedObjects);
       console.log('final info ', info);
-      
-    });
-   
-  
-    // const fetchOptions = 
-    //   {
-    //     method: "POST",
-    //     headers: {
-    //         "Content-Type": "application/json",
-    //         "Accept": "application/xml",
-    //     },
-    //     redirect: "follow", 
-    //     referrer: "no-referrer", 
-    //     body: JSON.stringify(this.cRule.toDescription()),
-    // }
-    // fetch('http://10.138.2.9:8080/workflow', fetchOptions).then((res)=>{
+        const fetchOptions = 
+      {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+        },
+        redirect: "follow", 
+        referrer: "no-referrer", 
+        body: JSON.stringify(info),
+    }
+    // fetch('http://10.138.2.9:8080/verify', fetchOptions).then((res)=>{
     //   console.log(res);
-    //   res.text().then(text =>{
-    //     console.log(text);
-    //   })
-    // });
-  
+    //   this.showVerification(res.message);
+    //  });
+     this.showVerification({"status":false,"message":"Deadlock found in the composition"});
+    });
+    
   },
     saveRule:function(){
       var longest = ""

@@ -27,18 +27,7 @@ class ComposedRule {
     this.rules = rules;
     this.expression = expression;
   
-//test
-this.index = 0; 
 
-
-//setting up the first rule to on
-    // this.normalEngine.getRule(this.rules[this.index]).then((rule) =>{
-    //   rule.enabled = true;
-    //   this.normalEngine.updateRule(rule.id,rule);
-    //   console.log("setting up the first rule to on");
-      
-    //  });
-//test
 
   }
 

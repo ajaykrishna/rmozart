@@ -570,25 +570,20 @@
               </div>
             </div>
              <div id="operators-side-menu">
-              <div class="operator-menu-item" id="part-after"><h3>after ";"</h3></div>
-              <div class="operator-menu-item" id="part-and"><h3>and "|"</h3></div>
-              <div class="operator-menu-item" id="part-or"><h3>or "[,]"</h3></div>
-              <div class="operator-menu-item" id="part-other"><h3>other</h3></div>
+              <div class="operator-menu-item" id="part-after"><h3>Sequence</h3></div>
+              <div class="operator-menu-item" id="part-and"><h3>And</h3></div>
+              <div class="operator-menu-item" id="part-or"><h3>Or</h3></div>
+              <div class="operator-menu-item" id="part-other"><h3>Repeat</h3></div>
             </div>
        </div>
         
         <div id="rules-area"></div>
      </div>
      <nav class="container"  > 
-    
-      <a href="#"  id="save-button" class="buttons" tooltip="Google+">save</a>
-      
+      <a href="#"  id="save-button" class="buttons" tooltip="Google+">save</a>  
       <a href="#"  id="verification-button" class="buttons" tooltip="Twitter">verify</a>
-      
       <a href="#" id ="diagram-button" class="buttons" tooltip="Facebook">Diagram</a>
-  
       <button id="vscad-create-rule-button" class="icon-button buttons"></button>
-  
     </nav>
     
       
@@ -596,6 +591,11 @@
      <!-- diagram screen -->
      <section data-view="diagram" class="hidden" id="diagram-view" >
       <div id="canvas"></div>
+      <div id="validation-dialog"> 
+        <h1 id="noti-header">holas</h1> 
+        <p id="noti-message"></p> 
+        <button id="confirm-button">OK</button>
+      </div>
      </section>
 
     <!-- Speech button -->
