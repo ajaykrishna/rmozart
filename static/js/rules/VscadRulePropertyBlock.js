@@ -38,10 +38,7 @@ VscadRulePropertyBlock.prototype = Object.create(VscadRuleBlock.prototype);
  * On mouse up during a drag
  */
 VscadRulePropertyBlock.prototype.onUp = function( clientX, clientY) {
-  VscadRuleBlock.prototype.onUp.call(this, clientX, clientY);
-  console.log("up on ",this.text);
-  
-  
+  VscadRuleBlock.prototype.onUp.call(this, clientX, clientY);  
 };
 
 
