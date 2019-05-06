@@ -111,7 +111,7 @@ const VscadRulesScreen = {
 
     if(!this.diagramLoaded){
       var xhttp = new XMLHttpRequest();  
-      xhttp.open("GET", "../OnlineOrderingSimpleV8.bpmn", false);
+      xhttp.open("GET", "../example.bpmn", false);
       xhttp.send();
       if (xhttp.readyState === 4)
       this.showDiagram(xhttp.response);
@@ -125,10 +125,15 @@ const VscadRulesScreen = {
     this.hiddeDiagram()
    var  alertDialog = document.getElementById('validation-dialog');
     alertDialog.style.display = "block"
-
-    alertDialog.querySelector("#noti-header").textContent = response.status?"Verifyed":"Problem found";
+    if(response.status){
+      alertDialog.querySelector("#tittle").textContent = "Verified";
+      alertDialog.querySelector("img").src = "../images/tick-mark.png"
+    }
+    else{
+      alertDialog.querySelector("#tittle").textContent = "Problem found";
+      alertDialog.querySelector("img").src = "../images/rejected-mark.png"
+    }
     alertDialog.querySelector("#noti-message").textContent = response.message;
-    alertDialog.querySelector("#confirm-button")
      
   },
   hiddeVerification:function(){
@@ -248,7 +253,7 @@ const VscadRulesScreen = {
     //   console.log(res);
     //   this.showVerification(res.message);
     //  });
-     this.showVerification({"status":false,"message":"Deadlock found in the composition"});
+     this.showVerification({"status":true,"message":"Deadlock found in the composition"});
     });
     
   },
