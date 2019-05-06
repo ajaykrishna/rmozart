@@ -6,7 +6,12 @@
 
  const nodes = require('./example.json').nodes;
  const flows = require('./example.json').flows;
-
+  //TODO 
+  /*
+    + CHANGE NODES AND FLOWS FOR REAL DATA
+    + CHANGE  THE FUNCTION "NOTIFY" TO ACT WITH REAL TRIGGERS
+  */
+ 
  
  var testNodes = {};
  var testFlows = {}; 
@@ -51,19 +56,19 @@
  }
  notify(rule,state){
    // this is just to test
-  if(rule.id == 11){
+  //if(rule.id == 11){
   
-    var  fakeId = this.getRuleIdForTest();
+    //var  fakeId = this.getRuleIdForTest();
 
-    console.log(fakeId,testPointers);
-    var pointerIndex =  this.getPointerOfRule(fakeId)//rule.id
+    console.log(rule.id,testPointers);
+    var pointerIndex =  this.getPointerOfRule(rule.id)//rule.id
     
     if(!isNaN(parseInt(fakeId)))   
-      this.turnOffRule(fakeId)//rule.id
+      this.turnOffRule(rule.id)//rule.id
   
     
      testPointers[pointerIndex] = this.pointerActivate(this.pointerToNextNode(testPointers[pointerIndex] ))
-  }  
+ // }  
   }
  getRuleIdForTest(){
     const rand = Math.floor(Math.random() * testPointers.length);

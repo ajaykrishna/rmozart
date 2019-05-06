@@ -33,7 +33,7 @@ transform: translate(6.9rem,-5rem);
 #validation-dialog{
   display: block;
   margin: auto;
-  text-align: right;
+  text-align: center;
   background: #76a6c8;
   width: 30%;
   border-radius: 10px;
@@ -45,9 +45,15 @@ transform: translate(6.9rem,-5rem);
   color: white;
   background: #618eae;
   margin-right: 2rem;
+  margin-bottom: 2rem;
+}
+#validation-dialog img{
+  width: auto;
+height: 10rem;
+margin: 1rem;
 }
 #noti-header{
-  text-align: left;
+  
     background: azure;
     margin: 0;
     padding: 2rem;
