@@ -8,11 +8,11 @@ const PromiseRouter = require('express-promise-router');
 
 const APIError = require('../rules-engine/APIError');
 const Database = require('./VscadDatabase');
-const Engine = require('./VscadEngine');
+const VscadEngine = require('./VscadEngine');
 const Rule = require('./VscadComposedRule');
 
 const index = PromiseRouter();
-const engine = new Engine();
+const engine = new VscadEngine();
 
 /**
  * Express middleware for extracting rules from the bodies of requests
@@ -51,6 +51,7 @@ index.get('/:id', async function(req, res) {
       new APIError('Engine failed to get  composed rule', e).toString());
   }
 });
+
 
 index.post('/', parseRuleFromBody, async function(req, res) {
   const ruleId = await engine.addRule(req.rule);

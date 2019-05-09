@@ -93,7 +93,7 @@ VscadConnectorBlock.prototype.returnChildToRuleArea = function (child) {
     if (currentChild === child) {
       this.children.splice(i, 1);
 
-      if (this.children.length === 0) {
+      if (this.children.length == 0) {
         this.elt.querySelector('.non-visible').classList.remove('non-visible')
       } else {
         if (child.parent !== null) {
@@ -105,8 +105,8 @@ VscadConnectorBlock.prototype.returnChildToRuleArea = function (child) {
             child.elt.previousElementSibling.remove();
 
         }
-        if (this.children.length === 1) {
-          this.elt.querySelector('.hint-holder').classList.remove('non-visible')
+        if (this.children.length == 1) {
+         this.elt.lastElementChild.classList.remove('non-visible');
         }
       }
   
@@ -132,6 +132,7 @@ VscadConnectorBlock.prototype.isOwnParent = function (dragging) {
 VscadConnectorBlock.prototype.addAsChild = function (child, sibling) {
   child.parent = this;
   child.snapToGrid(0, 0);
+  // if tey are conectors of the same type merge the items
   if(child instanceof VscadConnectorBlock && child.name == this.name && child.children){
     while(child.children.length>0) {
       var element = child.children[0];
@@ -145,7 +146,7 @@ VscadConnectorBlock.prototype.addAsChild = function (child, sibling) {
         this.elt.querySelector('.empty-space').classList.add('non-visible')
       } else {
         if (this.children.length === 1) {
-          this.elt.querySelector('.hint-holder').classList.add('non-visible')
+          this.elt.lastElementChild.classList.add('non-visible')
         }
         let nElt = document.createElement('h3');
         nElt.innerHTML = this.name;

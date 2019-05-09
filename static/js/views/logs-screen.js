@@ -19,6 +19,7 @@ const Utils = require('../utils');
 class LogsScreen {
   constructor() {
     this.logs = {};
+    this.logWindows = {};
     this.logDescr = null;
     this.resizeTimeout = null;
     this.start = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
@@ -70,6 +71,8 @@ class LogsScreen {
     this.logsBackButton.addEventListener('click', () => {
       page('/logs');
     });
+    this.menuButton =
+      document.getElementById('menu-button');
     this.onWindowResize();
   }
 
@@ -103,10 +106,12 @@ class LogsScreen {
       App.buildOverflowMenu(menu);
       App.showOverflowButton();
       this.createLogButton.classList.add('hidden');
+      this.menuButton.classList.add('hidden');
       this.logsBackButton.classList.remove('hidden');
     } else {
       App.hideOverflowButton();
       this.createLogButton.classList.remove('hidden');
+      this.menuButton.classList.remove('hidden');
       this.logsBackButton.classList.add('hidden');
       this.logsHeader.textContent = 'Logs';
     }
@@ -133,8 +138,8 @@ class LogsScreen {
           continue;
         }
 
-        const log = new Log(logInfo.thing, logInfo.property, this.start,
-                            this.end, soloView);
+        const log = new Log(this.logWindows, logInfo.thing, logInfo.property,
+                            this.start, this.end, soloView);
 
         this.logs[logInfo.id] = log;
         this.logsContainer.appendChild(log.elt);

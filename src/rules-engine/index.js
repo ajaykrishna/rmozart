@@ -4,17 +4,19 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.*
  */
 
-'use strict';
+//'use strict';
 
 const PromiseRouter = require('express-promise-router');
 
 const APIError = require('./APIError');
 const Database = require('./Database');
-const Engine = require('./Engine');
+const MasterEngine = require('../vscad-rules-engine/VscadMasterEngine').default;
+const Engine  = require ('./Engine');
 const Rule = require('./Rule');
-
+var engine = new Engine();
 const index = PromiseRouter();
-const engine = new Engine();
+
+
 
 /**
  * Express middleware for extracting rules from the bodies of requests
@@ -89,7 +91,11 @@ index.delete('/:id', async (req, res) => {
 
 index.configure = async () => {
   await Database.open();
+  engine.MasterEngine = MasterEngine;
   await engine.getRules();
+  MasterEngine.engine = engine;
+  MasterEngine.init(engine);
+  
 };
 
 module.exports = index;

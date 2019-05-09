@@ -50,7 +50,17 @@ const VscadRulesScreen = {
     this.diagramView.addEventListener('click',()=>{
       this.diagramView.classList.remove('selected');
       this.diagramView.style.display = "none"
+      this.hiddeVerification();
+      this.hiddeDiagram();
     })
+    this.testButton.addEventListener('click',()=>{
+      this.testCompile();
+    })
+    
+    this.verificationButton.addEventListener('click',()=>{
+      this.requestVerify();
+    })
+    
     this.ruleNameCustomize.addEventListener('click', selectRuleName);
     this.ruleName.addEventListener('dblclick', (event) => {
       event.preventDefault();
@@ -96,16 +106,47 @@ const VscadRulesScreen = {
     });
   },
   testDiagram : function(){
+    var  diagram = document.getElementById('canvas');
+    diagram.style.display = "flex"
+
     if(!this.diagramLoaded){
       var xhttp = new XMLHttpRequest();  
-      xhttp.open("GET", "../OnlineOrderingSimpleV8.bpmn", false);
+      xhttp.open("GET", "../example.bpmn", false);
       xhttp.send();
       if (xhttp.readyState === 4)
       this.showDiagram(xhttp.response);
     }
   },
+  showVerification:function(response){
+    // {"status":false,"message":"Deadlock found in the composition"}
+    
+    this.diagramView.classList.add('selected');
+    this.diagramView.style.display = "flex";
+    this.hiddeDiagram()
+   var  alertDialog = document.getElementById('validation-dialog');
+    alertDialog.style.display = "block"
+    if(response.status){
+      alertDialog.querySelector("#tittle").textContent = "Verified";
+      alertDialog.querySelector("img").src = "../images/tick-mark.png"
+    }
+    else{
+      alertDialog.querySelector("#tittle").textContent = "Problem found";
+      alertDialog.querySelector("img").src = "../images/rejected-mark.png"
+    }
+    alertDialog.querySelector("#noti-message").textContent = response.message;
+     
+  },
+  hiddeVerification:function(){
+   var alertDialog = document.getElementById('validation-dialog');
+    alertDialog.style.display = "none";
+  },
+  hiddeDiagram(){
+    var  diagram = document.getElementById('canvas');
+    diagram.style.display = "none"
+  },
   showDiagram:function (bpmnXML){
-    var bpmnViewer =  new BpmnJS({
+   
+    var bpmnViewer = new BpmnJS({
       container: '#canvas'
     });
       // import diagram
@@ -120,29 +161,101 @@ const VscadRulesScreen = {
     this.diagramLoaded = true;
   },
    
-  testCompile:function(){
-    // const fetchOptions = 
-    //   {
-    //     method: "POST", // *GET, POST, PUT, DELETE, etc.
-    //     //mode: "cors", // no-cors, cors, *same-origin
-    //     cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-    //     //credentials: "same-origin", // include, *same-origin, omit
-    //     headers: {
-    //         "Content-Type": "application/json",
-    //         // "Content-Type": "application/x-www-form-urlencoded",
-    //     },
-    //     redirect: "follow", // manual, *follow, error
-    //     referrer: "no-referrer", // no-referrer, *client
-    //     body: JSON.stringify({
-    //       enabled: true,
-    //       expression: "( 1 | 3 | 1 | ( 3))",
-    //       id: 1,
-    //       name: "Rue me1",
-    //       rules: ["1", "3"]
-    //     }), // body data type must match "Content-Type" header
-    // }
-      
+  requestDiagram:function(){
+    const fetchOptions = 
+      {
+        method: "POST", // *GET, POST, PUT, DELETE, etc.
+        //mode: "cors", // no-cors, cors, *same-origin
+        cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+        //credentials: "same-origin", // include, *same-origin, omit
+        headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/xml",
+            // "Content-Type": "application/x-www-form-urlencoded",
+        },
+       
+        redirect: "follow", // manual, *follow, error
+        referrer: "no-referrer", // no-referrer, *client
+        body: JSON.stringify(this.cRule.toDescription()), // body data type must match "Content-Type" header
+    }
+    fetch('http://10.138.2.9:8080/workflow', fetchOptions).then((res)=>{
+      console.log(res);
+      res.text().then(text =>{
+        console.log(text);
+        this.showDiagram(text);
+      })
+    
+    });
     // ;
+  },
+     
+  requestVerify:function(cRule){
+
+
+    fetch(`/rules`, {headers: API.headers(),}).then((res) => {
+      return res.json();
+    }).then((res) => {
+      var info = {}
+      info.expression = this.cRule.expression;
+      info.objects = [];
+      info.rules = [];
+
+      var usedRules = [];
+      var usedObjects = {};
+      //get te used rules
+      res.forEach(rule => {
+         if(this.cRule.rules.includes(`${rule.id}`))
+          usedRules.push(rule);
+      });
+      // 
+      usedRules.forEach(rule => {
+        var tempRule = {}
+        tempRule.id =  rule.id.toString();
+        tempRule.type = rule.trigger.op;
+        tempRule.events = []
+        tempRule.actions = []
+        rule.trigger.triggers.forEach(trigger => {
+          if(trigger.property){
+            tempRule.actions.push(`${trigger.property.thing}|${trigger.property.id}`)
+            usedObjects[trigger.property.thing] = true;
+          }else{ 
+            tempRule.actions.push(`${trigger.type}|${Object.keys(trigger)[1]}`)
+            usedObjects[trigger.type] = true;
+          }
+        });
+        rule.effect.effects.forEach(effect => {
+          if(effect.property){
+            tempRule.events.push(`${effect.property.thing}|${effect.property.id}`)
+            usedObjects[effect.property.thing] = true;
+          }else{
+            tempRule.events.push(`${effect.type}|${Object.keys(effect)[1]}`)
+            usedObjects[effect.type] = true;
+          }
+         
+        });
+        info.rules.push(tempRule);
+     });
+
+     info.objects = Object.keys(usedObjects);
+      console.log('final info ', info);
+        const fetchOptions = 
+      {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+        },
+        redirect: "follow", 
+        referrer: "no-referrer", 
+        body: JSON.stringify(info),
+    }
+    // fetch('http://10.138.2.9:8080/verify', fetchOptions).then((res)=>{
+    //   console.log(res);
+    //   this.showVerification(res.message);
+    //  });
+     this.showVerification({"status":true,"message":"Deadlock found in the composition"});
+    });
+    
   },
     saveRule:function(){
       var longest = ""
