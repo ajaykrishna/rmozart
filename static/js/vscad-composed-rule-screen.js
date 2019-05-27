@@ -19,7 +19,6 @@ const VscadConnectorBlock = require('./rules/VscadConnectorBlock');
 // eslint-disable-next-line no-unused-vars
 const VscadRulesScreen = {
   init: function() {
-    this.createRuleButton = document.getElementById('create-rule-button');
     this.createRuleHint = document.getElementById('create-rule-hint');
     this.rulesList = document.getElementById('rules-side-menu');
     this.ruleArea = document.getElementById('rules-area');
@@ -101,9 +100,7 @@ const VscadRulesScreen = {
      this.saveButton.addEventListener('click',()=>{
        this.saveRule();
      });
-    this.createRuleButton.addEventListener('click', () => {
-      page('/rules/new');
-    });
+   
   },
   testDiagram : function(){
     var  diagram = document.getElementById('canvas');
