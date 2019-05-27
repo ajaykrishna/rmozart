@@ -11,6 +11,7 @@
 'use strict';
 
 const App = require('../app');
+const Constants = require('../constants');
 const Icons = require('../icons');
 const Utils = require('../utils');
 
@@ -27,11 +28,12 @@ class Log {
     this.logWindows = logWindows;
     this.thingId = thingId;
     this.propertyId = propertyId;
-    this.logStart = logStart;
-    this.logEnd = logEnd;
+    this.logStart = new Date(logStart.getTime());
+    this.logEnd = new Date(logEnd.getTime());
     this.start = new Date(this.logEnd.getTime() - 24 * 60 * 60 * 1000);
-    this.end = this.logEnd;
+    this.end = new Date(this.logEnd.getTime());
     this.soloView = soloView;
+    this.loading = true;
 
     this.dimension();
     this.elt = document.createElement('div');
@@ -40,6 +42,8 @@ class Log {
       this.elt.classList.add('logs-log-container-solo-view');
     }
     this.rawPoints = [];
+
+    this.onPropertyStatus = this.onPropertyStatus.bind(this);
 
     this.onPointerDown = this.onPointerDown.bind(this);
     this.onPointerMove = this.onPointerMove.bind(this);
@@ -50,6 +54,8 @@ class Log {
     this.pointerState = {};
     this.prevPointerState = {};
     this.touchTooltipTimeout = null;
+
+    this.liveScrollUpdate = this.liveScrollUpdate.bind(this);
 
     this.restoreWindow();
     this.drawSkeleton();
@@ -174,10 +180,12 @@ class Log {
     }
     this.weekDropdown = document.createElement('select');
     this.weekDropdown.classList.add('logs-log-week-dropdown', 'arrow-select');
-    const oneHourMs = 60 * 60 * 1000;
+    const oneMinuteMs = 60 * 1000;
+    const oneHourMs = 60 * oneMinuteMs;
     const oneDayMs = 24 * oneHourMs;
     const oneWeekMs = 7 * oneDayMs;
     const options = [
+      {name: 'Minute', value: oneMinuteMs},
       {name: 'Hour', value: oneHourMs},
       {name: 'Day', value: oneDayMs},
       {name: 'Week', value: oneWeekMs},
@@ -195,8 +203,7 @@ class Log {
       this.weekDropdown.appendChild(option);
     }
     if (!anySelected) {
-      const dayOption = this.weekDropdown.childNodes[1];
-      dayOption.setAttribute('selected', true);
+      this.weekDropdown.value = oneDayMs;
     }
     const onChange = () => {
       let newEnd = this.end.getTime();
@@ -217,12 +224,12 @@ class Log {
   makePath(points, close) {
     const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
     const text = [
-      'M', Math.round(points[0].x).toString(),
-      Math.round(points[0].y).toString(),
+      'M', points[0].x.toFixed(1),
+      points[0].y.toFixed(1),
     ];
     for (let i = 1; i < points.length; i++) {
-      text.push('L', Math.round(points[i].x).toString(),
-                Math.round(points[i].y).toString());
+      text.push('L', points[i].x.toFixed(1),
+                points[i].y.toFixed(1));
     }
     if (close) {
       text.push('Z');
@@ -243,13 +250,13 @@ class Log {
 
   async load() {
     const thing = await App.gatewayModel.getThing(this.thingId);
-    const thingModel = await App.gatewayModel.getThingModel(this.thingId);
-    if (!thing || !thingModel) {
+    this.thingModel = await App.gatewayModel.getThingModel(this.thingId);
+    if (!thing || !this.thingModel) {
       // be sad
       return;
     }
     const thingName = thing.name;
-    this.property = thingModel.propertyDescriptions[this.propertyId];
+    this.property = this.thingModel.propertyDescriptions[this.propertyId];
     const propertyName = this.property.title ||
       Utils.capitalize(this.propertyId);
     const formattedName = `${thingName} ${propertyName}`;
@@ -272,6 +279,8 @@ class Log {
     const propertyUnit = this.property.unit || '';
     this.yAxisLabel.textContent = Utils.unitNameToAbbreviation(propertyUnit);
 
+    this.thingModel.subscribe(Constants.PROPERTY_STATUS, this.onPropertyStatus);
+
     if (this.rawPoints.length > 0) {
       this.redraw();
     }
@@ -288,7 +297,7 @@ class Log {
     });
 
     // update progress bar
-    if (this.rawPoints.length > 2) {
+    if (this.loading && this.rawPoints.length > 2) {
       const lastPoint = this.rawPoints[this.rawPoints.length - 1];
       let fractionDone = (lastPoint.time - this.start.getTime()) /
         (this.end.getTime() - this.start.getTime());
@@ -524,12 +533,13 @@ class Log {
         this.property.type === 'integer') {
       // Add a point so that the value steps down instead of gradually
       // decreasing
+      const lastPoint = points[points.length - 1];
       points.push({
-        x: points[points.length - 1].x,
-        y: rightPoint.y,
+        x: lastPoint.x,
+        y: lastPoint.y,
       }, {
         x: this.xStart + this.graphWidth,
-        y: rightPoint.y,
+        y: lastPoint.y,
       });
     } else if (points.length > 0) {
       const borderPoint = this.interpolate(points[points.length - 1],
@@ -563,6 +573,11 @@ class Log {
 
     this.graph.appendChild(graphFill);
     this.graph.appendChild(graphLine);
+
+    if (!this.liveScrollFrameRequest) {
+      this.liveScrollFrameRequest =
+        window.requestAnimationFrame(this.liveScrollUpdate);
+    }
   }
 
   timeToLabel(time) {
@@ -570,11 +585,12 @@ class Log {
     if (date.getHours() === 0 && date.getMinutes() === 0) {
       return `${date.getDate()}`;
     }
-    let minutes = `${date.getMinutes()}`;
-    if (minutes.length < 2) {
-      minutes = `0${minutes}`;
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    if (date.getSeconds() === 0) {
+      return `${date.getHours()}:${minutes}`;
     }
-    return `${date.getHours()}:${minutes}`;
+    const seconds = date.getSeconds().toString().padStart(2, '0');
+    return `${date.getHours()}:${minutes}:${seconds}`;
   }
 
   valueToLabel(value, bonusPlaces) {
@@ -649,13 +665,14 @@ class Log {
   }
 
   drawXTicks() {
-    const oneMinuteMs = 60 * 1000;
+    const oneSecondMs = 1000;
+    const oneMinuteMs = 60 * oneSecondMs;
     const oneHourMs = 60 * oneMinuteMs;
     const oneDayMs = 24 * oneHourMs;
 
     const reasonableTicks = [
       oneDayMs, 12 * oneHourMs, oneHourMs, 15 * oneMinuteMs, 5 * oneMinuteMs,
-      oneMinuteMs,
+      oneMinuteMs, 10 * oneSecondMs, oneSecondMs,
     ];
 
     let i;
@@ -761,11 +778,18 @@ class Log {
                                   this.logEnd.getTime());
 
     // Make sure control is wide enough to tap
-    if (controlEnd - controlStart < 16) {
-      controlEnd = controlStart + 16;
+    const minWidth = 16;
+    if (controlEnd - controlStart < minWidth) {
+      const mid = (controlEnd + controlStart) / 2;
+      controlStart = mid - minWidth / 2;
+      controlEnd = mid + minWidth / 2;
       if (controlEnd > this.xStart + this.graphWidth) {
         controlEnd = this.xStart + this.graphWidth;
-        controlStart = controlEnd - 16;
+        controlStart = controlEnd - minWidth;
+      }
+      if (controlStart < this.xStart) {
+        controlStart = this.xStart;
+        controlEnd = controlStart + minWidth;
       }
     }
 
@@ -871,8 +895,14 @@ class Log {
       if (i < 0 || i > this.rawPoints.length - 1) {
         continue;
       }
-      const dx = this.timeToX(this.rawPoints[i].time) - localX;
-      const dy = this.valueToY(this.rawPoints[i].value) - localY;
+      if (this.rawPoints[i].time < this.start.getTime() ||
+          this.rawPoints[i].time > this.end.getTime()) {
+        continue;
+      }
+      const pointX = this.timeToX(this.rawPoints[i].time);
+      const pointY = this.valueToY(this.rawPoints[i].value);
+      const dx = pointX - localX;
+      const dy = pointY - localY;
       const diffSq = dx * dx + dy * dy;
       if (diffSq > nearestDSq) {
         continue;
@@ -1050,8 +1080,8 @@ class Log {
       this.finishScrolling();
     } else if (this.pointerState.action === DRAGGING) {
       const dragEnd = this.constrainTime(this.xToTime(event.clientX));
-      if (Math.abs(dragEnd - this.pointerState.dragStart) < 30 * 1000) {
-        // Drag was way too small (<30s)
+      if (Math.abs(dragEnd - this.pointerState.dragStart) < 10 * 1000) {
+        // Drag was way too small (<10s)
         this.setPointerState({});
         return;
       }
@@ -1079,9 +1109,19 @@ class Log {
 
   finishScrolling() {
     const controlX = parseFloat(this.scrollControl.getAttribute('x'));
-    const controlTime = this.xToTime(controlX, this.logStart.getTime(),
-                                     this.logEnd.getTime());
-    const delta = controlTime - this.start.getTime();
+    const controlWidth = parseFloat(this.scrollControl.getAttribute('width'));
+
+    const controlCenter = controlX + controlWidth / 2;
+    const controlXStart = this.xStart + controlWidth / 2;
+    const controlGraphWidth = this.graphWidth - controlWidth;
+    const windowWidth = this.end.getTime() - this.start.getTime();
+    const logMidStart = this.logStart.getTime() + windowWidth / 2;
+    const logMidEnd = this.logEnd.getTime() - windowWidth / 2;
+    const controlTime = (controlCenter - controlXStart) / controlGraphWidth *
+      (logMidEnd - logMidStart) + logMidStart;
+
+    const centerTime = this.start.getTime() + windowWidth / 2;
+    const delta = controlTime - centerTime;
     this.scroll(delta);
   }
 
@@ -1113,6 +1153,76 @@ class Log {
       start: this.start.getTime(),
       end: this.end.getTime(),
     };
+  }
+
+  onPropertyStatus(properties) {
+    if (this.loading || !this.property ||
+        !properties.hasOwnProperty(this.propertyId)) {
+      return;
+    }
+    const lastPoint = this.rawPoints[this.rawPoints.length - 1];
+    if (lastPoint && properties[this.propertyId] === lastPoint.value) {
+      return;
+    }
+    const now = Date.now();
+    this.addRawPoint({
+      value: properties[this.propertyId],
+      date: now,
+    });
+    if (!this.pointerState.action) {
+      const initialDiff = this.logEnd.getTime() - this.end.getTime();
+      this.logEnd.setTime(now);
+      if (initialDiff < 10 * 1000) {
+        const advancement = now - this.end.getTime();
+        this.start.setTime(this.start.getTime() + advancement);
+        this.end.setTime(this.end.getTime() + advancement);
+      }
+      this.redraw();
+    }
+  }
+
+  liveScrollUpdate() {
+    if (this.pointerState.action) {
+      this.liveScrollFrameRequest = null;
+      return;
+    }
+    const now = Date.now();
+    const nowX = this.timeToX(now);
+    const logEndX = this.timeToX(this.logEnd.getTime());
+    if (nowX - logEndX < 1) {
+      // Must move window forwards by one pixel
+      this.liveScrollFrameRequest =
+        window.requestAnimationFrame(this.liveScrollUpdate);
+      return;
+    }
+    const closeToWindow = (this.end.getTime() - this.start.getTime()) / 10;
+    let redraw = false;
+    if (this.logEnd.getTime() - this.end.getTime() < closeToWindow) {
+      const diff = now - this.end.getTime();
+      this.end.setTime(this.end.getTime() + diff);
+      this.start.setTime(this.start.getTime() + diff);
+      redraw = true;
+    }
+    this.logEnd.setTime(now);
+
+    this.liveScrollFrameRequest =
+      window.requestAnimationFrame(this.liveScrollUpdate);
+
+    if (redraw) {
+      this.redraw();
+    }
+  }
+
+  remove() {
+    if (this.elt.parentNode) {
+      this.elt.parentNode.removeChild(this.elt);
+    }
+    this.thingModel.unsubscribe(Constants.PROPERTY_STATUS,
+                                this.onPropertyStatus);
+    if (this.liveScrollFrameRequest) {
+      window.cancelAnimationFrame(this.liveScrollFrameRequest);
+      this.liveScrollFrameRequest = null;
+    }
   }
 }
 

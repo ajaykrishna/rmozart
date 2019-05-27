@@ -88,6 +88,7 @@ class LogsScreen {
   }
 
   reload() {
+    this.end = new Date(Date.now());
     const soloView = !!this.logDescr;
 
     if (soloView) {
@@ -121,9 +122,7 @@ class LogsScreen {
     }).then((schema) => {
       for (const id in this.logs) {
         const log = this.logs[id];
-        if (log.elt.parentNode) {
-          log.elt.parentNode.removeChild(log.elt);
-        }
+        log.remove();
         delete this.logs[id];
       }
 
@@ -188,6 +187,7 @@ class LogsScreen {
       this.messageSocket = null;
 
       for (const id in this.logs) {
+        this.logs[id].loading = false;
         this.logs[id].redraw();
       }
     };
