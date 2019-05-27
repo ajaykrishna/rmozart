@@ -194,7 +194,7 @@ VscadConnectorBlock.prototype.onDown = function () {
   if(this.parent && this.parent.returnChildToRuleArea){
     this.parent.returnChildToRuleArea(this);
   }
-  const deleteArea = document.getElementById('rules-side-menu');
+  const deleteArea = document.getElementById('vscad-delete-area');
   deleteArea.classList.add('delete-active');
   this.elt.classList.add('dragging');
   this.ruleArea.classList.add('drag-location-hint');
@@ -241,16 +241,13 @@ VscadConnectorBlock.prototype.snapToGrid = function (relX, relY) {
  */
 VscadConnectorBlock.prototype.onUp = function (clientX, clientY) {
   this.elt.classList.remove('dragging');
-
-  const deleteArea = document.getElementById('operators-side-menu');
+  const deleteArea = document.getElementById('vscad-delete-area');
   const deleteAreaWidth = deleteArea.getBoundingClientRect().width;
-
   if (clientX < deleteAreaWidth) {
     this.remove();
-
   }
   this.ruleArea.dragging = null;
-
+  deleteArea.classList.remove('delete-active');
 };
 
 /**

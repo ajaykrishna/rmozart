@@ -74,7 +74,7 @@ VscadRuleBlock.prototype.onDown = function() {
     transform: this.elt.style.transform,
   };
 
-  const deleteArea = document.getElementById('rules-side-menu');
+  const deleteArea = document.getElementById('vscad-delete-area');
   deleteArea.classList.add('delete-active');
   this.elt.classList.add('dragging');
   this.ruleArea.classList.add('drag-location-hint');
@@ -92,7 +92,7 @@ VscadRuleBlock.prototype.getText = function(){
  */
 VscadRuleBlock.prototype.onMove = function(clientX, clientY, relX, relY) {
   const ruleAreaRect = this.ruleArea.getBoundingClientRect();
-  const deleteArea = document.getElementById('rules-side-menu');
+  const deleteArea = document.getElementById('vscad-delete-area');
   const deleteAreaWidth = deleteArea.getBoundingClientRect().width;
   if (clientX < deleteAreaWidth) {
     this.VscadRuleBlock.classList.remove('trigger');
@@ -125,7 +125,7 @@ VscadRuleBlock.prototype.snapToGrid = function(relX, relY) {
  */
 VscadRuleBlock.prototype.onUp = function(clientX, clientY) {
   this.elt.classList.remove('dragging');
-  const deleteArea = document.getElementById('rules-side-menu');
+  const deleteArea = document.getElementById('vscad-delete-area');
   const deleteAreaWidth = deleteArea.getBoundingClientRect().width;
   
   this.ruleArea.dragging = null;
@@ -133,7 +133,7 @@ VscadRuleBlock.prototype.onUp = function(clientX, clientY) {
     this.remove();
     
   } 
-
+  deleteArea.classList.remove('delete-active');
 };
 
 /**

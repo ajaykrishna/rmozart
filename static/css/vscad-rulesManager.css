@@ -3,6 +3,22 @@
     background: #5d9bc7;
   }
 }
+#vscad-delete-area.delete-active {
+  display: block;
+}
+
+#vscad-delete-area {
+  display: none;
+position: absolute;
+width: inherit;
+height: inherit;
+background: #fc8686d0;
+box-sizing: border-box;
+margin: 0;
+padding: 2rem;
+top: 9.6rem;
+}
+
 /* float butons */
 
 #vscad-create-rule-button {

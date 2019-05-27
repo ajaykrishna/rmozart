@@ -321,7 +321,7 @@ const VscadRulesScreen = {
       this.rulesList.querySelectorAll('.rule').forEach((elt) => {
         elt.parentNode.removeChild(elt);
       });
-
+      // TODO: addHere
       for (const ruleDesc of fetchedRules) {
         this.addVscadRuleCardItem(ruleDesc);
       }
