@@ -24,7 +24,7 @@ const VscadRulesScreen = {
     this.ruleArea = document.getElementById('rules-area');
     this.testButton = document.getElementById('test-button');
     this.diagramView = document.getElementById('diagram-view');
-    
+    this.createRuleButton = document.getElementById('create-rule-shortcut');
     this.diagramButton = document.getElementById('diagram-button');
     this.verificationButton = document.getElementById('verification-button');
     this.saveButton = document.getElementById('save-button');
@@ -55,7 +55,9 @@ const VscadRulesScreen = {
     this.testButton.addEventListener('click',()=>{
       this.testCompile();
     })
-    
+    this.createRuleButton.addEventListener('click',()=>{
+      page("/rules/new");
+    })
     this.verificationButton.addEventListener('click',()=>{
       this.requestVerify();
     })
@@ -321,7 +323,6 @@ const VscadRulesScreen = {
       this.rulesList.querySelectorAll('.rule').forEach((elt) => {
         elt.parentNode.removeChild(elt);
       });
-      // TODO: addHere
       for (const ruleDesc of fetchedRules) {
         this.addVscadRuleCardItem(ruleDesc);
       }
