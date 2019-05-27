@@ -219,7 +219,9 @@ VscadRuleBlock.prototype.snapToCenter = function(index, length) {
  * Remove the VscadRuleBlock from the DOM and from its associated rule
  */
 VscadRuleBlock.prototype.remove = function() {
-  this.ruleArea.removeChild(this.elt);
+  if (this.elt.parentNode) {
+    this.elt.parentNode.removeChild(this.elt);
+  }
   this.rulePart = null;
   this.role = 'removed';
 };
