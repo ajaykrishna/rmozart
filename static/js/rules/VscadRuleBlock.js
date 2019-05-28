@@ -91,7 +91,6 @@ VscadRuleBlock.prototype.getText = function(){
  * On mouse move during a drag
  */
 VscadRuleBlock.prototype.onMove = function(clientX, clientY, relX, relY) {
-  const ruleAreaRect = this.ruleArea.getBoundingClientRect();
   const deleteArea = document.getElementById('vscad-delete-area');
   const deleteAreaWidth = deleteArea.getBoundingClientRect().width;
   if (clientX < deleteAreaWidth) {

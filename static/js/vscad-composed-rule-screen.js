@@ -259,15 +259,22 @@ const VscadRulesScreen = {
   },
     saveRule:function(){
       var longest = ""
+      var   foundRules = 0;
       for (let i = this.ComposedRuleBlocks.length-1; i >= 0; i--) {
         const block = this.ComposedRuleBlocks[i];
-        if(block && block.role !== "removed"){
+        if(block && block.role === ""){
           if(longest.length < block.getText().length)
             longest = block.getText();
+            foundRules++
         } 
+        else if(block.role === "removed")
+          this.ComposedRuleBlocks.splice(i,1)
+        
       }
-      console.log(longest);
-      
+      console.log(this.ComposedRuleBlocks);
+    
+        document.getElementById('warning-message').style.display = (foundRules>1)?"block":"none"
+     
       this.cRule.setExpression(longest);
       this.cRule.setRules(this.cRule.getRulesFromExpression());
       

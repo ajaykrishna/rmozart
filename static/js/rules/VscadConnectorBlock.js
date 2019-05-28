@@ -83,7 +83,7 @@ VscadConnectorBlock.prototype.setName = function(name){
   this.elt.classList.add('flex-style');
 }
 VscadConnectorBlock.prototype.returnChildToRuleArea = function (child) {
-
+  child.role = '';
   for (let i = 0; i < this.children.length; i++) {
     const currentChild = this.children[i];
     if (currentChild === child) {
@@ -127,6 +127,7 @@ VscadConnectorBlock.prototype.isOwnParent = function (dragging) {
 
 VscadConnectorBlock.prototype.addAsChild = function (child, sibling) {
   child.parent = this;
+  child.role = 'used';
   child.snapToGrid(0, 0);
   // if tey are conectors of the same type merge the items
   if(child instanceof VscadConnectorBlock && child.name == this.name && child.children){

@@ -274,9 +274,17 @@ padding: 3rem;
   font-size: 1.6rem;
 }
 
-
-
-
+#warning-message{
+  display: none;
+  background: #FFCF8A;
+  color: black;
+  padding: 1rem;
+  
+}
+h2{
+  padding: 0;
+  margin: auto;
+}
 
 .rule-preview {
   border-radius: 0.5rem 0.5rem 0 0;
