@@ -1,6 +1,5 @@
 const Rule = require('./Rule');
 const RuleUtils = require('./RuleUtils');
-const page = require('page');
 const Utils = require('../utils');
 
 /**
@@ -24,7 +23,7 @@ function VscadRuleCardItem(gateway, elt, id, desc) {
   }
 
   let iconTrigger = '/optimized-images/thing-icons/thing.svg';
-  let iconEffect = '/optimized-images/thing-icons/thing.svg';
+ 
 
   if (this.rule.trigger) {
     let trigger = this.rule.trigger;
@@ -36,17 +35,6 @@ function VscadRuleCardItem(gateway, elt, id, desc) {
       iconTrigger = RuleUtils.icon(thingTrigger);
     } else if (trigger.type === 'TimeTrigger') {
       iconTrigger = '/optimized-images/thing-icons/clock.svg';
-    }
-  }
-
-  if (this.rule.effect) {
-    let effect = this.rule.effect;
-    if (effect.effects && effect.effects.length > 0) {
-      effect = effect.effects[0];
-    }
-    const thingEffect = RuleUtils.thingFromPart(gateway, effect);
-    if (thingEffect) {
-      iconEffect = RuleUtils.icon(thingEffect);
     }
   }
 

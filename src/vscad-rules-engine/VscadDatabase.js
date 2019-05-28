@@ -7,7 +7,6 @@
 'use strict';
 
 const db = require('../db.js');
-const DatabaseMigrate = require('../rules-engine/DatabaseMigrate');
 
 function VscadDatabase() {
   if (!db.db) {

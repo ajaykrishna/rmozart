@@ -112,30 +112,6 @@ ComposedRule.prototype.toDescription = function() {
   } ;
 };
 
-/**
- * Convert the rule's description to human-readable plain text
- * @return {String}
- */
-ComposedRule.prototype.toHumanDescription = function() {
-  return this.toHumanRepresentation(false);
-};
-
-/**
- * Convert the rule's description to a human-readable interface
- * @return {String}
- */
-ComposedRule.prototype.toHumanInterface = function() {
-  return this.toHumanRepresentation(true);
-};
-
-/**
- * Convert the rule's description to a human-readable string
- * @param {boolean} html - whether an html interface
- * @return {String}
- */
-ComposedRule.prototype.toHumanRepresentation = function(html) {
-  return `to human non disponible `;
-};
 
 /**
  * Set the  rules used in the composed rule, updating the server model if valid

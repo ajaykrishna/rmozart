@@ -19,7 +19,6 @@ const VscadConnectorBlock = require('./rules/VscadConnectorBlock');
 // eslint-disable-next-line no-unused-vars
 const VscadRulesScreen = {
   init: function() {
-    this.createRuleHint = document.getElementById('create-rule-hint');
     this.rulesList = document.getElementById('rules-side-menu');
     this.ruleArea = document.getElementById('rules-area');
     this.testButton = document.getElementById('test-button');
@@ -33,6 +32,7 @@ const VscadRulesScreen = {
     this.ComposedRuleBlocks = [];
     this.connectors = {};
     this.diagramLoaded = false;
+
     // tittle bariables and the editin functionalities
     this.view = document.getElementById('rules-manager-view');
     this.ruleNameCustomize = this.view.querySelector('.rule-name-customize')
@@ -46,6 +46,7 @@ const VscadRulesScreen = {
       selection.removeAllRanges();
       selection.addRange(range);
     };
+    
     this.diagramView.addEventListener('click',()=>{
       this.diagramView.classList.remove('selected');
       this.diagramView.style.display = "none"
@@ -354,16 +355,11 @@ const VscadRulesScreen = {
     this.rulesList.appendChild(ruleElt);
   },
   onconnectorBlockDown: function(event,type) {
-    console.log(type);
     const deviceRect = event.target.getBoundingClientRect();
-
     const x = deviceRect.left;
     const y = deviceRect.top;
     const newBlock = new VscadConnectorBlock(this.ruleArea,type);
-   
     newBlock.snapToGrid(x, y);
-  
- 
     newBlock.vscadDraggable.onDown(event);
     this.ComposedRuleBlocks.push(newBlock);
   },
@@ -394,8 +390,6 @@ const VscadRulesScreen = {
 
   },
   prepareVisual: function(desc,gateway,fetchedRules){
-    console.log(desc);
-    
     if(desc.expression && gateway && fetchedRules){
       var usedRules = {};
       // get all the used rules 
@@ -418,8 +412,6 @@ const VscadRulesScreen = {
     getBlockOf: function(parts, usedRules){
       
       var i = 0;
-   
-      
       const block = new VscadConnectorBlock(this.ruleArea)
       while(i<parts.length){
         var part = parts[i];

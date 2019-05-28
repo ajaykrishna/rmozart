@@ -4,7 +4,7 @@ class VscadDraggable {
    * @constructor
    * @param {Element} elt - VscadDraggable element
    * @param {Function?} afterDown - listener for after the user starts a drag
-   * @param {Function?} afterMove - listener for when the user moves during a
+   * @param {Function?} afterMove - listener for when the user moves during a 
    *                                drag
    * @param {Function?} afterUp - listener for after the drag stops
    */

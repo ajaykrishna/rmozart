@@ -22,29 +22,27 @@ function VscadConnectorBlock(ruleArea, name) {
   this.elt = document.createElement('div');
   this.elt.classList.add('rule-connector-container');
 
- 
-
-if(name){
-this.setName(name);
-  this.elt.innerHTML = `
-    <div class="empty-space"></div>
-    <div class="hint-holder">
-      <h3 class="rule-connector-name">${name}</h3>
-      <div class="next-hint">
-        <div class="empty-space"></div>
-      </div>
-    </div>
-  `;
-}
-  else{
+  if(name){
+  this.setName(name);
     this.elt.innerHTML = `
-    <div class="empty-space"></div>
-    <div class="hint-holder">
-      <div class="next-hint">
-        <div class="empty-space"></div>
+      <div class="empty-space"></div>
+      <div class="hint-holder">
+        <h3 class="rule-connector-name">${name}</h3>
+        <div class="next-hint">
+          <div class="empty-space"></div>
+        </div>
       </div>
-    </div>
-  `;
+    `;
+  }
+    else{
+      this.elt.innerHTML = `
+      <div class="empty-space"></div>
+      <div class="hint-holder">
+        <div class="next-hint">
+          <div class="empty-space"></div>
+        </div>
+      </div>
+    `;
 
   }
 
@@ -62,9 +60,7 @@ this.setName(name);
   this.elt.addEventListener("mouseup", (event) => {
     let dragging = this.ruleArea.dragging
     if (dragging) {
-
       if (dragging.elt !== null && dragging.elt !== this.elt) {
-       
         if (!this.isOwnParent(dragging)) {
           this.addAsChild(dragging);
         }
@@ -161,8 +157,7 @@ VscadConnectorBlock.prototype.addAsChild = function (child, sibling) {
         }
        
       }
-      if(sibling)
-      {
+      if(sibling){
         for (let i = 0; i < this.children.length; i++) {
           const currentChild = this.children[i];
           if (currentChild === sibling) {
@@ -248,85 +243,6 @@ VscadConnectorBlock.prototype.onUp = function (clientX, clientY) {
   }
   this.ruleArea.dragging = null;
   deleteArea.classList.remove('delete-active');
-};
-
-/**
- * Reset the VscadConnectorBlock to before the current drag started
- */
-VscadConnectorBlock.prototype.reset = function () {
-  this.elt.style.transform = this.resetState.transform;
-  if (this.role === 'trigger') {
-    this.VscadConnectorBlock.classList.add('trigger');
-    this.VscadConnectorBlock.classList.remove('effect');
-  } else if (this.role === 'effect') {
-    this.VscadConnectorBlock.classList.remove('trigger');
-    this.VscadConnectorBlock.classList.add('effect');
-  } else {
-    this.remove();
-  }
-};
-
-/**
- * Initialize based on an existing partial rule
- */
-VscadConnectorBlock.prototype.setRulePart = function (rulePart) {
-  this.rulePart = rulePart;
-  if (rulePart.trigger) {
-    this.role = 'trigger';
-    this.VscadConnectorBlock.classList.add('trigger');
-  } else if (rulePart.effect) {
-    this.role = 'effect';
-    this.VscadConnectorBlock.classList.add('effect');
-  }
-};
-
-/**
- * Snap to the center of the current area, aligning with siblings if part of
- * a multi effect. If centered relative to a list of siblings, index and length
- * specify this effect's relative location
- *
- * @param {number?} index - Centered relative to a list
- * @param {number?} length
- */
-VscadConnectorBlock.prototype.snapToCenter = function (index, length) {
-  if (!this.role) {
-    return;
-  }
-  const dragHint = document.getElementById('drag-hint');
-  const flexDir = window.getComputedStyle(dragHint).flexDirection;
-  // Throw away our current coords and snap to centered on the grid
-
-  const areaRect = this.ruleArea.getBoundingClientRect();
-  const rect = this.elt.getBoundingClientRect();
-
-  if (typeof index === 'undefined') {
-    index = 0;
-    length = 1;
-  }
-  const ratio = (index + 1) / (length + 1);
-
-
-  if (flexDir === 'row') {
-    const centerY = areaRect.height * ratio - rect.height / 2;
-
-    let roleX = areaRect.width / 4 - rect.width / 2;
-    if (this.role === 'effect') {
-      roleX = areaRect.width * 3 / 4 - rect.width / 2;
-    }
-
-    this.snapToGrid(roleX, centerY);
-  } else if (flexDir === 'column') {
-    const centerX = areaRect.width * ratio - rect.width / 2;
-
-    let roleY = areaRect.height / 4 - rect.height / 2;
-    if (this.role === 'effect') {
-      roleY = areaRect.height * 3 / 4 - rect.height / 2;
-    }
-
-    this.snapToGrid(centerX, roleY);
-  }
-
-  this.flexDir = flexDir;
 };
 
 /**

@@ -1,4 +1,3 @@
-const PropertySelect = require('./PropertySelect');
 const VscadRuleBlock = require('./VscadRuleBlock');
 const RuleUtils = require('./RuleUtils');
 
@@ -14,20 +13,7 @@ const RuleUtils = require('./RuleUtils');
  */
 function VscadRulePropertyBlock(ruleArea,desc,gateway) {  
   let iconTrigger = '/optimized-images/thing-icons/thing.svg';
-
-  if (desc.trigger) {
-    let trigger = desc.trigger;
-    if (trigger.triggers && trigger.triggers.length > 0) {
-      trigger = trigger.triggers[0];
-    }
-    const thingTrigger = RuleUtils.thingFromPart(gateway, trigger);
-    if (thingTrigger) {
-      iconTrigger = RuleUtils.icon(thingTrigger);
-    }
-  }
-
   VscadRuleBlock.call(this, ruleArea, desc.name, iconTrigger);
-
 }
 VscadRulePropertyBlock.prototype.getText = function(){
   return  VscadRuleBlock.prototype.getText.call(this);

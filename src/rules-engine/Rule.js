@@ -45,9 +45,10 @@ class Rule  {
     if (!this.enabled) {
       return;
     }
+    //setted in Engine.js 28
     if(this.parent)
       this.parent.notify(this,state);
-      else
+    else
       console.log("no function");
       
       
