@@ -11,9 +11,9 @@ const RuleUtils = require('./RuleUtils');
  * @param {Rule} rule
  * @param {ThingDescription} thing
  */
-function VscadRulePropertyBlock(ruleArea,desc,gateway) {  
+function VscadRulePropertyBlock(ruleArea,desc,onRuleChange) {  
   let iconTrigger = '/optimized-images/thing-icons/thing.svg';
-  VscadRuleBlock.call(this, ruleArea, desc.name, iconTrigger);
+  VscadRuleBlock.call(this, ruleArea,onRuleChange, desc.name, iconTrigger);
 }
 VscadRulePropertyBlock.prototype.getText = function(){
   return  VscadRuleBlock.prototype.getText.call(this);

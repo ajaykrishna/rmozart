@@ -12,10 +12,10 @@ const VscadDraggable = require('./VscadDraggable');
  * @param {number} x
  * @param {number} y
  */
-function VscadRuleBlock(ruleArea, name, icon) {
+function VscadRuleBlock(ruleArea, onRuleChange, name, icon) {
   this.role = '';
   this.rulePart = null;
-
+  this.onRuleChange = onRuleChange;
 
   this.elt = document.createElement('div');
   this.elt.classList.add('rule-part-container');
@@ -52,6 +52,7 @@ function VscadRuleBlock(ruleArea, name, icon) {
             }
        }            
        this.ruleArea.dragging = null;
+       this.onRuleChange();
       }
       
       } 

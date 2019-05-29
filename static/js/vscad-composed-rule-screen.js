@@ -28,6 +28,8 @@ const VscadRulesScreen = {
     this.verificationButton = document.getElementById('verification-button');
     this.saveButton = document.getElementById('save-button');
     
+    this.saveRule = this.saveRule.bind(this);
+    
     this.gateway = new Gateway();
     this.ComposedRuleBlocks = [];
     this.connectors = {};
@@ -365,7 +367,7 @@ const VscadRulesScreen = {
     const deviceRect = event.target.getBoundingClientRect();
     const x = deviceRect.left;
     const y = deviceRect.top;
-    const newBlock = new VscadConnectorBlock(this.ruleArea,type);
+    const newBlock = new VscadConnectorBlock(this.ruleArea,this.saveRule,type);
     newBlock.snapToGrid(x, y);
     newBlock.vscadDraggable.onDown(event);
     this.ComposedRuleBlocks.push(newBlock);
@@ -393,7 +395,6 @@ const VscadRulesScreen = {
       }
     });
 
-    
 
   },
   prepareVisual: function(desc,gateway,fetchedRules){
@@ -419,7 +420,7 @@ const VscadRulesScreen = {
     getBlockOf: function(parts, usedRules){
       
       var i = 0;
-      const block = new VscadConnectorBlock(this.ruleArea)
+      const block = new VscadConnectorBlock(this.ruleArea,this.saveRule)
       while(i<parts.length){
         var part = parts[i];
         if(part == "("){
@@ -454,7 +455,7 @@ const VscadRulesScreen = {
         else{
           var ruleDesc = usedRules[part];
          var newBlock = new VscadRulePropertyBlock(
-           this.ruleArea,ruleDesc,this.gateway);
+           this.ruleArea,ruleDesc,this.saveRule);
            newBlock.text = ruleDesc.id;
           block.addAsChild(newBlock);
           
@@ -472,7 +473,7 @@ const VscadRulesScreen = {
     const x = deviceRect.left;
     const y = deviceRect.top;
     const newBlock = new VscadRulePropertyBlock(
-      this.ruleArea,desc,gateway);
+      this.ruleArea,desc,this.saveRule);
     newBlock.text = desc.id;
     newBlock.snapToGrid(x, y);
     newBlock.vscadDraggable.onDown(event);

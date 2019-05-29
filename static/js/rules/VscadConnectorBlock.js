@@ -15,10 +15,10 @@ const Constants = require('../constants');
  */
 
 
-function VscadConnectorBlock(ruleArea, name) {
+function VscadConnectorBlock(ruleArea,onRuleChange, name) {
   this.role = '';
   this.rulePart = null;
-  
+  this.onRuleChange = onRuleChange;
   this.elt = document.createElement('div');
   this.elt.classList.add('rule-connector-container');
 
@@ -69,6 +69,7 @@ function VscadConnectorBlock(ruleArea, name) {
       } else if (dragging.elt !== this.elt) {
         this.returnChildToRuleArea(dragging);
       }
+      this.onRuleChange();
     }
   })
   const dragHint = document.getElementById('drag-hint');
