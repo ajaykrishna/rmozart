@@ -59,7 +59,7 @@ const VscadRulesScreen = {
       this.testCompile();
     })
     this.createRuleButton.addEventListener('click',()=>{
-      page("/rules/new");
+      page("/rules/quickNew");
     })
     this.verificationButton.addEventListener('click',()=>{
       this.requestVerify();

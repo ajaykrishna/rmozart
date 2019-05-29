@@ -77,8 +77,9 @@ ComposedRule.prototype.update = function() {
 };
 ComposedRule.prototype.getRulesFromExpression = function(){
 var output ={}
-if(this.expression)
-  this.expression.match(/\d+/g).forEach(function(e){
+const results  = this.expression.match(/\d+/g)
+if(results)
+  results.forEach(function(e){
       output[e]=true
   })
   return Object.keys(output);
