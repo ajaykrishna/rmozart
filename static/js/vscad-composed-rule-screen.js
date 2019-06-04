@@ -98,8 +98,7 @@ const VscadRulesScreen = {
     this.nextId = 0;
 
     this.diagramButton.addEventListener('click',()=>{
-      this.diagramView.classList.add('selected');
-      this.diagramView.style.display = "flex";
+      
        this.testDiagram();
      });
      this.saveButton.addEventListener('click',()=>{
@@ -110,7 +109,9 @@ const VscadRulesScreen = {
   testDiagram : function(){
     var  diagram = document.getElementById('canvas');
     diagram.style.display = "flex"
-
+    this.diagramView.classList.add('selected');
+    this.diagramView.style.display = "flex";
+    this.hiddeVerification()
     if(!this.diagramLoaded){
       var xhttp = new XMLHttpRequest();  
       xhttp.open("GET", "../example.bpmn", false);
@@ -273,7 +274,7 @@ const VscadRulesScreen = {
           this.ComposedRuleBlocks.splice(i,1)
         
       }
-      console.log(this.ComposedRuleBlocks);
+      //console.log(this.ComposedRuleBlocks);
     
         document.getElementById('warning-message').style.display = (foundRules>1)?"block":"none"
      

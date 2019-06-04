@@ -279,11 +279,12 @@ padding: 3rem;
   background: #FFCF8A;
   color: black;
   padding: 1rem;
-  
+  margin: auto;
 }
 h2{
   padding: 0;
   margin: auto;
+  width: 100%
 }
 
 .rule-preview {
@@ -308,14 +309,7 @@ h2{
   opacity: 1;
 }
 
-.rule-info {
-  padding: 1rem 2rem;
-  width: 66%;
-  display: inline-block;
-  vertical-align: bottom;
-  height: 30%;
-  overflow: hidden;
-}
+
 .side-menu .rule-info {
   padding: 1rem 2rem;
   width: 66%;
@@ -494,10 +488,15 @@ h2{
 }
 
 #rules-manager-view .rule-part-icon {
-  margin: 0rem;
   padding: 0;
   width: 2.4rem;
   height: 2.4rem;
+  margin: 1rem;
+}
+#rules-manager-view .rule-part-block .rule-part-icon {
+  width: 3.6rem;
+  height: 3.6rem;
+  margin: 1rem;
 }
 #rules-manager-view .dragging .rule-part-icon {
   margin: 1.7rem;
@@ -542,6 +541,7 @@ h2{
   padding: 0;
   display: -webkit-inline-box;
   height: 100%;
+  width: 90%;
 }
 #rules-manager-view .title-bar .rule-info > p {
   font-size: 1.6rem;
@@ -550,7 +550,7 @@ h2{
 }
 
 #rules-manager-view  .title-bar .rule-info h1 {
-  margin: 0;
+  margin: 0 0.7rem;
   font-size: 1.6rem;
   font-family: 'Open Sans', sans-serif;
   font-weight: normal;
