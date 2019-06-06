@@ -56,7 +56,7 @@ const VscadRulesScreen = {
       this.hiddeDiagram();
     })
     this.testButton.addEventListener('click',()=>{
-      this.testCompile();
+      this.deployRule()
     })
     this.createRuleButton.addEventListener('click',()=>{
       page("/rules/quickNew");
@@ -64,6 +64,13 @@ const VscadRulesScreen = {
     this.verificationButton.addEventListener('click',()=>{
       this.requestVerify();
     })
+    this.diagramButton.addEventListener('click',()=>{
+      this.requestDiagram();
+    });
+    this.saveButton.addEventListener('click',()=>{
+      this.saveRule();
+    });
+  
     
     this.ruleNameCustomize.addEventListener('click', selectRuleName);
     this.ruleName.addEventListener('dblclick', (event) => {
@@ -97,21 +104,10 @@ const VscadRulesScreen = {
 
     this.nextId = 0;
 
-    this.diagramButton.addEventListener('click',()=>{
-      
-       this.testDiagram();
-     });
-     this.saveButton.addEventListener('click',()=>{
-       this.saveRule();
-     });
    
   },
   testDiagram : function(){
-    var  diagram = document.getElementById('canvas');
-    diagram.style.display = "flex"
-    this.diagramView.classList.add('selected');
-    this.diagramView.style.display = "flex";
-    this.hiddeVerification()
+    
     if(!this.diagramLoaded){
       var xhttp = new XMLHttpRequest();  
       xhttp.open("GET", "../example.bpmn", false);
@@ -148,6 +144,11 @@ const VscadRulesScreen = {
     diagram.style.display = "none"
   },
   showDiagram:function (bpmnXML){
+    var  diagram = document.getElementById('canvas');
+    diagram.style.display = "flex"
+    this.diagramView.classList.add('selected');
+    this.diagramView.style.display = "flex";
+    this.hiddeVerification()
    
     var bpmnViewer = new BpmnJS({
       container: '#canvas'
@@ -167,21 +168,18 @@ const VscadRulesScreen = {
   requestDiagram:function(){
     const fetchOptions = 
       {
-        method: "POST", // *GET, POST, PUT, DELETE, etc.
-        //mode: "cors", // no-cors, cors, *same-origin
-        cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-        //credentials: "same-origin", // include, *same-origin, omit
+        method: "POST", 
+        cache: "no-cache", 
         headers: {
             "Content-Type": "application/json",
-            "Accept": "application/xml",
-            // "Content-Type": "application/x-www-form-urlencoded",
+            "Accept": "application/xml",    
         },
-       
-        redirect: "follow", // manual, *follow, error
-        referrer: "no-referrer", // no-referrer, *client
-        body: JSON.stringify(this.cRule.toDescription()), // body data type must match "Content-Type" header
-    }
-    fetch('http://10.138.2.9:8080/workflow', fetchOptions).then((res)=>{
+        redirect: "follow", 
+        referrer: "no-referrer",
+        body: JSON.stringify(this.cRule.toDescription()),
+      }
+      //10.138.2.9:8080
+    fetch('http://localhost:9001/workflow', fetchOptions).then((res)=>{
       console.log(res);
       res.text().then(text =>{
         console.log(text);
@@ -190,6 +188,15 @@ const VscadRulesScreen = {
     
     });
     // ;
+  },
+  requestExecution:function(){
+    console.log("trying to deploy");
+    
+    fetch('/composed-rules/deploy/1',{headers: API.headers()}).then((res)=>{
+      console.log(res);
+      
+    
+    });
   },
      
   requestVerify:function(cRule){
@@ -252,11 +259,12 @@ const VscadRulesScreen = {
         referrer: "no-referrer", 
         body: JSON.stringify(info),
     }
-    // fetch('http://10.138.2.9:8080/verify', fetchOptions).then((res)=>{
-    //   console.log(res);
-    //   this.showVerification(res.message);
-    //  });
-     this.showVerification({"status":true,"message":"Deadlock found in the composition"});
+    fetch('http://localhost:9001/verify', fetchOptions).then((res)=>{
+       return res.json()
+     }).then( data =>{
+      this.showVerification(data);
+     });
+
     });
     
   },
@@ -285,6 +293,9 @@ const VscadRulesScreen = {
       //console.log(this.cRule.toDescription());
       
 
+  },
+  deployRule(){
+    this.requestExecution();
   },
  testApi:function testApi(){
    console.log("testing");
@@ -478,15 +489,8 @@ const VscadRulesScreen = {
     newBlock.text = desc.id;
     newBlock.snapToGrid(x, y);
     newBlock.vscadDraggable.onDown(event);
-    
-   
-    
     this.ComposedRuleBlocks.push(newBlock);
   },
-
-
-
-
 };
 
 module.exports = VscadRulesScreen;

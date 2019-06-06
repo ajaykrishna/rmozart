@@ -77,10 +77,29 @@ index.delete('/:id', async function(req, res) {
       new APIError('Engine failed to delete rule', e).toString());
   }
 });
+index.get('/deploy/:id', async function(req, res) {
+  try {
+    console.log("exe");
+    
+    const masterEngine = require('./VscadMasterEngine').default;
+    const id = parseInt(req.params.id);
+    const rule = await engine.getRule(id);
+    masterEngine.execute(rule);
+    res.send(rule.toDescription());
+  } catch (e) {
+    res.status(404).send(
+      new APIError('Engine failed', e).toString());
+  }
+});
 
 index.configure = async function() {
   await Database.open();
   await engine.getRules();
+  
+  const masterEngine = require('./VscadMasterEngine').default;
+  const rule = await engine.getRule(id);
+  masterEngine.execute(rule);
+  
 };
 
 module.exports = index;

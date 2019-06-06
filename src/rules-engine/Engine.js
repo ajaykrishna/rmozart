@@ -18,6 +18,8 @@ class Engine  {
    * @return {Promise<Array<Rule>>} rules
    */
   getRules() {
+    this.MasterEngine = require('../vscad-rules-engine/VscadMasterEngine').default;
+
     let rulesPromise = Promise.resolve(this.rules);
     if (!this.rules) {
       rulesPromise = Database.getRules().then(async (ruleDescs) => {
@@ -50,6 +52,8 @@ class Engine  {
     if (!rule) {
       return Promise.reject(new Error(`Rule ${id} does not exist`));
     }
+    this.MasterEngine = require('../vscad-rules-engine/VscadMasterEngine').default;
+    rule.parent = this.MasterEngine;
     return Promise.resolve(rule);
   }
 
@@ -99,10 +103,7 @@ class Engine  {
       delete this.rules[ruleId];
     });
   }
-  testComunication(){
-    console.log('succes');
-    
-  }
+  
 }
 
 module.exports = Engine;

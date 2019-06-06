@@ -89,12 +89,14 @@ index.delete('/:id', async (req, res) => {
   }
 });
 
+
 index.configure = async () => {
   await Database.open();
   engine.MasterEngine = MasterEngine;
   await engine.getRules();
   MasterEngine.engine = engine;
   MasterEngine.init(engine);
+  
   
 };
 

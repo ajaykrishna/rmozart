@@ -1,143 +1,112 @@
 {
   "nodes": [{
-    "id": "start",
+    "id": "init",
     "incomingFlows": [],
-    "outgoingFlows": ["flow1"],
+    "outgoingFlows": ["sequenceFlow-dd08a28b-1d95-4ec6-a6fc-b62c86e11d61"],
     "type": "INITIAL"
   }, {
-    "id": "EndEvent_0rt4yrd",
-    "incomingFlows": ["flow2"],
+    "id": "final",
+    "incomingFlows": ["sequenceFlow-a0cab365-eafa-4643-b7b0-10a4ad95123c"],
     "outgoingFlows": [],
     "type": "FINAL"
   }, {
-    "id": "1",
-    "incomingFlows": ["flow1"],
-    "outgoingFlows": ["flow3"],
+    "id": "3",
+    "incomingFlows": ["sequenceFlow-9d76b17e-fcaf-4bc0-a48e-94a980e50c9d"],
+    "outgoingFlows": ["sequenceFlow-89fa9aa4-84eb-4405-a9b8-6cc0fb5698f5"],
     "type": "TASK"
   }, {
     "id": "2",
-    "incomingFlows": ["flow3"],
-    "outgoingFlows": ["flow4"],
+    "incomingFlows": ["sequenceFlow-7cd30750-55c0-403d-b990-22c38144e4db"],
+    "outgoingFlows": ["sequenceFlow-de60998f-d030-48c6-a221-e03a5f212f59"],
     "type": "TASK"
   }, {
-    "id": "ExcSplit1",
-    "incomingFlows": ["flow4"],
-    "outgoingFlows": ["flow5", "flow6"],
-    "type": "EXCSPLIT"
+    "id": "3-parSplit-2",
+    "incomingFlows": ["sequenceFlow-f72ccc7c-0aa6-4c49-8a04-2564aa58c417"],
+    "outgoingFlows": ["sequenceFlow-9d76b17e-fcaf-4bc0-a48e-94a980e50c9d", "sequenceFlow-7cd30750-55c0-403d-b990-22c38144e4db"],
+    "type": "PARSPLIT"
   }, {
-    "id": "3",
-    "incomingFlows": ["flow5"],
-    "outgoingFlows": ["flow7"],
+    "id": "3-parMerge-2",
+    "incomingFlows": ["sequenceFlow-89fa9aa4-84eb-4405-a9b8-6cc0fb5698f5", "sequenceFlow-de60998f-d030-48c6-a221-e03a5f212f59"],
+    "outgoingFlows": ["sequenceFlow-51b83c7f-1dff-4657-a0c1-124be3cb2558"],
+    "type": "PARMERGE"
+  }, {
+    "id": "1",
+    "incomingFlows": ["sequenceFlow-dd08a28b-1d95-4ec6-a6fc-b62c86e11d61"],
+    "outgoingFlows": ["sequenceFlow-f72ccc7c-0aa6-4c49-8a04-2564aa58c417"],
     "type": "TASK"
   }, {
     "id": "4",
-    "incomingFlows": ["flow6"],
-    "outgoingFlows": ["flow8"],
+    "incomingFlows": ["sequenceFlow-51b83c7f-1dff-4657-a0c1-124be3cb2558"],
+    "outgoingFlows": ["sequenceFlow-a0cab365-eafa-4643-b7b0-10a4ad95123c"],
     "type": "TASK"
-  }, {
-    "id": "5",
-    "incomingFlows": ["flow7"],
-    "outgoingFlows": ["flow9"],
-    "type": "TASK"
-  }, {
-    "id": "6",
-    "incomingFlows": ["flow10"],
-    "outgoingFlows": ["flow11"],
-    "type": "TASK"
-  }, {
-    "id": "7",
-    "incomingFlows": ["flow12"],
-    "outgoingFlows": ["flow13"],
-    "type": "TASK"
-  }, {
-    "id": "8",
-    "incomingFlows": ["flow14"],
-    "outgoingFlows": ["flow15"],
-    "type": "TASK"
-  }, {
-    "id": "9",
-    "incomingFlows": ["flow16"],
-    "outgoingFlows": ["flow2"],
-    "type": "TASK"
-  }, {
-    "id": "ParMerge1",
-    "incomingFlows": ["flow15", "flow13"],
-    "outgoingFlows": ["flow16"],
-    "type": "PARMERGE"
-  }, {
-    "id": "ParSplit1",
-    "incomingFlows": ["flow11"],
-    "outgoingFlows": ["flow12", "flow14"],
-    "type": "PARSPLIT"
-  }, {
-    "id": "ExcMerge1",
-    "incomingFlows": ["flow8", "flow9"],
-    "outgoingFlows": ["flow10"],
-    "type": "EXCMERGE"
   }],
-  "flows": [{
-    "id": "flow1",
-    "source": "start",
-    "target": "1"
-  }, {
-    "id": "flow3",
-    "source": "1",
-    "target": "2"
-  }, {
-    "id": "flow4",
-    "source": "2",
-    "target": "ExcSplit1"
-  }, {
-    "id": "flow5",
-    "source": "ExcSplit1",
-    "target": "3"
-  }, {
-    "id": "flow6",
-    "source": "ExcSplit1",
-    "target": "4"
-  }, {
-    "id": "flow7",
-    "source": "3",
-    "target": "5"
-  }, {
-    "id": "flow8",
-    "source": "4",
-    "target": "ExcMerge1"
-  }, {
-    "id": "flow9",
-    "source": "5",
-    "target": "ExcMerge1"
-  }, {
-    "id": "flow10",
-    "source": "ExcMerge1",
-    "target": "6"
-  }, {
-    "id": "flow11",
-    "source": "6",
-    "target": "ParSplit1"
-  }, {
-    "id": "flow12",
-    "source": "ParSplit1",
-    "target": "7"
-  }, {
-    "id": "flow14",
-    "source": "ParSplit1",
-    "target": "8"
-  }, {
-    "id": "flow15",
-    "source": "8",
-    "target": "ParMerge1"
-  }, {
-    "id": "flow13",
-    "source": "7",
-    "target": "ParMerge1"
-  }, {
-    "id": "flow16",
-    "source": "ParMerge1",
-    "target": "9"
-  }, {
-    "id": "flow2",
-    "source": "9",
-    "target": "EndEvent_0rt4yrd"
-  }]
+  "flows": {
+    "sequenceFlow-89fa9aa4-84eb-4405-a9b8-6cc0fb5698f5": {
+      "source": "3",
+      "target": "3-parMerge-2"
+    },
+    "sequenceFlow-9d76b17e-fcaf-4bc0-a48e-94a980e50c9d": {
+      "source": "3-parSplit-2",
+      "target": "3"
+    },
+    "sequenceFlow-f72ccc7c-0aa6-4c49-8a04-2564aa58c417": {
+      "source": "1",
+      "target": "3-parSplit-2"
+    },
+    "sequenceFlow-51b83c7f-1dff-4657-a0c1-124be3cb2558": {
+      "source": "3-parMerge-2",
+      "target": "4"
+    },
+    "sequenceFlow-7cd30750-55c0-403d-b990-22c38144e4db": {
+      "source": "3-parSplit-2",
+      "target": "2"
+    },
+    "sequenceFlow-dd08a28b-1d95-4ec6-a6fc-b62c86e11d61": {
+      "source": "init",
+      "target": "1"
+    },
+    "sequenceFlow-de60998f-d030-48c6-a221-e03a5f212f59": {
+      "source": "2",
+      "target": "3-parMerge-2"
+    },
+    "sequenceFlow-a0cab365-eafa-4643-b7b0-10a4ad95123c": {
+      "source": "4",
+      "target": "final"
+    }
+  }
 }
+2019 - 06 - 06 09: 04: 51.155 INFO: {
+  "sequenceFlow-89fa9aa4-84eb-4405-a9b8-6cc0fb5698f5": {
+    "source": "3",
+    "target": "3-parMerge-2"
+  },
+  "sequenceFlow-9d76b17e-fcaf-4bc0-a48e-94a980e50c9d": {
+    "source": "3-parSplit-2",
+    "target": "3"
+  },
+  "sequenceFlow-f72ccc7c-0aa6-4c49-8a04-2564aa58c417": {
+    "source": "1",
+    "target": "3-parSplit-2"
+  },
+  "sequenceFlow-51b83c7f-1dff-4657-a0c1-124be3cb2558": {
+    "source": "3-parMerge-2",
+    "target": "4"
+  },
+  "sequenceFlow-7cd30750-55c0-403d-b990-22c38144e4db": {
+    "source": "3-parSplit-2",
+    "target": "2"
+  },
+  "sequenceFlow-dd08a28b-1d95-4ec6-a6fc-b62c86e11d61": {
+    "source": "init",
+    "target": "1"
+  },
+  "sequenceFlow-de60998f-d030-48c6-a221-e03a5f212f59": {
+    "source": "2",
+    "target": "3-parMerge-2"
+  },
+  "sequenceFlow-a0cab365-eafa-4643-b7b0-10a4ad95123c": {
+    "source": "4",
+    "target": "final"
+  }
+}
+sequenceFlow-89c5737d-224b-4ff8-9c0e-096950a96d60

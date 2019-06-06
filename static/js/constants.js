@@ -12,8 +12,8 @@ module.exports.ThingFormat = {
 };
 module.exports.COMMANDS ={
   THEN:" ; ",
-  AND:" | ",
-  OR:" + ",
+  AND:" + ",
+  OR:" | ",
   TIMES:" * ",
   OR_BEGIN:"[",
   OR_END:"]",

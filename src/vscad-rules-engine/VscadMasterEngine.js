@@ -4,15 +4,14 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.*
  */
 
- const nodes = require('./example.json').nodes;
- const flows = require('./example.json').flows;
   //TODO 
   /*
     + CHANGE NODES AND FLOWS FOR REAL DATA
     + CHANGE  THE FUNCTION "NOTIFY" TO ACT WITH REAL TRIGGERS
   */
  
- 
+ const fetch = require("node-fetch");
+
  var testNodes = {};
  var testFlows = {}; 
  var testPointers = [];
@@ -22,67 +21,85 @@
    if(! MasterEngine.instance){
       MasterEngine.instance = this;
       this.engine = {};
-      
-     //demo*
-     
-     
-     for (let i = 0; i < nodes.length; i++) {
-       const node = nodes[i];
-       testNodes[node.id] = node;
-     }
-     for (let i = 0; i < flows.length; i++) {
-       const flow = flows[i];
-       testFlows[flow.id] = flow;
-     }
-
-     const firstPointer = {location:"start", node:testNodes['start']}
-     testPointers.push(firstPointer);
-
-     
-     
-     //*demo
-     
    }
-   console.log('creating enine instance');
-   
    return MasterEngine.instance;
   
   }
  init(engine){
   this.engine.getRule = engine.getRule.bind(engine);
   this.engine.updateRule = engine.updateRule.bind(engine);
+  this.engine.getRules = engine.getRules.bind(engine);
+  
  
-  testPointers[0] = this.pointerActivate(this.pointerToNextNode(testPointers[0]));
+  
  }
  notify(rule,state){
-   // this is just to test
-  //if(rule.id == 11){
-  
-    //var  fakeId = this.getRuleIdForTest();
-
+ 
     console.log(rule.id,testPointers);
-    var pointerIndex =  this.getPointerOfRule(rule.id)//rule.id
-    
-    if(!isNaN(parseInt(fakeId)))   
-      this.turnOffRule(rule.id)//rule.id
+    var pointerIndex =  this.getPointerOfRule(rule.id)
+    this.turnOffRule(rule.id)
   
-    
      testPointers[pointerIndex] = this.pointerActivate(this.pointerToNextNode(testPointers[pointerIndex] ))
- // }  
+  
+  }
+ execute(rule){
+      this.turnOffAllRules();
+      const fetchOptions = 
+        {
+          method: "POST", 
+          cache: "no-cache", 
+          headers: {
+              "Content-Type": "application/json",
+              "Accept": "application/json",    
+          },
+          redirect: "follow", 
+          referrer: "no-referrer",
+          body: JSON.stringify(rule.toDescription()), 
+      }
+      fetch('http://localhost:9001/execute', fetchOptions).then((res)=>{
+        
+        res.json().then(data =>{
+
+          testNodes = {};
+          testFlows = {}; 
+          testPointers = [];
+
+          var nodes = data.nodes;
+          for (let i = 0; i < nodes.length; i++) {
+            const node = nodes[i];
+            testNodes[node.id] = node;
+          }
+          testFlows = data.flows;
+
+          const firstPointer = {location:"init", node:testNodes['init']}
+          testPointers.push(firstPointer);
+          testPointers[0] = this.pointerActivate(this.pointerToNextNode(testPointers[0]));
+          console.warn("deployed");
+          
+          // TODO  put data and flow to the correct variable
+        })
+      
+      });
+   
   }
  getRuleIdForTest(){
     const rand = Math.floor(Math.random() * testPointers.length);
     return  testPointers[rand].location;
  }
   getPointerOfRule(ruleId){
+    
+    for (let i = 0; i < testPointers.length; i++) {
+      const pointer = testPointers[i];
+      if( pointer.node.type == "TASK" && pointer.location == ruleId)
+      return i;
+    }
   
     for (let i = 0; i < testPointers.length; i++) {
       const pointer = testPointers[i];
-      if(pointer.node.type == 'TASK' && pointer.location == ruleId)
+      if( pointer.node.type == "FINAL" )
       return i;
     }
-   
-    console.error('retornando null en getPointerOfRule');
+    console.error('retornando null en getPointerOfRule',testPointers,ruleId);
     return 1;
   }
   turnOffRule(ruleId){
@@ -95,8 +112,23 @@
      })
     }
     else{
-      console.log('no engine',ruleId ,this.engine);
-      
+      console.log('144 - no engine',ruleId ,this.engine);
+    }
+  }
+  turnOffAllRules(){
+   if(this.engine.getRules){
+    this.engine.getRules().then((rules) => {
+      rules.forEach(rule => {
+        if(rule.enabled){
+          rule.enabled = false;
+          this.engine.updateRule(rule.id,rule);
+          console.log(`setting up rule ${rule.id} to off`);
+        } 
+      });
+     })
+    }
+    else{
+      console.log('no engine',this.engine);
     }
   }
 
@@ -125,8 +157,13 @@
       if(!newPointer.origins) newPointer.origins = [];
       newPointer.origins.push(pointer.location);
     } 
-    else
-      newPointer.location  = testFlows[pointer.node.outgoingFlows[0]].target;
+    else {
+        console.log(JSON.stringify(testFlows),pointer.node.outgoingFlows[0]);
+        newPointer.location  = testFlows[pointer.node.outgoingFlows[0]].target
+      }
+      
+    
+     
 
     newPointer.node = testNodes[newPointer.location];
 
@@ -135,13 +172,13 @@
 
   pointerActivate(pointer,index){
     const node = pointer.node;
-
     switch (node.type) {
       case 'INITIAL':
           pointer =  this.pointerActivate(this.pointerToNextNode(pointer))
         break;
       case 'FINAL':
-         console.warn("acabamos");  
+          
+        console.warn("acabamos");  
         break;
       case 'TASK':
          this.turnOnRule(node.id) 
