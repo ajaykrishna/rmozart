@@ -15,7 +15,7 @@
  var testNodes = {};
  var testFlows = {}; 
  var testPointers = [];
-
+ var cacheData = {};
  class MasterEngine {
   constructor(){
    if(! MasterEngine.instance){
@@ -33,14 +33,23 @@
  
   
  }
+ printPointers(){
+  console.log("current state ASK",testPointers);
+ }
  notify(rule,state){
+ if(!isNaN(rule.id)){
+  var pointerIndex =  this.getPointerOfRule(rule.id)
+  this.turnOffRule(rule.id)
  
-    console.log(rule.id,testPointers);
-    var pointerIndex =  this.getPointerOfRule(rule.id)
-    this.turnOffRule(rule.id)
-  
-     testPointers[pointerIndex] = this.pointerActivate(this.pointerToNextNode(testPointers[pointerIndex] ))
-  
+
+   
+    this.pointerActivate(this.pointerToNextNode(testPointers[pointerIndex]),pointerIndex)
+     console.log("current state AFTER RULE",testPointers);
+    }
+    else{
+      console.warn("notify from ",rule.id);
+    }
+     
   }
  execute(rule){
       this.turnOffAllRules();
@@ -59,7 +68,17 @@
       fetch('http://localhost:9001/execute', fetchOptions).then((res)=>{
         
         res.json().then(data =>{
-
+          console.warn("Deploying");
+          cacheData = data;
+          this.initGraph(data);      
+         
+        })
+      
+      });
+   
+  }
+  initGraph(data){
+   
           testNodes = {};
           testFlows = {}; 
           testPointers = [];
@@ -71,32 +90,16 @@
           }
           testFlows = data.flows;
 
-          const firstPointer = {location:"init", node:testNodes['init']}
-          testPointers.push(firstPointer);
-          testPointers[0] = this.pointerActivate(this.pointerToNextNode(testPointers[0]));
-          console.warn("deployed");
-          
-          // TODO  put data and flow to the correct variable
-        })
-      
-      });
-   
+          testPointers[0] = {location:"init", node:testNodes['init']}
+          this.pointerActivate(this.pointerToNextNode(testPointers[0]),0);
+          console.warn("graph started", testPointers);
   }
- getRuleIdForTest(){
-    const rand = Math.floor(Math.random() * testPointers.length);
-    return  testPointers[rand].location;
- }
+ 
   getPointerOfRule(ruleId){
     
     for (let i = 0; i < testPointers.length; i++) {
       const pointer = testPointers[i];
       if( pointer.node.type == "TASK" && pointer.location == ruleId)
-      return i;
-    }
-  
-    for (let i = 0; i < testPointers.length; i++) {
-      const pointer = testPointers[i];
-      if( pointer.node.type == "FINAL" )
       return i;
     }
     console.error('retornando null en getPointerOfRule',testPointers,ruleId);
@@ -158,13 +161,8 @@
       newPointer.origins.push(pointer.location);
     } 
     else {
-        console.log(JSON.stringify(testFlows),pointer.node.outgoingFlows[0]);
         newPointer.location  = testFlows[pointer.node.outgoingFlows[0]].target
       }
-      
-    
-     
-
     newPointer.node = testNodes[newPointer.location];
 
     return newPointer;
@@ -172,62 +170,89 @@
 
   pointerActivate(pointer,index){
     const node = pointer.node;
+    var add = true;
+    console.log(node.type,"activated");
     switch (node.type) {
       case 'INITIAL':
-          pointer =  this.pointerActivate(this.pointerToNextNode(pointer))
+           this.pointerActivate(this.pointerToNextNode(pointer),index)
         break;
       case 'FINAL':
-          
-        console.warn("acabamos");  
+        this.turnOffAllRules();
+            console.warn("acabamos");
+            this.initGraph(cacheData)
+           
         break;
       case 'TASK':
          this.turnOnRule(node.id) 
         break;
       case 'EXCSPLIT':
       case 'PARSPLIT':
+          
           node.outgoingFlows.forEach(flow => {
-            testPointers.push(this.pointerActivate(this.pointerToNextNode(pointer,flow)));
+            this.pointerActivate(this.pointerToNextNode(pointer,flow), testPointers.length);
           });
-          testPointers.splice(testPointers.indexOf(pointer),1);
+          console.log("deleting ",testPointers.splice(index,1));
+          console.log("current state AFTER SPLIT",testPointers);
+          add = false
+          
         break;
       case 'EXCMERGE':
-      
-          this.turnOffAllPointersWithOrigin(pointer.origins[pointer.origins.lenght-1])
-          pointer =  this.pointerActivate(this.pointerToNextNode(pointer))
-
+          //console.log('availavle origins EXCMERGE',pointer.origins);
+           
+          this.turnOffAllPointersWithOrigin(pointer.origins[pointer.origins.length-1])
+          this.pointerActivate(this.pointerToNextNode(pointer),index)
+         // console.log("pointers after XCMERGE",testPointers);
+         add = false;
         break;
       case 'PARMERGE':
         //OPTIMIZATION:  save a boolean table, if all the values are true continue(there is no need of the loop);
-          if(this.anyPointerWithOrigin(pointer.origins[pointer.origins.lenght-1])){
-              testPointers.splice(testPointers.lastIndexOf(pointer),1);
+          if(this.anyPointerWithOrigin(pointer.origins[pointer.origins.length-1])){
+           console.log('entro al merg',testPointers.splice(index,1));
+           
           }else{
-            
-            pointer =  this.pointerActivate(this.pointerToNextNode(pointer))
+         //   console.log('par merge no encontro mas origins')
+            this.pointerActivate(this.pointerToNextNode(pointer),index)
           }
+          add = false;
+         // console.log("pointers after parMERGE",testPointers);
         break;
      default:
+       console.log('non handeled',node.type);
+       
         break;
     }
-    return pointer;
+    
+  if(add)
+  testPointers[index] = pointer;
   }
   
   anyPointerWithOrigin(origin){
+    //console.log('testing origin' ,origin);
+    var count = 0;
     for (let i = 0; i < testPointers.length; i++) {
       const pointer = testPointers[i];
-      if(pointer.origins && pointer.origins.includes(origin))
-        return true;
+      if(pointer.origins && pointer.origins.includes(origin)){
+        count++;
+        if(count == 2 )  return true;
+      }
     }
     return false
   }
 
   turnOffAllPointersWithOrigin(origin){
+    console.log('turning all' ,origin);
+
     for (let i = testPointers.length-1; i >= 0; i--) {
       const pointer = testPointers[i];
       if(pointer.origins && pointer.origins.includes(origin)){
         this.turnOffRule(pointer.location);
-        testPointers.splice(i,1);
+        console.log("delting for slow", testPointers.splice(i,1));
+        
+
+         
       }  
     }
+    console.log("current state after turn off all",testPointers);
   }
 
 }

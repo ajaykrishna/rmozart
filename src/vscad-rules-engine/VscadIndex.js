@@ -83,9 +83,26 @@ index.get('/deploy/:id', async function(req, res) {
     
     const masterEngine = require('./VscadMasterEngine').default;
     const id = parseInt(req.params.id);
-    const rule = await engine.getRule(id);
-    masterEngine.execute(rule);
-    res.send(rule.toDescription());
+    if(isNaN(id)){
+      const masterEngine = require('./VscadMasterEngine').default;
+    masterEngine.printPointers();
+    res.send({});
+    }else{
+      const rule = await engine.getRule(id);
+      masterEngine.execute(rule);
+      res.send(rule.toDescription());
+    }
+   
+  } catch (e) {
+    res.status(404).send(
+      new APIError('Engine failed', e).toString());
+  }
+});
+index.get('/deploy/ask', async function(req, res) {
+  try {
+    
+    
+    
   } catch (e) {
     res.status(404).send(
       new APIError('Engine failed', e).toString());
@@ -97,7 +114,7 @@ index.configure = async function() {
   await engine.getRules();
   
   const masterEngine = require('./VscadMasterEngine').default;
-  const rule = await engine.getRule(id);
+  const rule = await engine.getRule(1);
   masterEngine.execute(rule);
   
 };

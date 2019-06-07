@@ -56,8 +56,16 @@ const VscadRulesScreen = {
       this.hiddeDiagram();
     })
     this.testButton.addEventListener('click',()=>{
-      this.deployRule()
+      console.log("ask");
+      
+      fetch('/composed-rules/deploy/ask',{headers: API.headers()}).then((res)=>{
+        console.log(res);
+      });
     })
+    this.testButton.addEventListener('dblclick', (event) => {
+      console.log("deploy");
+      this.deployRule()
+    });
     this.createRuleButton.addEventListener('click',()=>{
       page("/rules/quickNew");
     })
@@ -453,10 +461,10 @@ const VscadRulesScreen = {
               case ";":
                 block.setName("THEN");
                 break;
-              case "|":
+              case "+":
                 block.setName("AND"); 
                   break;
-              case "+": 
+              case "|": 
                     block.setName("OR");
                 break;
             
