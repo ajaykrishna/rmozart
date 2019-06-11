@@ -23,7 +23,6 @@ const VscadRulesScreen = {
     this.ruleArea = document.getElementById('rules-area');
     this.testButton = document.getElementById('test-button');
     this.diagramView = document.getElementById('diagram-view');
-    this.createRuleButton = document.getElementById('create-rule-shortcut');
     this.diagramButton = document.getElementById('diagram-button');
     this.verificationButton = document.getElementById('verification-button');
     this.saveButton = document.getElementById('save-button');
@@ -66,9 +65,6 @@ const VscadRulesScreen = {
       console.log("deploy");
       this.deployRule()
     });
-    this.createRuleButton.addEventListener('click',()=>{
-      page("/rules/quickNew");
-    })
     this.verificationButton.addEventListener('click',()=>{
       this.requestVerify();
     })
@@ -347,12 +343,28 @@ const VscadRulesScreen = {
    * @return {Promise<Array<RuleDescription>>}
    */
   readRules: function readRules() {
+    var createRuleButton = document.createElement("div")
+    createRuleButton.innerHTML = ` <div class="rule-part-block trigger">
+    <img  src="/optimized-images/add.svg">
+  </div>
+  <div class="rule-info">
+      <h3>NEW RULE</h3>
+  </div>`;
+    createRuleButton.setAttribute("id","create-rule-shortcut")
+    createRuleButton.setAttribute("class","rule")
+
+  createRuleButton.addEventListener('click',()=>{
+    page("/rules/quickNew");
+  })
+    
+
     return fetch('/rules', {headers: API.headers()}).then((res) => {
       return res.json();
     }).then((fetchedRules) => {
       this.rulesList.querySelectorAll('.rule').forEach((elt) => {
         elt.parentNode.removeChild(elt);
       });
+      this.rulesList.appendChild(createRuleButton)
       for (const ruleDesc of fetchedRules) {
         this.addVscadRuleCardItem(ruleDesc);
       }
