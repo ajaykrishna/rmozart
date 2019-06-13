@@ -20,7 +20,9 @@ top: 9.6rem;
 }
 
 /* float butons */
-
+#test-button{
+  display: none;
+}
 #vscad-create-rule-button {
   bottom: 0rem;
   right: 0rem;
@@ -120,6 +122,10 @@ margin: 1rem;
       -ms-transform: none;
           transform: none;
   margin: 15px auto 0;
+  color: white;
+  text-decoration: none;
+  text-align: center;
+  line-height: 3.5;
 }
 /* end  float buttons */
 #rules-manager-view {
@@ -246,18 +252,6 @@ padding: 3rem;
   background-image: url('../optimized-images/rules-icon.png');
 }
 
-.rule {
-  position: relative;
-  background: #46769C;
-  margin: 0;
-  padding: 1rem;
-  box-sizing: border-box;
-  width: 40rem;
-  height: 26.6rem;
-  border-radius: 0.5rem;
-  display: inline-block;
-  vertical-align: bottom;
-}
 
 
 .side-menu .rule {

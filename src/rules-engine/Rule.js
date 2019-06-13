@@ -42,11 +42,13 @@ class Rule  {
    * @param {State} state
    */
   onTriggerStateChanged(state) {
+    //console.log("Trigger change",state);
+    
     if (!this.enabled) {
       return;
     }
-    //setted in Engine.js 28
-    if(this.parent)
+ 
+    if(this.parent && state.on)
       this.parent.notify(this,state);
     else
       console.log("no function");

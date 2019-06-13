@@ -27,6 +27,7 @@ class Engine  {
         for (const ruleId in ruleDescs) {
           ruleDescs[ruleId].id = parseInt(ruleId);
           this.rules[ruleId] = Rule.fromDescription(ruleDescs[ruleId]);
+          
           this.rules[ruleId].parent = this.MasterEngine; // test
           await this.rules[ruleId].start();
         }

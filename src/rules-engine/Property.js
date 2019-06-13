@@ -66,6 +66,8 @@ class Property extends EventEmitter {
    */
   async get() {
     try {
+      //console.log("Property get",this.thing, this.id);
+      
       return await Things.getThingProperty(this.thing, this.id);
     } catch (e) {
       console.warn('Rule get failed', e);
@@ -123,6 +125,8 @@ class Property extends EventEmitter {
     if (property.name !== this.id) {
       return;
     }
+    //console.log("property.value :",property.value);
+    
     this.emit(Events.VALUE_CHANGED, property.value);
   }
 

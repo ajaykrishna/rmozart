@@ -43,14 +43,17 @@ class EventTrigger extends Trigger {
     if (this.stopped) {
       return;
     }
+
     thing.addEventSubscription(this.onEvent);
   }
 
   onEvent(event) {
+    console.log(event);
     if (this.event !== event.name) {
       return;
     }
-
+    
+    
     this.emit(Events.STATE_CHANGED, {on: true, value: Date.now()});
     this.emit(Events.STATE_CHANGED, {on: false, value: Date.now()});
   }

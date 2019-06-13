@@ -26,7 +26,8 @@ const VscadRulesScreen = {
     this.diagramButton = document.getElementById('diagram-button');
     this.verificationButton = document.getElementById('verification-button');
     this.saveButton = document.getElementById('save-button');
-    
+    this.deployButton = document.getElementById('deploy-button');
+
     this.saveRule = this.saveRule.bind(this);
     
     this.gateway = new Gateway();
@@ -54,15 +55,15 @@ const VscadRulesScreen = {
       this.hiddeVerification();
       this.hiddeDiagram();
     })
+
     this.testButton.addEventListener('click',()=>{
       console.log("ask");
-      
       fetch('/composed-rules/deploy/ask',{headers: API.headers()}).then((res)=>{
         console.log(res);
       });
     })
-    this.testButton.addEventListener('dblclick', (event) => {
-      console.log("deploy");
+
+    this.deployButton.addEventListener('click', (event) => {
       this.deployRule()
     });
     this.verificationButton.addEventListener('click',()=>{
@@ -110,16 +111,7 @@ const VscadRulesScreen = {
 
    
   },
-  testDiagram : function(){
-    
-    if(!this.diagramLoaded){
-      var xhttp = new XMLHttpRequest();  
-      xhttp.open("GET", "../example.bpmn", false);
-      xhttp.send();
-      if (xhttp.readyState === 4)
-      this.showDiagram(xhttp.response);
-    }
-  },
+ 
   showVerification:function(response){
     // {"status":false,"message":"Deadlock found in the composition"}
     
@@ -153,15 +145,18 @@ const VscadRulesScreen = {
     this.diagramView.classList.add('selected');
     this.diagramView.style.display = "flex";
     this.hiddeVerification()
-   
-    var bpmnViewer = new BpmnJS({
-      container: '#canvas'
-    });
+    if(this.diagramLoaded)
+      this.bpmnViewer.clear();
+     else{
+      this.bpmnViewer = new BpmnJS({
+        container: '#canvas'
+      });
+     } 
       // import diagram
-    bpmnViewer.importXML(bpmnXML, function(err) {
+      this.bpmnViewer.importXML(bpmnXML,(err) => {
       if (err)  return console.error('could not import BPMN 2.0 diagram', err);
       // access viewer components
-      var canvas = bpmnViewer.get('canvas');
+      var canvas = this.bpmnViewer.get('canvas');
       // zoom to fit full viewport
       canvas.zoom('fit-viewport');
   
@@ -186,7 +181,6 @@ const VscadRulesScreen = {
     fetch('http://localhost:9001/workflow', fetchOptions).then((res)=>{
       console.log(res);
       res.text().then(text =>{
-        console.log(text);
         this.showDiagram(text);
       })
     
@@ -197,6 +191,7 @@ const VscadRulesScreen = {
     console.log("trying to deploy");
     
     fetch('/composed-rules/deploy/1',{headers: API.headers()}).then((res)=>{
+      console.log("si cambia ?")
       console.log(res);
       
     
@@ -301,42 +296,6 @@ const VscadRulesScreen = {
   deployRule(){
     this.requestExecution();
   },
- testApi:function testApi(){
-   console.log("testing");
-   //get all
-   fetch('/composed-rules', {headers: API.headers()}).then((res) => {
-    return res.json();
-  }).then((fetchedRules) => {
-    for (const ruleDesc of fetchedRules) {
-      console.log(ruleDesc);  
-    }
-  });
-   const desc ={
-    enabled:true,
-    name : "Rule Name",
-    rules : [],
-    expression :"[r1 ; r3 , r2] | r4"
-   }
-   // creation
-    var cRule = new VscadComposedRule(this.gateway,desc);
-
-   cRule.expression ="2,4;8*10";
-   cRule.update().then(()=>{
-     // get
-    fetch(`/composed-rules/${cRule.id}`, {
-      headers: API.headers(),
-    }).then((res) => {
-      console.log(res.json);
-      
-      return res.json();
-    });
-  }); 
-   
- 
-    
-   //cRule.delete();
-
- },
  
 
   /**
@@ -458,7 +417,7 @@ const VscadRulesScreen = {
         if(part == "("){
           var j = i+1;
           var count =1;
-         while(parts[j] != ")" && count == 1){
+         while(parts[j] != ")" && count == 1 && j<parts.length){
            if(parts[j] != ")") count--;
            if(parts[j] != "(") count ++;
           j++;

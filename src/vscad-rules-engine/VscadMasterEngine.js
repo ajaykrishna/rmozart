@@ -37,45 +37,44 @@
   console.log("current state ASK",testPointers);
  }
  notify(rule,state){
- if(!isNaN(rule.id)){
-  var pointerIndex =  this.getPointerOfRule(rule.id)
-  this.turnOffRule(rule.id)
- 
-
-   
-    this.pointerActivate(this.pointerToNextNode(testPointers[pointerIndex]),pointerIndex)
-     console.log("current state AFTER RULE",testPointers);
+    var pointerIndex =  this.getPointerOfRule(rule.id)
+    if(pointerIndex != -1){
+       this.turnOffRule(rule.id)
+      this.pointerActivate(this.pointerToNextNode(testPointers[pointerIndex]),pointerIndex)
     }
-    else{
-      console.warn("notify from ",rule.id);
-    }
-     
   }
  execute(rule){
-      this.turnOffAllRules();
-      const fetchOptions = 
-        {
-          method: "POST", 
-          cache: "no-cache", 
-          headers: {
-              "Content-Type": "application/json",
-              "Accept": "application/json",    
-          },
-          redirect: "follow", 
-          referrer: "no-referrer",
-          body: JSON.stringify(rule.toDescription()), 
-      }
-      fetch('http://localhost:9001/execute', fetchOptions).then((res)=>{
-        
-        res.json().then(data =>{
-          console.warn("Deploying");
-          cacheData = data;
-          this.initGraph(data);      
-         
-        })
-      
-      });
+   console.log("hola");
    
+   if(rule.expression){
+     console.log("executing rule :",rule)
+    this.turnOffAllRules();
+    const fetchOptions = 
+      {
+        method: "POST", 
+        cache: "no-cache", 
+        headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json",    
+        },
+        redirect: "follow", 
+        referrer: "no-referrer",
+        body: JSON.stringify(rule.toDescription()), 
+    }
+    fetch('http://localhost:9001/execute', fetchOptions).then((res)=>{
+      
+      res.json().then(data =>{
+        console.warn("Deploying");
+        cacheData = data;
+        this.initGraph(data);      
+       
+      })
+    
+    });
+   }
+    else{
+      console.log("not executing rule :",rule)
+    } 
   }
   initGraph(data){
    
@@ -84,15 +83,18 @@
           testPointers = [];
 
           var nodes = data.nodes;
-          for (let i = 0; i < nodes.length; i++) {
-            const node = nodes[i];
-            testNodes[node.id] = node;
+          if(nodes){
+            for (let i = 0; i < nodes.length; i++) {
+              const node = nodes[i];
+              testNodes[node.id] = node;
+            }
+            testFlows = data.flows;
+  
+            testPointers[0] = {location:"init", node:testNodes['init']}
+            this.pointerActivate(this.pointerToNextNode(testPointers[0]),0);
+            console.warn("graph started", testPointers);
           }
-          testFlows = data.flows;
-
-          testPointers[0] = {location:"init", node:testNodes['init']}
-          this.pointerActivate(this.pointerToNextNode(testPointers[0]),0);
-          console.warn("graph started", testPointers);
+          
   }
  
   getPointerOfRule(ruleId){
@@ -102,8 +104,7 @@
       if( pointer.node.type == "TASK" && pointer.location == ruleId)
       return i;
     }
-    console.error('retornando null en getPointerOfRule',testPointers,ruleId);
-    return 1;
+    return -1;
   }
   turnOffRule(ruleId){
     // check the type of pointer to deactivate the 
