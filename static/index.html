@@ -454,7 +454,7 @@
 
     <section data-view="rule" id="rule-view" class="hidden">
       <div class="title-bar">
-        <a href="/rules" class="back-button icon-button"></a>
+        <a id="return-button" class="back-button icon-button"></a>
         <div class="rule-info">
           <h1>
             <span class="rule-name">Rule Name</span>
@@ -531,6 +531,83 @@
       <button class="create-log-button icon-button"></button>
     </section>
 
+    <!-- composed rules manager view -->
+    <!-- <section data-view="composed-rules" id="composed-rules-view" class="hidden">
+        <div class="title-bar">
+          <h3 class="rules-header">Rules manager</h3>
+        </div>
+        <div id="rules">
+          <div id="create-rule-hint" class="hidden">
+            No rules created. Click the plus button to create a rule.
+          </div>
+        </div>
+        <button id="create-rule-button" class="icon-button"></button>
+      </section> -->
+      
+    <!--  vscad composed Rule  view -->
+    <section data-view="rules" id="rules-manager-view" class="hidden">
+      <div class="title-bar">
+          <a href="/composed-rules" class="back-button icon-button"></a>
+          <div class="rule-info">
+            <h1>
+              <span class="rule-name">Rule Name</span>
+              <img src="/optimized-images/customize-16.svg" alt="Customize Rule Name" class="rule-name-customize"/>
+            </h1>
+            <div id= "warning-message">
+              <h2>warning: we found more than 1 composed rule,
+                we are taking the biggest for execution</h2>
+            </div>
+            <!-- <p>Rule Description</p> -->
+            <button id="test-button" > TEST API </button>
+          </div>
+          <button id="delete-button">
+            <img src="/optimized-images/delete-16.svg" alt="Delete" width="40" height="40"/>
+          </button>
+        </div>
+     
+     <div id="area-wraper">
+       <div class="side-menu">
+        
+          <div id="rules-side-menu" >
+            
+          </div>
+          <div id="operators-side-menu">
+            <div class="operator-menu-item" id="part-after"><h3>Sequence</h3></div>
+            <div class="operator-menu-item" id="part-and"><h3>And</h3></div>
+            <div class="operator-menu-item" id="part-or"><h3>Or</h3></div>
+            <div class="operator-menu-item" id="part-other"><h3>Repeat</h3></div>
+          </div>
+          <div id="vscad-delete-area">
+                <div class="delete-container">
+                  <h2 class="delete-prompt">Drop rules here to remove them</h2>
+                </div>
+          </div>
+       </div>
+        
+        <div id="rules-area"></div>
+     </div>
+     <nav class="container"  > 
+      <a href="#"  id="deploy-button" class="buttons" >Deploy</a>  
+      <a href="#"  id="save-button" class="buttons" >Save</a>  
+      <a href="#"  id="verification-button" class="buttons">Verify</a>
+      <a href="#" id ="diagram-button" class="buttons" >Diagram</a>
+      <button id="vscad-create-rule-button" class="icon-button buttons"></button>
+    </nav>
+    
+      
+    </section>
+     <!-- diagram screen -->
+     <section data-view="diagram" class="hidden" id="diagram-view" >
+      <div id="canvas"></div>
+      <div id="validation-dialog"> 
+        <div id="noti-header">
+            <img src="./images/tick-mark.png" alt="confirmation">
+          <h1 id="tittle"></h1>
+        </div> 
+        <p id="noti-message"></p> 
+      </div>
+     </section>
+
     <!-- Speech button -->
     <div id="speech-wrapper" class="hidden">
       <button id="speech-button" class="icon-button"></button>
@@ -545,7 +622,7 @@
         <li><a id="assistant-menu-item" href="/assistant" class="hidden" >Assistant</a></li>
         <li><a id="things-menu-item" href="/things" class="selected">Things</a></li>
         <li><a id="rules-menu-item" href="/rules">Rules</a></li>
-        <li><a id="logs-menu-item" href="/logs">Logs</a></li>
+        <li><a id="rules-manager-menu-item" href="/vscad-rulesManager/1">composed-rules</a></li>
         <li><a id="floorplan-menu-item" href="/floorplan">Floorplan</a></li>
         <li><a id="settings-menu-item" href="/settings">Settings</a></li>
         <li>
@@ -555,6 +632,8 @@
         </li>
       </ul>
     </nav>
+
+     
 
     <!-- Floating buttons -->
     <button id="menu-button" class="icon-button"></button>

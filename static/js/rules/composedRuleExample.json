@@ -1,0 +1,9 @@
+{
+  "enabled":true,
+  "id": 1,
+  "name": "Rule Name",
+  "rules": [],
+  "expression":"[r1 ; r3 , r2] | r4"
+}
+
+

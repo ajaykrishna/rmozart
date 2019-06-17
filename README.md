@@ -7,9 +7,30 @@
 [![optionalDependencies](https://david-dm.org/mozilla-iot/gateway/optional-status.svg)](https://david-dm.org/mozilla-iot/gateway?type=optional)
 [![license](https://img.shields.io/badge/license-MPL--2.0-blue.svg)](LICENSE)
 
+
+
 Web of Things gateway.
 
 If you have a Rasberry Pi, the easiest way to use the gateway is to [download and flash](http://iot.mozilla.org/gateway/) a pre-built software image from Mozilla to an SD card. Otherwise you can build it from source yourself (see below).
+
+## git setup
+```
+git add remote origin https://gitlab.inria.fr/amuroorn/vscad.git
+git add remote upstream https://github.com/mozilla-iot/gateway.git
+```
+
+### pull from GITHUB 
+the github respository is the main source of the code so its important to keep  your repository up to date with this remote.
+```
+git pull upstream master
+```
+###  push to GITLAB 
+before pushing into Gitlab is important to have both remotes to the lates version 
+```
+git pull origin master
+
+git push origin master
+```
 
 ## Prerequisites for Building
 

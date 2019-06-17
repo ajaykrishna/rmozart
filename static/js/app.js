@@ -32,6 +32,8 @@ let Router;
 // eslint-disable-next-line prefer-const
 let RulesScreen;
 // eslint-disable-next-line prefer-const
+let VscadComposedRuleScreen;
+// eslint-disable-next-line prefer-const
 let RuleScreen;
 // eslint-disable-next-line prefer-const
 let LogsScreen;
@@ -89,6 +91,7 @@ const App = {
     }
 
     RulesScreen.init();
+    VscadComposedRuleScreen.init();
     RuleScreen.init();
 
     LogsScreen.init();
@@ -98,6 +101,7 @@ const App = {
     this.views.floorplan = document.getElementById('floorplan-view');
     this.views.settings = document.getElementById('settings-view');
     this.views.rules = document.getElementById('rules-view');
+    this.views['rules-manager'] = document.getElementById('rules-manager-view');
     this.views.rule = document.getElementById('rule-view');
     this.views.assistant = document.getElementById('assistant-view');
     this.views.logs = document.getElementById('logs-view');
@@ -235,7 +239,10 @@ const App = {
     RulesScreen.show();
     this.selectView('rules');
   },
-
+  showComposedRule: function(context) {
+    VscadComposedRuleScreen.show(context.params.rule);
+    this.selectView('rules-manager');
+  },
   showRule: function(context) {
     RuleScreen.show(context.params.rule);
     this.selectView('rule');
@@ -262,8 +269,8 @@ const App = {
     }
     this.views[this.currentView].classList.remove('selected');
     this.views[view].classList.add('selected');
-    Menu.selectItem(view);
     this.currentView = view;
+    Menu.selectItem(view);
   },
 
   showMenuButton: function() {
@@ -388,6 +395,7 @@ Router = require('./router');
 RulesScreen = require('./views/rules-screen');
 RuleScreen = require('./views/rule-screen');
 LogsScreen = require('./views/logs-screen');
+VscadComposedRuleScreen = require('./vscad-composed-rule-screen');
 Speech = require('./speech');
 
 // load web components

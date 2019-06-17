@@ -28,6 +28,7 @@ exports.UPLOADS_PATH = '/uploads';
 exports.MEDIA_PATH = '/media';
 exports.DEBUG_PATH = '/debug';
 exports.RULES_PATH = '/rules';
+exports.COMPOSED_RULES_PATH = '/composed-rules';
 exports.OAUTH_PATH = '/oauth';
 exports.OAUTHCLIENTS_PATH = '/authorizations';
 exports.INTERNAL_LOGS_PATH = '/internal-logs';
@@ -136,3 +137,4 @@ exports.LogSeverity = {
   ERROR: 3,
   PROMPT: 4,
 };
+

@@ -8,6 +8,7 @@
   left: 0;
   height: 100%;
   width: 32rem;
+  overflow-y: scroll;
   background-color: #5288af;
   margin: 0;
   transition: transform 0.25s ease;
@@ -62,6 +63,9 @@
 
 #main-menu #floorplan-menu-item {
   background-image: url('../optimized-images/floorplan-icon.png');
+}
+#main-menu #rules-manager-menu-item {
+  background-image: url('../optimized-images/rules-icon.png');
 }
 
 #main-menu #microphone-menu-item {

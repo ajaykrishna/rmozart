@@ -404,6 +404,7 @@ ThingsController.ws('/:thingId/', (websocket, request) => {
   }
 
   function onPropertyChanged(property) {
+    
     if (property.device.id !== thingId) {
       return;
     }

@@ -327,6 +327,10 @@ class Thing {
       event.thingId = this.id;
     }
     this.eventsDispatched.push(event);
+     
+    console.warn("dispatch event queue",this.eventsDispatched);
+    console.log("dispatch event",event);
+    
     this.emitter.emit(Constants.EVENT, event);
   }
 

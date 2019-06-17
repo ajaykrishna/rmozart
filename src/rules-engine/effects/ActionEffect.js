@@ -53,7 +53,8 @@ class ActionEffect extends Effect {
     if (!state.on) {
       return;
     }
-
+    console.log("in action effect",state);
+    
     this.createAction();
   }
 
