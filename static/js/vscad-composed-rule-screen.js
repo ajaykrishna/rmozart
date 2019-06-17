@@ -57,7 +57,7 @@ const VscadRulesScreen = {
     })
 
     this.testButton.addEventListener('click',()=>{
-      console.log("ask");
+     
       fetch('/composed-rules/deploy/ask',{headers: API.headers()}).then((res)=>{
         console.log(res);
       });
@@ -180,7 +180,7 @@ const VscadRulesScreen = {
       }
       //10.138.2.9:8080
     fetch('http://localhost:9001/workflow', fetchOptions).then((res)=>{
-      console.log(res);
+      //console.log(res);
       res.text().then(text =>{
         this.showDiagram(text);
       })
@@ -189,18 +189,10 @@ const VscadRulesScreen = {
     // ;
   },
   requestExecution:function(){
-    console.log("trying to deploy");
-    
-    fetch('/composed-rules/deploy/1',{headers: API.headers()}).then((res)=>{
-      console.log(res);
-      
-    
-    });
+    fetch('/composed-rules/deploy/1',{headers: API.headers()})
   },
      
   requestVerify:function(cRule){
-
-
     fetch(`/rules`, {headers: API.headers(),}).then((res) => {
       return res.json();
     }).then((res) => {
@@ -246,7 +238,7 @@ const VscadRulesScreen = {
      });
 
      info.objects = Object.keys(usedObjects);
-      console.log('final info ', info);
+      //console.log('final info ', info);
         const fetchOptions = 
       {
         method: "POST",

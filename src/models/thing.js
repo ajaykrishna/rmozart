@@ -339,7 +339,6 @@ class Thing {
    * @param {Function} callback
    */
   addEventSubscription(callback) {
-    console.warn("adding event suscription")
     this.emitter.on(Constants.EVENT, callback);
   }
 
