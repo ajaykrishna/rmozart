@@ -168,7 +168,8 @@ const VscadRulesScreen = {
     const fetchOptions = 
       {
         method: "POST", 
-        cache: "no-cache", 
+        cache: "no-cache",
+        mode: 'no-cors', 
         headers: {
             "Content-Type": "application/json",
             "Accept": "application/xml",    
@@ -191,7 +192,6 @@ const VscadRulesScreen = {
     console.log("trying to deploy");
     
     fetch('/composed-rules/deploy/1',{headers: API.headers()}).then((res)=>{
-      console.log("si cambia ?")
       console.log(res);
       
     
@@ -250,6 +250,7 @@ const VscadRulesScreen = {
         const fetchOptions = 
       {
         method: "POST",
+        mode: 'cors',
         headers: {
             "Content-Type": "application/json",
             "Accept": "application/json",

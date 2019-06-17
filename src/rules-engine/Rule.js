@@ -42,18 +42,19 @@ class Rule  {
    * @param {State} state
    */
   onTriggerStateChanged(state) {
-    //console.log("Trigger change",state);
-    
+     
     if (!this.enabled) {
       return;
     }
- 
+
     if(this.parent && state.on)
       this.parent.notify(this,state);
-    else
-      console.log("no function");
-      
-      
+      for (const effect of this.effect.effects) {
+        effect.on = false;
+      }
+    if(!this.parent)
+    console.log("no function");
+        
     if (DEBUG) {
       console.debug('Rule.onTriggerStateChanged', this.name, state);
     }

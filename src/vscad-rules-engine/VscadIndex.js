@@ -78,7 +78,6 @@ index.delete('/:id', async function(req, res) {
   }
 });
 index.get('/deploy/:id', async function(req, res) {
-  console.warn("exe");
   try {
     
     const masterEngine = require('./VscadMasterEngine').default;
