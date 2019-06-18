@@ -258,7 +258,14 @@ const VscadRulesScreen = {
       //console.log('final info ', info);
      return info;
 
-    }).then((info)=>{
+    }).then((info) =>{
+        return fetch("/composed-rules/things",{headers: API.headers()}).then((res) => {
+          return res.json();
+        }).then((things)=>{
+         info.fullThings = things;
+         return info; 
+        });
+      }).then((info)=>{
       const fetchOptions = 
       {
         method: "POST",
