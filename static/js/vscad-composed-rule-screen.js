@@ -35,7 +35,7 @@ const VscadRulesScreen = {
     this.ComposedRuleBlocks = [];
     this.connectors = {};
     this.diagramLoaded = false;
-
+    this.loaders= 0;
     // tittle bariables and the editin functionalities
     this.view = document.getElementById('rules-manager-view');
     this.ruleNameCustomize = this.view.querySelector('.rule-name-customize')
@@ -113,17 +113,22 @@ const VscadRulesScreen = {
    
   },
  showLoader(){
-  this.loader.style.display = "block";
+   this.loaders ++;
+   this.loader.style.display = "block";
  },
  hiddeLoader(){
-  this.loader.style.display = "none"
+   this.loaders --;
+   if(this.loaders <=0){
+    this.loader.style.display = "none";
+    this.loaders = 0;
+   }
+  
  },
   showVerification:function(response){
-    // {"status":false,"message":"Deadlock found in the composition"}
-    
     this.diagramView.classList.add('selected');
     this.diagramView.style.display = "flex";
-    this.hiddeDiagram()
+    this.hiddeDiagram();
+    
    var  alertDialog = document.getElementById('validation-dialog');
     alertDialog.style.display = "block"
     if(response.status){
@@ -175,7 +180,6 @@ const VscadRulesScreen = {
       {
         method: "POST", 
         cache: "no-cache",
-        mode: 'no-cors', 
         headers: {
             "Content-Type": "application/json",
             "Accept": "application/xml",    
@@ -204,10 +208,11 @@ const VscadRulesScreen = {
   },
      
   requestVerify:function(cRule){
-    this.showLoader();
+   
     fetch(`/rules`, {headers: API.headers(),}).then((res) => {
       return res.json();
     }).then((res) => {
+      this.showLoader();
       var info = {}
       info.expression = this.cRule.expression;
       info.objects = [];
@@ -251,7 +256,10 @@ const VscadRulesScreen = {
 
      info.objects = Object.keys(usedObjects);
       //console.log('final info ', info);
-        const fetchOptions = 
+     return info;
+
+    }).then((info)=>{
+      const fetchOptions = 
       {
         method: "POST",
         mode: 'cors',
@@ -267,10 +275,8 @@ const VscadRulesScreen = {
        return res.json()
      }).then( data =>{
       this.showVerification(data);
-     }).finally(()=>{
-       this.hiddeLoader();
-     });
-
+      this.hiddeLoader();
+     })
     });
     
   },
