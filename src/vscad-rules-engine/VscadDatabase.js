@@ -55,6 +55,31 @@ VscadDatabase.prototype.getRules = function() {
   });
 };
 
+VscadDatabase.prototype.getThings = function() {
+  return new Promise((resolve, reject) => {
+    db.db.all(
+      'SELECT id, description FROM things',
+      [],
+      (err, rows) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+        const things = {};
+        const updatePromises = [];
+        for (const row of rows) {
+          let desc = JSON.parse(row.description);
+          things[row.id] = desc;
+        }
+        Promise.all(updatePromises).then(() => {
+          resolve(things);
+        });
+      }
+    );
+  });
+};
+
+
 /**
  * Create a new rule
  * @param {RuleDescription} desc

@@ -44,7 +44,7 @@
    
    this.cacheData.rule = rule;
    if(rule.expression){
-     console.log("executing rule :",rule)
+     console.log("executing rule :",rule.expression)
     const fetchOptions = 
       {
         method: "POST", 
@@ -66,6 +66,9 @@
        
       })
     
+    }).catch((error) =>{
+      console.warn("java server turned off",error.message);
+      
     });
    }
   }

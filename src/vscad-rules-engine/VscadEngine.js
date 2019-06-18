@@ -17,7 +17,11 @@ class VscadEngine {
    * Get a list of all current rules
    * @return {Promise<Array<Rule>>} rules
    */
- 
+  getThings(){
+  
+      return  Database.getThings();
+    
+  }
   getRules() {
     let rulesPromise = Promise.resolve(this.rules);
 // TODO  get the atual rules so we can activate the next

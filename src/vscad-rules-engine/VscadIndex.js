@@ -39,6 +39,10 @@ index.get('/', async function(req, res) {
     return rule.toDescription();
   }));
 });
+index.get('/things', async function(req, res) {
+  const things = await engine.getThings();
+  res.send(things);
+});
 
 
 index.get('/:id', async function(req, res) {
