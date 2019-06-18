@@ -426,9 +426,9 @@ const VscadRulesScreen = {
         if(part == "("){
           var j = i+1;
           var count =1;
-         while(parts[j] != ")" && count == 1 && j<parts.length){
-           if(parts[j] != ")") count--;
-           if(parts[j] != "(") count ++;
+         while(  count >= 1 && j<parts.length){
+           if(parts[j] == ")") count--;
+           if(parts[j] == "(") count ++;
           j++;
          } 
 
