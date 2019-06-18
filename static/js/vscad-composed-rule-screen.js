@@ -23,6 +23,7 @@ const VscadRulesScreen = {
     this.ruleArea = document.getElementById('rules-area');
     this.testButton = document.getElementById('test-button');
     this.diagramView = document.getElementById('diagram-view');
+    this.loader = document.getElementById('loader-holder')
     this.diagramButton = document.getElementById('diagram-button');
     this.verificationButton = document.getElementById('verification-button');
     this.saveButton = document.getElementById('save-button');
@@ -111,7 +112,12 @@ const VscadRulesScreen = {
 
    
   },
- 
+ showLoader(){
+  this.loader.style.display = "block";
+ },
+ hiddeLoader(){
+  this.loader.style.display = "none"
+ },
   showVerification:function(response){
     // {"status":false,"message":"Deadlock found in the composition"}
     
@@ -179,9 +185,11 @@ const VscadRulesScreen = {
         body: JSON.stringify(this.cRule.toDescription()),
       }
       //10.138.2.9:8080
+      this.showLoader()
     fetch('http://localhost:9001/workflow', fetchOptions).then((res)=>{
       //console.log(res);
       res.text().then(text =>{
+        this.hiddeLoader();
         this.showDiagram(text);
       })
     
@@ -189,10 +197,14 @@ const VscadRulesScreen = {
     // ;
   },
   requestExecution:function(){
-    fetch('/composed-rules/deploy/1',{headers: API.headers()})
+    this.showLoader();
+    fetch('/composed-rules/deploy/1',{headers: API.headers()}).finally(()=>{
+      this.hiddeLoader();
+    })
   },
      
   requestVerify:function(cRule){
+    this.showLoader();
     fetch(`/rules`, {headers: API.headers(),}).then((res) => {
       return res.json();
     }).then((res) => {
@@ -255,6 +267,8 @@ const VscadRulesScreen = {
        return res.json()
      }).then( data =>{
       this.showVerification(data);
+     }).finally(()=>{
+       this.hiddeLoader();
      });
 
     });
@@ -309,7 +323,7 @@ const VscadRulesScreen = {
     page("/rules/quickNew");
   })
     
-
+    this.showLoader()
     return fetch('/rules', {headers: API.headers()}).then((res) => {
       return res.json();
     }).then((fetchedRules) => {
@@ -324,6 +338,8 @@ const VscadRulesScreen = {
       this.fetchedRules = fetchedRules;
       if(this.ComposedRuleBlocks.length<=0)
         this.prepareVisual(this.cRule.toDescription(),this.gateway,this.fetchedRules);
+    }).finally(()=>{
+      this.hiddeLoader();
     });
   },
   /**
