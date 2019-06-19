@@ -440,13 +440,14 @@ const VscadRulesScreen = {
           var j = i+1;
           var count =1;
          while(  count >= 1 && j<parts.length){
+          
            if(parts[j] == ")") count--;
            if(parts[j] == "(") count ++;
-          j++;
+           j++;
          } 
 
          block.addAsChild(this.getBlockOf(parts.slice(i+1,j),usedRules));
-         i = j;
+         i = j-1;
         }
         else if(isNaN(Number(part))){
           if(!block.name)
