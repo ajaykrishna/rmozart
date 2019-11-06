@@ -1,8 +1,5 @@
 'use strict';
 
-/* Tell jshint about mocha globals, and  */
-/* globals it */
-
 const {server, chai} = require('../common');
 const Database = require('../../db');
 const Platform = require('../../platform');
@@ -16,9 +13,9 @@ const Constants = require('../../constants');
 describe('settings/', () => {
   let jwt;
   beforeEach(async () => {
-    jwt = await createUser(server, TEST_USER);
     // Clear settings storage
     await Database.deleteEverything();
+    jwt = await createUser(server, TEST_USER);
   });
 
   it('Fail to get a setting that hasnt been set', async () => {

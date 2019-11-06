@@ -1,8 +1,5 @@
 'use strict';
 
-/* Tell jshint about mocha globals, and  */
-/* globals it */
-
 const nock = require('nock');
 
 const {waitForExpect} = require('../expect-utils');
@@ -23,7 +20,7 @@ const JSONWebToken = require('../../models/jsonwebtoken');
 const TEST_THING = {
   id: 'test-1',
   type: 'dimmableColorLight',
-  name: 'kitchen',
+  title: 'kitchen',
   '@context': 'https://iot.mozilla.org/schemas',
   '@type': ['OnOffSwitch', 'Light', 'ColorControl'],
   properties: {

@@ -11,6 +11,7 @@
 'use strict';
 
 const OnOffSwitch = require('./on-off-switch');
+const Utils = require('../../utils');
 
 class MultiLevelSwitch extends OnOffSwitch {
   /**
@@ -53,6 +54,32 @@ class MultiLevelSwitch extends OnOffSwitch {
         this.displayedProperties.hasOwnProperty('level')) {
       this.levelProperty = 'level';
     }
+
+    this.precision = 0;
+    this.unit = '';
+    this.minimum = 0;
+    this.maximum = 100;
+
+    if (this.levelProperty) {
+      const property = this.displayedProperties[this.levelProperty].property;
+
+      if (property.hasOwnProperty('multipleOf') &&
+          `${property.multipleOf}`.includes('.')) {
+        this.precision = `${property.multipleOf}`.split('.')[1].length;
+      }
+
+      if (property.hasOwnProperty('unit')) {
+        this.unit = property.unit;
+      }
+
+      if (property.hasOwnProperty('minimum')) {
+        this.minimum = property.minimum;
+      }
+
+      if (property.hasOwnProperty('maximum')) {
+        this.maximum = property.maximum;
+      }
+    }
   }
 
   get icon() {
@@ -72,7 +99,7 @@ class MultiLevelSwitch extends OnOffSwitch {
     }
 
     if (name === this.levelProperty) {
-      value = parseInt(value, 10);
+      value = parseFloat(value);
       this.icon.level = value;
     }
   }
@@ -85,8 +112,11 @@ class MultiLevelSwitch extends OnOffSwitch {
   }
 
   iconView() {
+    const unit = Utils.escapeHtml(Utils.unitNameToAbbreviation(this.unit));
     return `
-      <webthing-multi-level-switch-capability>
+      <webthing-multi-level-switch-capability data-unit="${unit}"
+        data-precision="${this.precision}" min="${this.minimum}"
+        max="${this.maximum}">
       </webthing-multi-level-switch-capability>`;
   }
 }

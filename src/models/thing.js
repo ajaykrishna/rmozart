@@ -36,7 +36,7 @@ class Thing {
     }
     // Parse the Thing Description
     this.id = id;
-    this.name = description.name || '';
+    this.title = description.title || description.name || '';
     this.type = description.type || '';
     this['@context'] =
       description['@context'] || 'https://iot.mozilla.org/schemas';
@@ -228,13 +228,13 @@ class Thing {
   }
 
   /**
-   * Set the name of this Thing.
+   * Set the title of this Thing.
    *
-   * @param {String} name The new name
+   * @param {String} title The new title
    * @return {Promise} A promise which resolves with the description set.
    */
-  setName(name) {
-    this.name = name;
+  setTitle(title) {
+    this.title = title;
     return Database.updateThing(this.id, this.getDescription());
   }
 
@@ -371,19 +371,8 @@ class Thing {
    * @param {Boolean} reqSecure whether or not the request is secure, i.e. TLS
    */
   getDescription(reqHost, reqSecure) {
-    const links = JSON.parse(JSON.stringify(this.links));
-
-    if (typeof reqHost !== 'undefined') {
-      const wsLink = {
-        rel: 'alternate',
-        href: `${reqSecure ? 'wss' : 'ws'}://${reqHost}${this.href}`,
-      };
-
-      links.push(wsLink);
-    }
-
-    return {
-      name: this.name,
+    const desc = {
+      title: this.title,
       type: this.type,
       '@context': this['@context'],
       '@type': this['@type'],
@@ -392,13 +381,42 @@ class Thing {
       properties: this.properties,
       actions: this.actions,
       events: this.events,
-      links,
+      links: JSON.parse(JSON.stringify(this.links)),
       floorplanX: this.floorplanX,
       floorplanY: this.floorplanY,
       layoutIndex: this.layoutIndex,
       selectedCapability: this.selectedCapability,
       iconHref: this.iconHref,
     };
+
+    if (typeof reqHost !== 'undefined') {
+      const wsLink = {
+        rel: 'alternate',
+        href: `${reqSecure ? 'wss' : 'ws'}://${reqHost}${this.href}`,
+      };
+
+      desc.links.push(wsLink);
+
+      desc.id = `${reqSecure ? 'https' : 'http'}://${reqHost}${this.href}`;
+      desc.base = `${reqSecure ? 'https' : 'http'}://${reqHost}/`;
+      desc.securityDefinitions = {
+        oauth2_sc: {
+          scheme: 'oauth2',
+          flow: 'code',
+          authorization: `${reqSecure ? 'https' : 'http'}://${reqHost}${Constants.OAUTH_PATH}/authorize`,
+          token: `${reqSecure ? 'https' : 'http'}://${reqHost}${Constants.OAUTH_PATH}/token`,
+          scopes: [
+            `${this.href}:readwrite`,
+            this.href,
+            `${Constants.THINGS_PATH}:readwrite`,
+            Constants.THINGS_PATH,
+          ],
+        },
+      };
+      desc.security = 'oauth2_sc';
+    }
+
+    return desc;
   }
 
   registerWebsocket(ws) {

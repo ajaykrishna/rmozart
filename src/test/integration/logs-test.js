@@ -1,8 +1,5 @@
 'use strict';
 
-/* Tell jshint about mocha globals, and  */
-/* globals it */
-
 const {server, chai, mockAdapter} = require('../common');
 const {
   TEST_USER,
@@ -15,7 +12,7 @@ const Logs = require('../../models/logs');
 
 const thingLight1 = {
   id: 'light1',
-  name: 'light1',
+  title: 'light1',
   type: 'onOffSwitch',
   '@context': 'https://iot.mozilla.org/schemas',
   '@type': ['OnOffSwitch'],

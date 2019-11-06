@@ -52,7 +52,7 @@ sudo apt install -y \
   libffi-dev \
   libglib2.0-dev \
   libnanomsg-dev \
-  libnanomsg4 \
+  libnanomsg5 \
   libtool \
   libudev-dev \
   libusb-1.0-0-dev \
@@ -62,7 +62,7 @@ sudo apt install -y \
   sqlite3
 
 # Install Python add-on bindings
-_url="git+https://github.com/mozilla-iot/gateway-addon-python@v0.8.0#egg=gateway_addon"
+_url="git+https://github.com/mozilla-iot/gateway-addon-python@v0.9.0#egg=gateway_addon"
 sudo pip2 install "$_url"
 sudo pip3 install "$_url"
 

@@ -53,6 +53,8 @@ class AddonManager extends EventEmitter {
     this.installedAddons = new Set();
     this.deferredWaitForAdapter = new Map();
     this.pluginServer = null;
+    this.updateTimeout = null;
+    this.updateInterval = null;
   }
 
   /**
@@ -831,12 +833,13 @@ class AddonManager extends EventEmitter {
 
     if (process.env.NODE_ENV !== 'test') {
       // Check for add-ons in 10 seconds (allow add-ons to load first).
-      setTimeout(() => {
+      this.updateTimeout = setTimeout(() => {
         this.updateAddons();
+        this.updateTimeout = null;
 
         // Check every day.
         const delay = 24 * 60 * 60 * 1000;
-        setInterval(this.updateAddons, delay);
+        this.updateInterval = setInterval(this.updateAddons.bind(this), delay);
       }, 10000);
     }
   }
@@ -898,6 +901,15 @@ class AddonManager extends EventEmitter {
     }
 
     this.addonsLoaded = false;
+
+    if (this.updateTimeout) {
+      clearTimeout(this.updateTimeout);
+    }
+
+    if (this.updateInterval) {
+      clearInterval(this.updateInterval);
+    }
+
     return Promise.all(unloadPromises).then(() => {
       if (this.pluginServer) {
         this.pluginServer.shutdown();
@@ -1290,7 +1302,7 @@ class AddonManager extends EventEmitter {
    * @returns A promise which is resolved when updating is complete.
    */
   async updateAddons() {
-    const url = config.get('addonManager.listUrl');
+    const urls = config.get('addonManager.listUrls');
     const api = config.get('addonManager.api');
     const architecture = Platform.getArchitecture();
     const version = pkg.version;
@@ -1312,15 +1324,29 @@ class AddonManager extends EventEmitter {
         params.set('python', pythonVersions.join(','));
       }
 
-      const response = await fetch(`${url}?${params.toString()}`, {
-        headers: {
-          Accept: 'application/json',
-          'User-Agent': `mozilla-iot-gateway/${version}`,
-        },
-      });
-      const list = await response.json();
+      const map = new Map();
 
-      for (const addon of list) {
+      for (const url of urls) {
+        const response = await fetch(`${url}?${params.toString()}`, {
+          headers: {
+            Accept: 'application/json',
+            'User-Agent': `mozilla-iot-gateway/${version}`,
+          },
+        });
+
+        const addons = await response.json();
+        for (const addon of addons) {
+          // Check for duplicates, keep newest.
+          if (map.has(addon.name) &&
+              semver.gte(map.get(addon.name).version, addon.version)) {
+            continue;
+          }
+
+          map.set(addon.name, addon);
+        }
+      }
+
+      for (const addon of map.values()) {
         available[addon.name] = {
           version: addon.version,
           url: addon.url,

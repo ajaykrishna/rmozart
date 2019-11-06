@@ -11,10 +11,39 @@
 const child_process = require('child_process');
 const config = require('config');
 const fs = require('fs');
+const ipRegex = require('ip-regex');
 const os = require('os');
 const parse = require('csv-parse/lib/sync');
 
 const DEBUG = false;
+
+/**
+ * Parses a text file looking for key/value pairs.
+ *
+ * @param {string} filename - name of the file to read
+ * @param {string} key - key value to look for
+ * @returns {string} - value that was looked up, or undefined
+ */
+function readValueFromFile(filename, key) {
+  const data = fs.readFileSync(filename, 'utf8');
+  const lines = data.split(/\n/);
+  for (const line of lines) {
+    const fields = line.split('=');
+    if (fields.length == 2 && fields[0] == key) {
+      let val = fields[1];
+      if (val.length >= 2 && val[0] == '\'' && val[val.length - 1] == '\'') {
+        // The /etc/openwrt_release file uses single quotes around all of
+        // the values, so we strip those off. None of the values we expect
+        // to be parsed should have embedded quotes, so we don't bother
+        // trying to unescape.
+        val = val.substring(1, val.length - 1);
+      }
+      return val;
+    }
+  }
+}
+
+const DISTRIB_ARCH = readValueFromFile('/etc/openwrt_release', 'DISTRIB_ARCH');
 
 /**
  * Spawns a process, and captures the output.
@@ -299,8 +328,11 @@ function isRedirectedTcpPort(ipaddr, fromPort, toPort) {
  * @returns {string} Architecture to use.
  */
 
-function getPlatformArchitecture(defaultArchitecture) {
-  return `openwrt-${defaultArchitecture}`;
+function getPlatformArchitecture(_defaultArchitecture) {
+  if (DISTRIB_ARCH) {
+    return `openwrt-linux-${DISTRIB_ARCH}`;
+  }
+  return `openwrt-linux-unknown`;
 }
 
 /**
@@ -335,6 +367,11 @@ function getCaptivePortalStatus() {
  * @returns {boolean} Boolean indicating success of the command.
  */
 function setCaptivePortalStatus(enabled, options = {}) {
+  const regex = ipRegex({exact: true});
+  if (options.ipaddr && !regex.test(options.ipaddr)) {
+    return false;
+  }
+
   const label = 'setCaptivePortalStatus';
   DEBUG && console.log(`${label}: enabled`, enabled, 'options:', options);
   const httpSrcPort = 80;
@@ -513,6 +550,14 @@ function setLanMode(mode, options = {}) {
     return false;
   }
 
+  const regex = ipRegex({exact: true});
+  if ((options.ipaddr && !regex.test(options.ipaddr)) ||
+      (options.netmask && !regex.test(options.netmask)) ||
+      (options.gateway && !regex.test(options.gateway)) ||
+      (options.dns && options.dns.filter((d) => !regex.test(d)).length > 0)) {
+    return false;
+  }
+
   if (!uciSet(label, 'network.lan.proto', mode)) {
     return false;
   }
@@ -577,6 +622,14 @@ function setWanMode(mode, options = {}) {
   DEBUG && console.log('setWanMode: mode:', mode, 'options:', options);
   const valid = ['static', 'dhcp', 'pppoe'];
   if (!valid.includes(mode)) {
+    return false;
+  }
+
+  const regex = ipRegex({exact: true});
+  if ((options.ipaddr && !regex.test(options.ipaddr)) ||
+      (options.netmask && !regex.test(options.netmask)) ||
+      (options.gateway && !regex.test(options.gateway)) ||
+      (options.dns && options.dns.filter((d) => !regex.test(d)).length > 0)) {
     return false;
   }
 
@@ -701,6 +754,11 @@ function setWirelessMode(enabled, mode = 'ap', options = {}) {
   DEBUG && console.log(`${label}: enabled:`, enabled, 'mode:', mode);
   const valid = ['ap', 'sta'];
   if (enabled && !valid.includes(mode)) {
+    return false;
+  }
+
+  const regex = ipRegex({exact: true});
+  if (options.ipaddr && !regex.test(options.ipaddr)) {
     return false;
   }
 
@@ -1129,7 +1187,7 @@ function getNetworkAddresses() {
   };
 
   const interfaces = os.networkInterfaces();
-  const res = uciShow(label, 'network.lan');
+  const res = uciShow(label, 'network');
   if (!res.success) {
     return res;
   }

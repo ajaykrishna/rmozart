@@ -40,6 +40,7 @@ const mDNSserver = require('./mdns-server');
 const Logs = require('./models/logs');
 const platform = require('./platform');
 const Router = require('./router');
+const sleep = require('./sleep');
 const TunnelService = require('./ssltunnel');
 const {RouterSetupApp, isRouterConfigured} = require('./router-setup');
 const {WiFiSetupApp, isWiFiConfigured} = require('./wifi-setup');
@@ -103,11 +104,22 @@ function createHttpsServer() {
   return https.createServer(options);
 }
 
+let httpsAttempts = 5;
 function startHttpsGateway() {
   const port = config.get('ports.https');
 
   if (!servers.https) {
     servers.https = createHttpsServer();
+    if (!servers.https) {
+      httpsAttempts -= 1;
+      if (httpsAttempts < 0) {
+        console.error('Unable to create HTTPS server after several tries');
+        gracefulExit();
+        process.exit(0);
+      }
+
+      return sleep(4000).then(startHttpsGateway);
+    }
   }
 
   httpsApp = createGatewayApp(servers.https);
@@ -161,6 +173,7 @@ function startHttpGateway() {
 
 function stopHttpGateway() {
   servers.http.removeListener('request', httpApp);
+  servers.http.close();
 }
 
 function startWiFiSetup() {
@@ -247,7 +260,13 @@ function rulesEngineConfigure(server) {
 
 function createApp() {
   const app = express();
-  app.engine('handlebars', expressHandlebars());
+  app.engine(
+    'handlebars',
+    expressHandlebars({
+      defaultLayout: undefined, // eslint-disable-line no-undefined
+      layoutsDir: Constants.VIEWS_PATH,
+    })
+  );
   app.set('view engine', 'handlebars');
   app.set('views', Constants.VIEWS_PATH);
 
@@ -379,6 +398,17 @@ function startGateway() {
   }
 }
 
+function gracefulExit() {
+  addonManager.unloadAddons();
+  mDNSserver.server.cleanup();
+  TunnelService.stop();
+
+  if (updaterInterval !== null) {
+    clearInterval(updaterInterval);
+    updaterInterval = null;
+  }
+}
+
 if (config.get('cli')) {
   // Get some decent error messages for unhandled rejections. This is
   // often just errors in the code.
@@ -389,16 +419,8 @@ if (config.get('cli')) {
 
   // Do graceful shutdown when Control-C is pressed.
   process.on('SIGINT', () => {
-    console.log('Control-C: unloading add-ons...');
-    addonManager.unloadAddons();
-    mDNSserver.server.cleanup();
-    TunnelService.stop();
-
-    if (updaterInterval !== null) {
-      clearInterval(updaterInterval);
-      updaterInterval = null;
-    }
-
+    console.log('Control-C: Exiting gracefully');
+    gracefulExit();
     process.exit(0);
   });
 }
@@ -428,7 +450,8 @@ mDNSserver.getmDNSstate().then((state) => {
   }
 });
 
-module.exports = { // for testing
+// for testing
+module.exports = {
   servers,
   serverStartup,
 };

@@ -10,6 +10,7 @@
 
 const child_process = require('child_process');
 const fs = require('fs');
+const ipRegex = require('ip-regex');
 const os = require('os');
 
 /**
@@ -97,6 +98,14 @@ function getLanMode() {
 function setLanMode(mode, options = {}) {
   const valid = ['static', 'dhcp'];
   if (!valid.includes(mode)) {
+    return false;
+  }
+
+  const regex = ipRegex({exact: true});
+  if ((options.ipaddr && !regex.test(options.ipaddr)) ||
+      (options.netmask && !regex.test(options.netmask)) ||
+      (options.gateway && !regex.test(options.gateway)) ||
+      (options.dns && options.dns.filter((d) => !regex.test(d)).length > 0)) {
     return false;
   }
 
@@ -277,6 +286,11 @@ function setWirelessMode(enabled, mode = 'ap', options = {}) {
     return false;
   }
 
+  const regex = ipRegex({exact: true});
+  if (options.ipaddr && !regex.test(options.ipaddr)) {
+    return false;
+  }
+
   // First, remove existing networks
   let proc = child_process.spawnSync(
     'wpa_cli',
@@ -438,6 +452,15 @@ function setWirelessMode(enabled, mode = 'ap', options = {}) {
     );
     if (proc.status !== 0) {
       return false;
+    }
+
+    if (mode === 'ap') {
+      // set up a default route when running in AP mode. ignore errors here and
+      // just try to move on.
+      child_process.spawnSync(
+        'sudo',
+        ['ip', 'route', 'add', 'default', 'via', options.ipaddr, 'dev', 'wlan0']
+      );
     }
   }
 
@@ -664,7 +687,7 @@ function scanWirelessNetworks() {
     .filter((l) => l.startsWith(' '))
     .map((l) => l.trim());
 
-  const cells = [];
+  const cells = new Map();
   let cell = {};
 
   for (const line of lines) {
@@ -683,7 +706,15 @@ function scanWirelessNetworks() {
           cell.connected = false;
         }
 
-        cells.push(cell);
+        // If there are two networks with the same SSID, but one is encrypted
+        // and the other is not, we need to keep both.
+        const key = `${cell.ssid}-${cell.encryption}`;
+        if (cells.has(key)) {
+          const stored = cells.get(key);
+          stored.quality = Math.max(stored.quality, cell.quality);
+        } else {
+          cells.set(key, cell);
+        }
       }
 
       cell = {};
@@ -702,7 +733,7 @@ function scanWirelessNetworks() {
     }
   }
 
-  return cells.sort((a, b) => b.quality - a.quality);
+  return Array.from(cells.values()).sort((a, b) => b.quality - a.quality);
 }
 
 /**

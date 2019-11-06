@@ -162,7 +162,7 @@ class Rule {
       if (!triggerThing) {
         return null;
       }
-      return `${triggerThing.name} event "${trigger.label}" occurs`;
+      return `${triggerThing.title} event "${trigger.label}" occurs`;
     }
 
     const triggerThing = this.gateway.things.filter(
@@ -177,7 +177,7 @@ class Rule {
       return null;
     }
 
-    let triggerStr = `${triggerThing.name} `;
+    let triggerStr = `${triggerThing.title} `;
     if (trigger.type === 'BooleanTrigger') {
       triggerStr += 'is ';
       if (!trigger.onValue) {
@@ -241,7 +241,20 @@ class Rule {
     }
 
     if (effect.type === 'NotificationEffect') {
-      return `notify with message "${effect.message}"`;
+      return `send a browser notification`;
+    }
+    if (effect.type === 'NotifierOutletEffect') {
+      const notifier = this.gateway.notifiers
+        .filter((notifier) => notifier.id === effect.notifier)[0];
+      if (!notifier) {
+        return null;
+      }
+      const outlet = notifier.outlets
+        .filter((outlet) => outlet.id === effect.outlet)[0];
+      if (!outlet) {
+        return null;
+      }
+      return `send a notification through ${outlet.name}`;
     }
     if (effect.type === 'ActionEffect') {
       const effectThing = this.gateway.things.filter(
@@ -250,7 +263,7 @@ class Rule {
       if (!effectThing) {
         return null;
       }
-      return `do ${effectThing.name} action "${effect.label}"`;
+      return `do ${effectThing.title} action "${effect.label}"`;
     }
 
     const effectThing = this.gateway.things.filter(
@@ -267,14 +280,14 @@ class Rule {
 
     let effectStr = '';
     if (effectProp.name === 'on' || effect.property.id === 'on') {
-      effectStr = `turn ${effectThing.name} `;
+      effectStr = `turn ${effectThing.title} `;
       if (effect.value) {
         effectStr += 'on';
       } else {
         effectStr += 'off';
       }
     } else {
-      effectStr += `set ${effectThing.name} ${effect.label} to `;
+      effectStr += `set ${effectThing.title} ${effect.label} to `;
       effectStr += effect.value;
     }
     return effectStr;

@@ -52,6 +52,22 @@ class MultiLevelSensor extends Thing {
         this.displayedProperties.hasOwnProperty('level')) {
       this.levelProperty = 'level';
     }
+
+    this.precision = 0;
+    this.unit = '';
+
+    if (this.levelProperty) {
+      const property = this.displayedProperties[this.levelProperty].property;
+
+      if (property.hasOwnProperty('multipleOf') &&
+          `${property.multipleOf}`.includes('.')) {
+        this.precision = `${property.multipleOf}`.split('.')[1].length;
+      }
+
+      if (property.hasOwnProperty('unit')) {
+        this.unit = property.unit;
+      }
+    }
   }
 
   get icon() {
@@ -77,18 +93,10 @@ class MultiLevelSensor extends Thing {
   }
 
   iconView() {
-    let unit = '';
-    for (const name in this.displayedProperties) {
-      const property = this.displayedProperties[name].property;
-      if (name === 'level' || property['@type'] === 'LevelProperty') {
-        unit = property.unit || '';
-        break;
-      }
-    }
-
-    unit = Utils.escapeHtml(Utils.unitNameToAbbreviation(unit));
+    const unit = Utils.escapeHtml(Utils.unitNameToAbbreviation(this.unit));
     return `
-      <webthing-multi-level-sensor-capability data-unit="${unit}">
+      <webthing-multi-level-sensor-capability data-unit="${unit}"
+        data-precision="${this.precision}">
       </webthing-multi-level-sensor-capability>`;
   }
 }

@@ -88,19 +88,55 @@ class MultiLevelSwitchCapability extends BaseComponent {
       '.webthing-multi-level-switch-capability-label');
     this._on = false;
     this._level = 0;
+    this._precision = 0;
+    this._unit = '';
     this._onClick = this.__onClick.bind(this);
   }
 
   connectedCallback() {
+    this._upgradeProperty('min');
+    this._upgradeProperty('max');
+
     // Default to on=true to display level
     this.on = typeof this.dataset.on !== 'undefined' ? this.dataset.on : true;
     this.level =
-      typeof this.dataset.level !== 'undefined' ? this.dataset.level : false;
+      typeof this.dataset.level !== 'undefined' ? this.dataset.level : this.min;
+    this.unit =
+      typeof this.dataset.unit !== 'undefined' ? this.dataset.unit : '';
+    this.precision =
+      typeof this.dataset.precision !== 'undefined' ?
+        this.dataset.precision :
+        0;
+
+    if (typeof this._min === 'undefined') {
+      this._min = 0;
+    }
+
+    if (typeof this._max === 'undefined') {
+      this._max = 100;
+    }
+
     this._container.addEventListener('click', this._onClick);
   }
 
   disconnectedCallback() {
     this._container.removeEventListener('click', this._onClick);
+  }
+
+  get min() {
+    return this._min;
+  }
+
+  set min(value) {
+    this._min = value;
+  }
+
+  get max() {
+    return this._max;
+  }
+
+  set max(value) {
+    this._max = value;
   }
 
   get on() {
@@ -132,15 +168,34 @@ class MultiLevelSwitchCapability extends BaseComponent {
     if (this._on) {
       bar = ON_BAR;
       blank = ON_BLANK;
-      this._label.innerText = `${Math.round(this._level)}%`;
+      this._label.innerHTML =
+        `${this._level.toFixed(this.precision)}${this.unit}`;
     } else {
       bar = OFF_BAR;
       blank = OFF_BLANK;
     }
 
+    const percent = (this.level - this.min) / (this.max - this.min) * 100;
+
     this._bar.style.background =
-      `linear-gradient(${blank}, ${blank} ${100 - this._level}%, ` +
-      `${bar} ${100 - this._level}%, ${bar})`;
+      `linear-gradient(${blank}, ${blank} ${100 - percent}%, ` +
+      `${bar} ${100 - percent}%, ${bar})`;
+  }
+
+  get unit() {
+    return this._unit;
+  }
+
+  set unit(value) {
+    this._unit = value;
+  }
+
+  get precision() {
+    return this._precision;
+  }
+
+  set precision(value) {
+    this._precision = parseInt(value, 10);
   }
 
   __onClick(e) {

@@ -33,8 +33,13 @@ class LevelDetail {
       this.max = 100;
     }
 
+    this.precision = 0;
     if (property.hasOwnProperty('multipleOf')) {
       this.step = property.multipleOf;
+
+      if (`${property.multipleOf}`.includes('.')) {
+        this.precision = `${property.multipleOf}`.split('.')[1].length;
+      }
     } else if (property.type === 'number') {
       this.step = 'any';
     } else {
@@ -57,7 +62,8 @@ class LevelDetail {
     return `
       <webthing-level-property data-name="${Utils.escapeHtml(this.label)}"
         data-unit="${unit}" min="${this.min}" max="${this.max}"
-        step="${this.step}" id="${this.id}" ${readOnly}>
+        step="${this.step}" id="${this.id}" ${readOnly}
+        data-precision="${this.precision}">
       </webthing-level-property>`;
   }
 

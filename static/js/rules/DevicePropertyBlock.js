@@ -14,7 +14,7 @@ const RuleUtils = require('./RuleUtils');
  */
 class DevicePropertyBlock extends RulePartBlock {
   constructor(ruleArea, onPresentationChange, onRuleChange, thing) {
-    super(ruleArea, onPresentationChange, onRuleChange, thing.name,
+    super(ruleArea, onPresentationChange, onRuleChange, thing.title,
           RuleUtils.icon(thing));
     this.thing = thing;
 
@@ -43,6 +43,11 @@ class DevicePropertyBlock extends RulePartBlock {
 
     this.propertySelect.updateOptionsForRole(this.role);
     this.propertySelect.selectByRuleFragment(rulePart);
+  }
+
+  remove() {
+    super.remove();
+    this.propertySelect.remove();
   }
 }
 
