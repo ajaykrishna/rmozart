@@ -53,8 +53,8 @@ const VscadRulesScreen = {
     this.diagramView.addEventListener('click',()=>{
       this.diagramView.classList.remove('selected');
       this.diagramView.style.display = "none"
-      this.hiddeVerification();
-      this.hiddeDiagram();
+      this.hideVerification();
+      this.hideDiagram();
     })
 
     this.testButton.addEventListener('click',()=>{
@@ -116,7 +116,7 @@ const VscadRulesScreen = {
    this.loaders ++;
    this.loader.style.display = "block";
  },
- hiddeLoader(){
+ hideLoader(){
    this.loaders --;
    if(this.loaders <=0){
     this.loader.style.display = "none";
@@ -127,7 +127,7 @@ const VscadRulesScreen = {
   showVerification:function(response){
     this.diagramView.classList.add('selected');
     this.diagramView.style.display = "flex";
-    this.hiddeDiagram();
+    this.hideDiagram();
     
    var  alertDialog = document.getElementById('validation-dialog');
     alertDialog.style.display = "block"
@@ -142,11 +142,11 @@ const VscadRulesScreen = {
     alertDialog.querySelector("#noti-message").textContent = response.message;
      
   },
-  hiddeVerification:function(){
+  hideVerification:function(){
    var alertDialog = document.getElementById('validation-dialog');
     alertDialog.style.display = "none";
   },
-  hiddeDiagram(){
+  hideDiagram(){
     var  diagram = document.getElementById('canvas');
     diagram.style.display = "none"
   },
@@ -155,7 +155,7 @@ const VscadRulesScreen = {
     diagram.style.display = "flex"
     this.diagramView.classList.add('selected');
     this.diagramView.style.display = "flex";
-    this.hiddeVerification()
+    this.hideVerification()
     if(this.diagramLoaded)
       this.bpmnViewer.clear();
      else{
@@ -193,7 +193,7 @@ const VscadRulesScreen = {
     fetch('http://localhost:9001/workflow', fetchOptions).then((res)=>{
       //console.log(res);
       res.text().then(text =>{
-        this.hiddeLoader();
+        this.hideLoader();
         this.showDiagram(text);
       })
     
@@ -203,7 +203,7 @@ const VscadRulesScreen = {
   requestExecution:function(){
     this.showLoader();
     fetch('/composed-rules/deploy/1',{headers: API.headers()}).finally(()=>{
-      this.hiddeLoader();
+      this.hideLoader();
     })
   },
      
@@ -282,7 +282,7 @@ const VscadRulesScreen = {
        return res.json()
      }).then( data =>{
       this.showVerification(data);
-      this.hiddeLoader();
+      this.hideLoader();
      })
     });
     
@@ -352,7 +352,7 @@ const VscadRulesScreen = {
       if(this.ComposedRuleBlocks.length<=0)
         this.prepareVisual(this.cRule.toDescription(),this.gateway,this.fetchedRules);
     }).finally(()=>{
-      this.hiddeLoader();
+      this.hideLoader();
     });
   },
   /**

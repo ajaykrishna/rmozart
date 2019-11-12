@@ -87,6 +87,14 @@ transform: translate(6.9rem,-5rem);
   width: 30%;
   border-radius: 10px;
 }
+#verify-form{
+  display: block;
+  margin: auto;
+  text-align: center;
+  background: #76a6c8;
+  width: 30%;
+  border-radius: 10px;
+}
 #confirm-button{
   padding: .5rem 1rem;
   border-radius: 5px;
