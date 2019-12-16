@@ -128,7 +128,6 @@ const VscadRulesScreen = {
     this.diagramView.classList.add('selected');
     this.diagramView.style.display = "flex";
     this.hideDiagram();
-    this.hideVerification();
     
    var  alertDialog = document.getElementById('validation-dialog');
     alertDialog.style.display = "block"
