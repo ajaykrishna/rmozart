@@ -29,8 +29,8 @@ const Router = {
     page('/logs', App.showLogs.bind(App));
     page('/logs/things/:thingId/properties', App.showLogs.bind(App));
     page('/logs/things/:thingId/properties/:propId', App.showLogs.bind(App));
-    page('/vscad-rulesManager/:rule', App.showComposedRule.bind(App));
     page('/extensions/:extensionId', App.showExtension.bind(App));
+    page('/vscad-rulesManager/:rule', App.showComposedRule.bind(App));
     page();
   },
 };

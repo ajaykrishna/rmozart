@@ -38,8 +38,6 @@
         <div id="thing-title-back-flex"></div>
         <div id="thing-title-container">
           <div id="thing-title-icon">
-            <webthing-custom-icon id="thing-title-custom-icon" class="hidden">
-            </webthing-custom-icon>
           </div>
           <span id="thing-title-title"></span>
         </div>
@@ -89,7 +87,6 @@
             <label id="domain-settings-local-label"
               data-l10n-id="domain-settings-local-label"
               for="domain-settings-local-checkbox">
-              Local Access
             </label>
             <input type="text" id="domain-settings-local-name" name="gateway"
                    data-l10n-id="domain-settings-local-name" />
@@ -98,7 +95,6 @@
             <button id="domain-settings-local-update" class="domain-settings-update text-button"
                     data-l10n-id="domain-settings-local-update"
                     type="submit">
-              Update host name
             </button>
           </li>
           <li class="domain-item">
@@ -564,19 +560,6 @@
       <button class="create-log-button icon-button"></button>
     </section>
 
-    <!-- composed rules manager view -->
-    <!-- <section data-view="composed-rules" id="composed-rules-view" class="hidden">
-        <div class="title-bar">
-          <h3 class="rules-header">Rules manager</h3>
-        </div>
-        <div id="rules">
-          <div id="create-rule-hint" class="hidden">
-            No rules created. Click the plus button to create a rule.
-          </div>
-        </div>
-        <button id="create-rule-button" class="icon-button"></button>
-      </section> -->
-      
     <!--  vscad composed Rule  view -->
     <section data-view="rules" id="rules-manager-view" class="hidden">
       <div class="title-bar">
@@ -658,6 +641,7 @@
         <li><a id="assistant-menu-item" data-l10n-id="assistant-menu-item" href="/assistant" class="hidden" ></a></li>
         <li><a id="things-menu-item" data-l10n-id="things-menu-item" href="/things" class="selected"></a></li>
         <li><a id="rules-menu-item" data-l10n-id="rules-menu-item" href="/rules"></a></li>
+        <li><a id="rules-manager-menu-item" href="/vscad-rulesManager/1">Advanced rules</a></li>
         <li><a id="logs-menu-item" data-l10n-id="logs-menu-item" href="/logs"></a></li>
         <li><a id="floorplan-menu-item" data-l10n-id="floorplan-menu-item" href="/floorplan"></a></li>
         <li><a id="settings-menu-item" data-l10n-id="settings-menu-item" href="/settings"></a></li>
@@ -733,16 +717,12 @@
       <button id="context-menu-back-button" class="back-button icon-button"></button>
       <div id="context-menu-heading">
         <div id="context-menu-heading-icon">
-          <webthing-custom-icon id="context-menu-heading-custom-icon" class="hidden">
-          </webthing-custom-icon>
         </div>
         <span id="context-menu-heading-text"></span>
       </div>
       <div id="context-menu-content">
         <div id="context-menu-content-edit" class="hidden">
           <div id="edit-thing-icon">
-            <webthing-custom-icon id="edit-thing-custom-icon" class="hidden">
-            </webthing-custom-icon>
           </div>
           <div id="edit-thing-metadata">
             <input type="text" id="edit-thing-title">

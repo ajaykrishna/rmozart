@@ -325,7 +325,6 @@ class Thing {
       event.thingId = this.id;
     }
     this.eventsDispatched.push(event);
-     
     this.emitter.emit(Constants.EVENT, event);
   }
 

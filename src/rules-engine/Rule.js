@@ -5,15 +5,14 @@
  */
 
 'use strict';
-const fetch = require('node-fetch');
+
 const effects = require('./effects');
 const triggers = require('./triggers');
 const Events = require('./Events');
 
-
 const DEBUG = false || (process.env.NODE_ENV === 'test');
 
-class Rule  {
+class Rule {
   /**
    * @param {boolean} enabled
    * @param {Trigger} trigger
@@ -23,6 +22,7 @@ class Rule  {
     this.enabled = enabled;
     this.trigger = trigger;
     this.effect = effect;
+
     this.onTriggerStateChanged = this.onTriggerStateChanged.bind(this);
   }
 
@@ -42,19 +42,16 @@ class Rule  {
    * @param {State} state
    */
   onTriggerStateChanged(state) {
-     
     if (!this.enabled) {
       return;
     }
-
     if(this.parent && state.on)
       this.parent.notify(this,state);
       for (const effect of this.effect.effects) {
         effect.on = false;
       }
     if(!this.parent)
-    console.log("no function");
-        
+      console.log("no function");
     if (DEBUG) {
       console.debug('Rule.onTriggerStateChanged', this.name, state);
     }

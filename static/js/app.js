@@ -287,6 +287,12 @@ const App = {
     this.selectView('rules');
   },
 
+  showComposedRule: function(context) {
+    this.hideExtensionBackButton();
+    VscadComposedRuleScreen.show(context.params.rule);
+    this.selectView('rules-manager');
+  },
+
   showRule: function(context) {
     this.hideExtensionBackButton();
     RuleScreen.show(context.params.rule);
@@ -527,7 +533,6 @@ require('./components/capability/temperature-sensor');
 require('./components/capability/thermostat');
 require('./components/capability/video-camera');
 require('./components/icon/custom');
-//require('./components/property/action');
 require('./components/property/alarm');
 require('./components/property/boolean');
 require('./components/property/brightness');

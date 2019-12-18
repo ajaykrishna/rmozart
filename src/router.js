@@ -67,10 +67,6 @@ const Router = {
       }
     });
 
-    // Allow LE challenges, used when renewing domain.
-    const acmeHandler = express.static(Constants.BUILD_STATIC_PATH);
-    app.use('/.well-known/acme-challenge', acmeHandler);
-
     // Content negotiation middleware
     app.use((request, response, next) => {
       // Inform the browser that content negotiation is taking place
@@ -162,7 +158,7 @@ const Router = {
     app.use(API_PREFIX + Constants.RULES_PATH, nocache, auth,
             require('./rules-engine/index'));
     app.use(API_PREFIX + Constants.COMPOSED_RULES_PATH, nocache, auth,
-            require('./vscad-rules-engine/VscadIndex'));
+                require('./vscad-rules-engine/VscadIndex'));
     app.use(API_PREFIX + Constants.INTERNAL_LOGS_PATH, nocache, auth,
             require('./controllers/internal_logs_controller'));
     app.use(API_PREFIX + Constants.PUSH_PATH, nocache, auth,

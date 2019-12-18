@@ -609,6 +609,8 @@ describe('rules engine', () => {
       expect(res.body.length).toEqual(1);
       expect(res.body[0]).toHaveProperty('blink');
     });
+
+    // dispatch event get action
     await deleteRule(ruleId);
   });
 

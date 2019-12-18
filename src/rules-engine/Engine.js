@@ -4,15 +4,15 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
- //'use strict';
+'use strict';
 
 const Database = require('./Database');
 const Rule = require('./Rule');
+
 /**
  * An engine for running and managing list of rules
  */
-class Engine  {
- 
+class Engine {
   /**
    * Get a list of all current rules
    * @return {Promise<Array<Rule>>} rules
@@ -21,13 +21,13 @@ class Engine  {
     this.MasterEngine = require('../vscad-rules-engine/VscadMasterEngine').default;
 
     let rulesPromise = Promise.resolve(this.rules);
+
     if (!this.rules) {
       rulesPromise = Database.getRules().then(async (ruleDescs) => {
         this.rules = {};
         for (const ruleId in ruleDescs) {
           ruleDescs[ruleId].id = parseInt(ruleId);
           this.rules[ruleId] = Rule.fromDescription(ruleDescs[ruleId]);
-          
           this.rules[ruleId].parent = this.MasterEngine; // test
           await this.rules[ruleId].start();
         }
@@ -38,9 +38,8 @@ class Engine  {
     return rulesPromise.then((rules) => {
       return Object.keys(rules).map((ruleId) => {
         return rules[ruleId];
-      })
+      });
     });
- 
   }
 
   /**
@@ -105,7 +104,6 @@ class Engine  {
       delete this.rules[ruleId];
     });
   }
-  
 }
 
 module.exports = Engine;

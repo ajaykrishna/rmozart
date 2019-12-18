@@ -1,0 +1,69 @@
+package.json
+package-lock.json
+README.md
+src/app.js      --yes
+src/constants.js --yes
+src/controllers/things_controller.js --no
+src/models/thing.js --no
+src/router.js --yes
+src/rules-engine/effects/ActionEffect.js --no
+src/rules-engine/Engine.js --yes
+src/rules-engine/index.js --yes
+src/rules-engine/Property.js --no
+src/rules-engine/Rule.js --yes
+src/rules-engine/triggers/EventTrigger.js --no
+src/test/rules-engine/index-test.js
+src/test/run-tests.sh
+src/vscad-rules-engine/example.json
+src/vscad-rules-engine/VscadComposedRule.js
+src/vscad-rules-engine/VscadDatabase.js
+src/vscad-rules-engine/VscadEngine.js
+src/vscad-rules-engine/VscadIndex.js
+src/vscad-rules-engine/VscadMasterEngine.js
+static/css/menu.css --yes
+static/css/rulesManager.css  --not found
+static/css/vscad-rulesManager.css
+static/example.bpmn
+static/images/rejected-mark.png
+static/images/tick-mark.png
+static/index.html
+static/js/app.js  --yes
+static/js/constants.js --yes
+static/js/d2utmp3sUZUk  --na
+static/js/menu.js --yes
+static/js/router.js  --yes
+static/js/rules/composedRuleExample.json
+static/js/rules/RuleBlock.js  --rulepartblock
+static/js/rules/RuleCardItem.js --no
+static/js/rules/ruleExample.json
+static/js/rules/RulePropertyBlock.js
+static/js/rules/VscadComposedRule.js
+static/js/rules/VscadConectorBlock.js
+static/js/rules/VscadConnectorBlock.js
+static/js/rules/VscadDraggable.js
+static/js/rules/VscadRuleBlock.js
+static/js/rules/VscadRuleCardItem.js
+static/js/rules/VscadRulePropertyBlock.js
+static/js/rules-manager-screen.js
+static/js/views/menu.js --yes
+static/js/views/rule-screen.js --possible source of error?
+static/js/vscad-composed-rule-screen.js
+static/js/vscad-rules-manager-screen.js
+static/OnlineOrderingSimpleV8.bpmn
+static/OnlineOrderingV6.bpmn
+static/optimized-images/composed-rules.png
+static/p0027.bpmn
+static/test.bpmn
+tsconfig.json --possible?
+webpack.config.js --yes
+
+
+Keywords
+#v0.8.0
+
+vscad
+COMPOSED_RULES_PATH
+composedrules
+rules-manager
+quicknew
+MasterEngine

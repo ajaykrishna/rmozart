@@ -10,6 +10,7 @@ module.exports.ThingFormat = {
   EXPANDED: 1,
   LINK_ICON: 2,
 };
+
 module.exports.COMMANDS ={
   THEN:" ; ",
   AND:" + ",
@@ -19,4 +20,4 @@ module.exports.COMMANDS ={
   OR_END:"]",
   GROUP_BEGIN:"(",
   GROUP_END:")",
-}
+};

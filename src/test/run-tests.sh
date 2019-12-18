@@ -2,7 +2,7 @@
 
 SCRIPTDIR="$(dirname ""$0"")"
 
-Mjest OZIOT_HOME="${MOZIOT_HOME:=${HOME}/.mozilla-iot}"
+MOZIOT_HOME="${MOZIOT_HOME:=${HOME}/.mozilla-iot}"
 MOZIOT_TEST_HOME="${MOZIOT_HOME}/test"
 if [ ! -f "${MOZIOT_TEST_HOME}/ssl/certificate.pem" ]; then
   MOZIOT_HOME="${MOZIOT_TEST_HOME}" ${SCRIPTDIR}/../../tools/make-self-signed-cert.sh

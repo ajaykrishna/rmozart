@@ -253,7 +253,9 @@ function getOptions() {
  */
 function rulesEngineConfigure() {
   const rulesEngine = require('./rules-engine/index');
+  const composedrulesEngine = require('./vscad-rules-engine/VscadIndex');
   rulesEngine.configure();
+  composedrulesEngine.configure();
 }
 
 function createApp() {
