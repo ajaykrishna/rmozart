@@ -11,6 +11,7 @@
 'use strict';
 
 const API = require('../api');
+const fluent = require('../fluent');
 const Utils = require('../utils');
 
 let idCounter = -1;
@@ -68,7 +69,7 @@ class NewWebThing {
         </div>
         <div class="new-thing-metadata">
           <input type="text" class="new-web-thing-url"
-            placeholder="Enter web thing URL"></input>
+            data-l10n-id="new-web-thing-url"></input>
           <input type="text" class="new-web-thing-title hidden"></input>
           <span class="new-web-thing-origin hidden"></span>
           <select class="new-thing-type hidden"></select>
@@ -76,19 +77,20 @@ class NewWebThing {
           <input type="file" class="new-thing-custom-icon-input hidden"
             id="${id}" accept="image/jpeg,image/png,image/svg+xml">
           <label for="${id}"
-            class="new-thing-custom-icon-label text-button hidden">
-            Choose icon...
+            class="new-thing-custom-icon-label text-button hidden"
+            data-l10n-id="new-thing-choose-icon">
           </label>
-          <span class="new-web-thing-label">Web Thing</span>
+          <span class="new-web-thing-label"
+                data-l10n-id="new-web-thing-label"></span>
           <div class="new-web-thing-controls">
-            <button class="new-web-thing-cancel-button text-button">
-              Cancel
+            <button class="new-web-thing-cancel-button text-button"
+              data-l10n-id="new-thing-cancel">
             </button>
-            <button class="new-web-thing-submit-button text-button">
-              Submit
+            <button class="new-web-thing-submit-button text-button"
+              data-l10n-id="new-thing-submit">
             </button>
-            <button class="new-web-thing-save-button text-button hidden">
-              Save
+            <button class="new-web-thing-save-button text-button hidden"
+              data-l10n-id="new-thing-save">
             </button>
           </div>
         </div>
@@ -119,6 +121,9 @@ class NewWebThing {
         break;
       case 'ColorControl':
         cls = 'color-control';
+        break;
+      case 'ColorSensor':
+        cls = 'color-sensor';
         break;
       case 'EnergyMonitor':
         cls = 'energy-monitor';
@@ -159,6 +164,12 @@ class NewWebThing {
       case 'Alarm':
         cls = 'alarm';
         break;
+      case 'Thermostat':
+        cls = 'thermostat';
+        break;
+      case 'Lock':
+        cls = 'lock';
+        break;
       case 'Custom':
         this.customIconLabel.classList.remove('hidden');
         this.customIcon.classList.remove('hidden');
@@ -171,6 +182,7 @@ class NewWebThing {
       'on-off-switch',
       'multi-level-switch',
       'color-control',
+      'color-sensor',
       'energy-monitor',
       'binary-sensor',
       'multi-level-sensor',
@@ -183,7 +195,9 @@ class NewWebThing {
       'video-camera',
       'camera',
       'temperature-sensor',
-      'alarm'
+      'alarm',
+      'thermostat',
+      'lock'
     );
 
     if (cls) {
@@ -200,7 +214,7 @@ class NewWebThing {
 
     const file = this.customIconInput.files[0];
     if (!['image/jpeg', 'image/png', 'image/svg+xml'].includes(file.type)) {
-      this.label.innerText = 'Invalid file.';
+      this.label.innerText = fluent.getMessage('invalid-file');
       this.label.classList.add('error');
       this.label.clsssList.remove('hidden');
       return;
@@ -210,7 +224,7 @@ class NewWebThing {
     reader.onloadend = (e) => {
       if (e.target.error) {
         console.error(e.target.error);
-        this.label.innerText = 'Failed to read file.';
+        this.label.innerText = fluent.getMessage('failed-read-file');
         this.label.classList.add('error');
         this.label.clsssList.remove('hidden');
         this.saveButton.disabled = false;
@@ -249,7 +263,7 @@ class NewWebThing {
   }
 
   submit() {
-    this.label.innerText = 'Loading...';
+    this.label.innerText = fluent.getMessage('loading');
     this.label.classList.remove('error');
 
     // Clean up the provided URL
@@ -268,28 +282,10 @@ class NewWebThing {
       return;
     }
 
-    fetch('/new_things', {
-      method: 'POST',
-      body: JSON.stringify({url}),
-      headers: {
-        Authorization: `Bearer ${API.jwt}`,
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-    }).then((response) => {
-      if (!response.ok) {
-        return response.text();
-      }
-
-      return response.json();
-    }).then((description) => {
-      if (typeof description === 'string') {
-        throw new Error(description);
-      }
-
+    API.addWebThing(url).then((description) => {
       // We don't support other gateways from this interface
       if (Array.isArray(description)) {
-        this.label.innerText = 'Multiple web things found';
+        this.label.innerText = fluent.getMessage('new-web-thing-multiple');
         this.label.classList.add('error');
         return;
       }
@@ -311,78 +307,69 @@ class NewWebThing {
       for (const capability of capabilities) {
         const option = document.createElement('option');
         option.value = capability;
-
+        option.innerText = fluent.getMessageStrict(capability) || capability;
         switch (capability) {
           case 'OnOffSwitch':
-            option.innerText = 'On/Off Switch';
             cls = cls || 'on-off-switch';
             break;
           case 'MultiLevelSwitch':
-            option.innerText = 'Multi Level Switch';
             cls = cls || 'multi-level-switch';
             break;
           case 'ColorControl':
-            option.innerText = 'Color Control';
             cls = cls || 'color-control';
             break;
+          case 'ColorSensor':
+            cls = cls || 'color-sensor';
+            break;
           case 'EnergyMonitor':
-            option.innerText = 'Energy Monitor';
             cls = cls || 'energy-monitor';
             break;
           case 'BinarySensor':
-            option.innerText = 'Binary Sensor';
             cls = cls || 'binary-sensor';
             break;
           case 'MultiLevelSensor':
-            option.innerText = 'Multi Level Sensor';
             cls = cls || 'multi-level-sensor';
             break;
           case 'SmartPlug':
-            option.innerText = 'Smart Plug';
             cls = cls || 'smart-plug';
             break;
           case 'Light':
-            option.innerText = 'Light';
             cls = cls || 'light';
             break;
           case 'DoorSensor':
-            option.innerText = 'Door Sensor';
             cls = cls || 'door-sensor';
             break;
           case 'MotionSensor':
-            option.innerText = 'Motion Sensor';
             cls = cls || 'motion-sensor';
             break;
           case 'LeakSensor':
-            option.innerText = 'Leak Sensor';
             cls = cls || 'leak-sensor';
             break;
           case 'PushButton':
-            option.innerText = 'Push Button';
             cls = cls || 'push-button';
             break;
           case 'VideoCamera':
-            option.innerText = 'Video Camera';
             cls = cls || 'video-camera';
             break;
           case 'Camera':
-            option.innerText = 'Camera';
             cls = cls || 'camera';
             break;
           case 'TemperatureSensor':
-            option.innerText = 'Temperature Sensor';
             cls = cls || 'temperature-sensor';
             break;
           case 'Alarm':
-            option.innerText = 'Alarm';
             cls = cls || 'alarm';
             break;
+          case 'Thermostat':
+            cls = cls || 'thermostat';
+            break;
+          case 'Lock':
+            cls = cls || 'lock';
+            break;
           case 'Custom':
-            option.innerText = 'Custom Thing';
             cls = cls || (capabilities.length > 1 ? '' : 'custom-thing');
             break;
           default:
-            option.innerText = capability;
             cls = cls || (capabilities.length > 1 ? '' : 'custom-thing');
             break;
         }
@@ -413,7 +400,7 @@ class NewWebThing {
       this.label.classList.add('hidden');
       this.thingType.classList.remove('hidden');
       this.titleInput.value = description.title;
-      this.originLabel.innerText = `from ${urlObj.host}`;
+      this.originLabel.innerText = `${fluent.getMessage('new-web-thing-from')} ${urlObj.host}`;
       this.urlInput.classList.add('hidden');
       this.titleInput.classList.remove('hidden');
       this.submitButton.classList.add('hidden');
@@ -452,34 +439,16 @@ class NewWebThing {
       thing.iconData = this.iconData;
     }
 
-    fetch('/things', {
-      method: 'POST',
-      body: JSON.stringify(thing),
-      headers: {
-        Authorization: `Bearer ${API.jwt}`,
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-    }).then((response) => {
-      if (!response.ok) {
-        return response.text();
-      }
-
-      return response.json();
-    }).then((description) => {
-      if (typeof description === 'string') {
-        throw new Error(description);
-      }
-
-      this.saveButton.innerHTML = 'Saved';
+    API.addThing(thing).then(() => {
+      this.saveButton.innerHTML = fluent.getMessage('new-thing-saved');
 
       const cancelButton = document.getElementById('add-thing-cancel-button');
       if (cancelButton) {
-        cancelButton.textContent = 'Done';
+        cancelButton.textContent = fluent.getMessage('new-thing-done');
       }
     }).catch((error) => {
       console.error('Failed to save web thing:', error.message);
-      this.label.innerText = 'Failed to save.';
+      this.label.innerText = fluent.getMessage('failed-save');
       this.label.classList.add('error');
       this.label.classList.remove('hidden');
       this.thingType.disabled = false;
@@ -506,6 +475,7 @@ class NewWebThing {
       'on-off-switch',
       'multi-level-switch',
       'color-control',
+      'color-sensor',
       'energy-monitor',
       'smart-plug',
       'door-sensor',
@@ -515,7 +485,9 @@ class NewWebThing {
       'video-camera',
       'camera',
       'temperature-sensor',
-      'alarm'
+      'alarm',
+      'thermostat',
+      'lock'
     );
     this.element.classList.add('web-thing');
     this.urlInput.classList.remove('hidden');

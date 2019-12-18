@@ -10,10 +10,14 @@
 
 'use strict';
 
-const defaultIcon = '/optimized-images/thing-icons/thing.svg';
+const fluent = require('./fluent');
+
+function defaultIcon() {
+  return fluent.getMessage('thing-icons-thing-src');
+}
 
 function capabilityHasIcon(capability) {
-  return capabilityToIcon(capability) !== defaultIcon;
+  return capabilityToIcon(capability) !== defaultIcon();
 }
 
 function capabilityToIcon(capability) {
@@ -23,6 +27,7 @@ function capabilityToIcon(capability) {
     case 'MultiLevelSwitch':
       return '/optimized-images/thing-icons/multi_level_switch.svg';
     case 'ColorControl':
+    case 'ColorSensor':
       return '/optimized-images/thing-icons/color_control.svg';
     case 'EnergyMonitor':
       return '/optimized-images/thing-icons/energy_monitor.svg';
@@ -50,14 +55,18 @@ function capabilityToIcon(capability) {
       return '/optimized-images/thing-icons/temperature_sensor.svg';
     case 'Alarm':
       return '/optimized-images/thing-icons/alarm.svg';
+    case 'Thermostat':
+      return '/optimized-images/thing-icons/thermostat.svg';
+    case 'Lock':
+      return '/optimized-images/thing-icons/lock.svg';
     case 'Custom':
     default:
-      return defaultIcon;
+      return defaultIcon();
   }
 }
 
 function typeHasIcon(type) {
-  return typeToIcon(type) !== defaultIcon;
+  return typeToIcon(type) !== defaultIcon();
 }
 
 function typeToIcon(type) {
@@ -78,7 +87,7 @@ function typeToIcon(type) {
     case 'smartPlug':
       return '/optimized-images/thing-icons/smart_plug.svg';
     default:
-      return defaultIcon;
+      return defaultIcon();
   }
 }
 

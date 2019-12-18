@@ -56,6 +56,8 @@ const Router = {
     // First look for a static file
     const staticHandler = express.static(Constants.BUILD_STATIC_PATH);
     app.use(Constants.UPLOADS_PATH, express.static(UserProfile.uploadsDir));
+    app.use(Constants.EXTENSIONS_PATH, nocache,
+            require('./controllers/extensions_controller'));
     app.use((request, response, next) => {
       if (request.path === '/' && request.accepts('html')) {
         // We need this to hit RootController.
@@ -158,9 +160,9 @@ const Router = {
     app.use(API_PREFIX + Constants.ADDONS_PATH, nocache, auth,
             require('./controllers/addons_controller'));
     app.use(API_PREFIX + Constants.RULES_PATH, nocache, auth,
-            require('./rules-engine/index.js'));
+            require('./rules-engine/index'));
     app.use(API_PREFIX + Constants.COMPOSED_RULES_PATH, nocache, auth,
-            require('./vscad-rules-engine/VscadIndex.js'));
+            require('./vscad-rules-engine/VscadIndex'));
     app.use(API_PREFIX + Constants.INTERNAL_LOGS_PATH, nocache, auth,
             require('./controllers/internal_logs_controller'));
     app.use(API_PREFIX + Constants.PUSH_PATH, nocache, auth,

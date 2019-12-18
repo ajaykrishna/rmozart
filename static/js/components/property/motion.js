@@ -12,6 +12,10 @@
 const StringLabelProperty = require('./string-label');
 
 class MotionProperty extends StringLabelProperty {
+  connectedCallback() {
+    this.uppercase = true;
+    super.connectedCallback();
+  }
 }
 
 window.customElements.define('webthing-motion-property', MotionProperty);

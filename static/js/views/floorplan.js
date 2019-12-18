@@ -17,11 +17,13 @@ const App = require('../app');
 const BinarySensor = require('../schema-impl/capability/binary-sensor');
 const Camera = require('../schema-impl/capability/camera');
 const ColorControl = require('../schema-impl/capability/color-control');
+const ColorSensor = require('../schema-impl/capability/color-sensor');
 const Constants = require('../constants');
 const DoorSensor = require('../schema-impl/capability/door-sensor');
 const EnergyMonitor = require('../schema-impl/capability/energy-monitor');
 const LeakSensor = require('../schema-impl/capability/leak-sensor');
 const Light = require('../schema-impl/capability/light');
+const Lock = require('../schema-impl/capability/lock');
 const MotionSensor = require('../schema-impl/capability/motion-sensor');
 const MultiLevelSensor =
   require('../schema-impl/capability/multi-level-sensor');
@@ -32,6 +34,7 @@ const PushButton = require('../schema-impl/capability/push-button');
 const SmartPlug = require('../schema-impl/capability/smart-plug');
 const TemperatureSensor =
   require('../schema-impl/capability/temperature-sensor');
+const Thermostat = require('../schema-impl/capability/thermostat');
 const Thing = require('../schema-impl/capability/thing');
 const VideoCamera = require('../schema-impl/capability/video-camera');
 
@@ -124,6 +127,9 @@ const FloorplanScreen = {
             case 'ColorControl':
               thing = new ColorControl(thingModel, description, format);
               break;
+            case 'ColorSensor':
+              thing = new ColorSensor(thingModel, description, format);
+              break;
             case 'EnergyMonitor':
               thing = new EnergyMonitor(thingModel, description, format);
               break;
@@ -162,6 +168,12 @@ const FloorplanScreen = {
               break;
             case 'Alarm':
               thing = new Alarm(thingModel, description, format);
+              break;
+            case 'Thermostat':
+              thing = new Thermostat(thingModel, description, format);
+              break;
+            case 'Lock':
+              thing = new Lock(thingModel, description, format);
               break;
             default:
               thing = new Thing(thingModel, description, format);
@@ -303,36 +315,15 @@ const FloorplanScreen = {
    * @param {Event} e A change event on the file input.
    */
   upload: function(e) {
-    const file = e.target.files[0];
-    const formData = new FormData();
-    formData.append('file', file);
     this.uploadButton.classList.add('loading');
-    const headers = {
-      Authorization: `Bearer ${API.jwt}`,
-    };
 
-    fetch('/uploads', {
-      method: 'POST',
-      body: formData,
-      headers,
-    }).then((response) => {
+    API.uploadFloorplan(e.target.files[0]).then(() => {
       this.uploadButton.classList.remove('loading');
-      if (response.ok) {
-        fetch('/uploads/floorplan.svg', {
-          method: 'GET',
-          headers,
-          // Make sure we update the cache with the new floorplan
-          cache: 'reload',
-        }).then(() => {
-          // Add a timestamp to the background image to force image reload
-          const timestamp = Date.now();
-          this.floorplan.setAttribute(
-            'style',
-            `background-image: url("/uploads/floorplan.svg?t=${timestamp}")`);
-        });
-      } else {
-        console.error('Failed to upload floorplan');
-      }
+
+      API.loadImage('/uploads/floorplan.svg').then((data) => {
+        this.floorplan.style.backgroundImage =
+          `url(${URL.createObjectURL(data)})`;
+      });
     }).catch((error) => {
       this.uploadButton.classList.remove('loading');
       console.error(`Failed to upload floorplan ${error}`);
@@ -360,7 +351,6 @@ const FloorplanScreen = {
     this.updateVminRequest = null;
     const newVmin = Math.min(window.innerWidth, window.innerHeight) / 100;
     this.vmin = newVmin;
-    console.log('updateVmin', newVmin);
     this.things.forEach((thing) => {
       const elt = thing.element;
       elt.style.transform =
@@ -420,26 +410,10 @@ const FloorplanScreen = {
     const thingUrl = decodeURI(thing.dataset.href);
     thing.style.cursor = '';
 
-    // HTTP PATCH request to set x and y co-ordinates of Thing in database.
-    const payload = {
-      floorplanX: x,
-      floorplanY: y,
-    };
-    fetch(thingUrl, {
-      method: 'PATCH',
-      body: JSON.stringify(payload),
-      headers: {
-        Authorization: `Bearer ${API.jwt}`,
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-    }).then((response) => {
-      if (!response.ok) {
-        console.error(`Failed to move thing ${thingUrl}`);
-      }
-    }).catch((e) => {
-      console.error(`Error trying to move thing ${thingUrl} ${e}`);
-    });
+    API.setThingFloorplanPosition(thingUrl.split('/').slice(-1)[0], x, y)
+      .catch((e) => {
+        console.error(`Error trying to move thing ${thingUrl} ${e}`);
+      });
 
     // Reset co-ordinates
     this.selectedThing = null;

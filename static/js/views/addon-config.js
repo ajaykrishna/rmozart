@@ -12,6 +12,7 @@
 const SchemaForm = require('../schema-form/schema-form');
 const page = require('page');
 const API = require('../api');
+const fluent = require('../fluent');
 
 class AddonConfig {
   /**
@@ -21,10 +22,10 @@ class AddonConfig {
    * @param {Object} metadata metadata object.
    */
   constructor(id, metadata) {
-    this.schema = metadata.moziot.schema;
-    this.config = metadata.moziot.config;
+    this.schema = metadata.schema;
     this.id = id;
     this.name = metadata.name;
+    this.primaryType = metadata.primary_type;
     this.container = document.getElementById('addon-config-settings');
     this.render();
   }
@@ -37,15 +38,19 @@ class AddonConfig {
     if (errors.length > 0) {
       this.scrollToTop();
     } else {
-      this.configForm.submitButton.innerText = 'Applying...';
+      this.configForm.submitButton.innerText =
+        fluent.getMessage('addon-config-applying');
       API.setAddonConfig(this.id, formData)
         .then(() => {
           page('/settings/addons');
         })
         .catch((err) => {
-          console.error(`Failed to set config add-on: ${this.name}\n${err}`);
+          console.error(
+            `Failed to set config for add-on: ${this.name}\n${err}`
+          );
           this.configForm.errorField.render([err]);
-          this.configForm.submitButton.innerText = 'Apply';
+          this.configForm.submitButton.innerText =
+            fluent.getMessage('addon-config-apply');
         });
     }
   }
@@ -54,13 +59,34 @@ class AddonConfig {
    * Render AddonConfig view and add to DOM.
    */
   render() {
-    this.configForm = new SchemaForm(this.schema,
-                                     `addon-config-${this.id}`,
-                                     this.name,
-                                     this.config,
-                                     this.handleApply.bind(this),
-                                     {submitText: 'Apply'});
-    this.container.appendChild(this.configForm.render());
+    const icon = this.container.querySelector('.section-title-icon');
+    switch (this.primaryType) {
+      case 'adapter':
+        icon.src = '/optimized-images/adapters-icon.png';
+        break;
+      case 'notifier':
+        icon.src = '/optimized-images/thing-icons/notification.svg';
+        break;
+      case 'extension':
+      default:
+        icon.src = '/optimized-images/add-on.svg';
+        break;
+    }
+
+    API.getAddonConfig(this.id)
+      .then((config) => {
+        this.configForm = new SchemaForm(
+          this.schema,
+          `addon-config-${this.id}`,
+          this.name,
+          config,
+          this.handleApply.bind(this),
+          {submitText: fluent.getMessage('addon-config-apply')});
+        this.container.appendChild(this.configForm.render());
+      })
+      .catch((err) => {
+        console.error(`Failed to get config for add-on: ${this.name}\n${err}`);
+      });
   }
 }
 

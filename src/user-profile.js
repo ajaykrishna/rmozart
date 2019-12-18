@@ -18,18 +18,21 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 const mkdirp = require('mkdirp');
-const ncp = require('ncp');
+const {ncp} = require('ncp');
 const rimraf = require('rimraf');
 
 const Profile = {
   init: function() {
-    this.baseDir = process.env.MOZIOT_HOME || config.get('profileDir');
+    this.baseDir = path.resolve(
+      process.env.MOZIOT_HOME || config.get('profileDir')
+    );
     this.configDir = path.join(this.baseDir, 'config');
+    this.dataDir = path.join(this.baseDir, 'data');
     this.sslDir = path.join(this.baseDir, 'ssl');
     this.uploadsDir = path.join(this.baseDir, 'uploads');
     this.mediaDir = path.join(this.baseDir, 'media');
     this.logDir = path.join(this.baseDir, 'log');
-    this.gatewayDir = path.join(__dirname, '..');
+    this.gatewayDir = path.resolve(path.join(__dirname, '..'));
 
     if (process.env.NODE_ENV === 'test') {
       this.addonsDir = path.join(this.gatewayDir, 'src', 'addons-test');
@@ -76,6 +79,9 @@ const Profile = {
     // Create all required profile directories.
     if (!fs.existsSync(this.configDir)) {
       mkdirp.sync(this.configDir);
+    }
+    if (!fs.existsSync(this.dataDir)) {
+      mkdirp.sync(this.dataDir);
     }
     if (!fs.existsSync(this.sslDir)) {
       mkdirp.sync(this.sslDir);

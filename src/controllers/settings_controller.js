@@ -14,11 +14,15 @@
 
 const CertificateManager = require('../certificate-manager');
 const config = require('config');
+const Constants = require('../constants');
 const fetch = require('node-fetch');
+const fs = require('fs');
+const ISO6391 = require('iso-639-1');
 const jwtMiddleware = require('../jwt-middleware');
 const mDNSserver = require('../mdns-server');
-const Platform = require('../platform');
+const path = require('path');
 const pkg = require('../../package.json');
+const Platform = require('../platform');
 const PromiseRouter = require('express-promise-router');
 const Settings = require('../models/settings');
 const TunnelService = require('../ssltunnel');
@@ -76,7 +80,8 @@ SettingsController.get(
       console.error(e);
       response.status(400).send(e);
     }
-  });
+  }
+);
 
 SettingsController.post('/reclaim', async (request, response) => {
   if (!request.body || !request.body.hasOwnProperty('subdomain')) {
@@ -90,7 +95,7 @@ SettingsController.post('/reclaim', async (request, response) => {
   try {
     await fetch(`${config.get('ssltunnel.registration_endpoint')
     }/reclaim?name=${subdomain}`);
-    response.status(200).end();
+    response.status(200).json({});
   } catch (e) {
     console.error(e);
     response.statusMessage = `Error reclaiming domain - ${e}`;
@@ -98,7 +103,7 @@ SettingsController.post('/reclaim', async (request, response) => {
   }
 });
 
-SettingsController.post('/subscribe', async (request, response) => {
+SettingsController.post('/subscribe', async (request, response, next) => {
   if (!request.body ||
       !request.body.hasOwnProperty('email') ||
       !request.body.hasOwnProperty('subdomain') ||
@@ -107,6 +112,13 @@ SettingsController.post('/subscribe', async (request, response) => {
     response.status(400).end();
     return;
   }
+
+  // increase the timeout for this request, as registration can take a while
+  request.setTimeout(5 * 60 * 1000, () => {
+    const err = new Error('Request Timeout');
+    err.status = 408;
+    next(err);
+  });
 
   const email = request.body.email.trim().toLowerCase();
   const reclamationToken = request.body.reclamationToken.trim().toLowerCase();
@@ -119,8 +131,9 @@ SettingsController.post('/subscribe', async (request, response) => {
       response.statusMessage = `Error issuing certificate - ${err}`;
       response.status(400).end();
     } else {
-      const endpoint =
-        `https://${subdomain}.${config.get('ssltunnel.domain')}`;
+      const endpoint = {
+        url: `https://${subdomain}.${config.get('ssltunnel.domain')}`,
+      };
       TunnelService.start(response, endpoint);
       TunnelService.switchToHttps();
     }
@@ -139,7 +152,7 @@ SettingsController.post('/subscribe', async (request, response) => {
 SettingsController.post('/skiptunnel', async (request, response) => {
   try {
     await Settings.set('notunnel', true);
-    response.status(200).end();
+    response.status(200).json({});
   } catch (e) {
     console.error('Failed to set notunnel setting.');
     console.error(e);
@@ -150,8 +163,7 @@ SettingsController.post('/skiptunnel', async (request, response) => {
 SettingsController.get('/tunnelinfo', auth, async (request, response) => {
   try {
     const localDomainSettings = await Settings.getTunnelInfo();
-    response.send(localDomainSettings);
-    response.status(200).end();
+    response.status(200).json(localDomainSettings);
   } catch (e) {
     console.error('Failed to retrieve default settings for ' +
       'tunneltoken or local service discovery setting');
@@ -226,7 +238,6 @@ SettingsController.put('/domain', auth, async (request, response) => {
 SettingsController.get('/addonsInfo', auth, (request, response) => {
   response.json({
     urls: config.get('addonManager.listUrls'),
-    api: config.get('addonManager.api'),
     architecture: Platform.getArchitecture(),
     version: pkg.version,
     nodeVersion: Platform.getNodeVersion(),
@@ -285,7 +296,7 @@ SettingsController.post('/system/actions', auth, (request, response) => {
     case 'restartGateway':
       if (Platform.implemented('restartGateway')) {
         if (Platform.restartGateway()) {
-          response.status(200).end();
+          response.status(200).json({});
         } else {
           response.status(500).send('Failed to restart gateway');
         }
@@ -296,7 +307,7 @@ SettingsController.post('/system/actions', auth, (request, response) => {
     case 'restartSystem':
       if (Platform.implemented('restartSystem')) {
         if (Platform.restartSystem()) {
-          response.status(200).end();
+          response.status(200).json({});
         } else {
           response.status(500).send('Failed to restart system');
         }
@@ -307,6 +318,32 @@ SettingsController.post('/system/actions', auth, (request, response) => {
     default:
       response.status(400).send('Unsupported action');
       break;
+  }
+});
+
+SettingsController.get('/system/ntp', (request, response) => {
+  const statusImplemented = Platform.implemented('getNtpStatus');
+
+  let synchronized = false;
+  if (statusImplemented) {
+    synchronized = Platform.getNtpStatus();
+  }
+
+  response.json({
+    statusImplemented,
+    synchronized,
+  });
+});
+
+SettingsController.post('/system/ntp', (request, response) => {
+  if (Platform.implemented('restartNtpSync')) {
+    if (Platform.restartNtpSync()) {
+      response.status(200).json({});
+    } else {
+      response.status(500).send('Failed to restart NTP sync');
+    }
+  } else {
+    response.status(500).send('Restart NTP sync not implemented');
   }
 });
 
@@ -328,7 +365,7 @@ SettingsController.put('/network/dhcp', auth, (request, response) => {
 
   if (Platform.implemented('setDhcpServerStatus')) {
     if (Platform.setDhcpServerStatus(enabled)) {
-      response.status(200).end();
+      response.status(200).json({});
     } else {
       response.status(500).send('Failed to toggle DHCP');
     }
@@ -356,7 +393,7 @@ SettingsController.put('/network/lan', auth, (request, response) => {
 
   if (Platform.implemented('setLanMode')) {
     if (Platform.setLanMode(mode, options)) {
-      response.status(200).end();
+      response.status(200).json({});
     } else {
       response.status(500).send('Failed to update LAN configuration');
     }
@@ -384,7 +421,7 @@ SettingsController.put('/network/wan', auth, (request, response) => {
 
   if (Platform.implemented('setWanMode')) {
     if (Platform.setWanMode(mode, options)) {
-      response.status(200).end();
+      response.status(200).json({});
     } else {
       response.status(500).send('Failed to update WAN configuration');
     }
@@ -425,7 +462,7 @@ SettingsController.put('/network/wireless', auth, (request, response) => {
 
   if (Platform.implemented('setWirelessMode')) {
     if (Platform.setWirelessMode(enabled, mode, options)) {
-      response.status(200).end();
+      response.status(200).json({});
     } else {
       response.status(500).send('Failed to update wireless configuration');
     }
@@ -441,5 +478,153 @@ SettingsController.get('/network/addresses', auth, (request, response) => {
     response.status(500).send('Network addresses not implemented');
   }
 });
+
+SettingsController.get('/localization/country', auth, (request, response) => {
+  let valid = [];
+  if (Platform.implemented('getValidWirelessCountries')) {
+    valid = Platform.getValidWirelessCountries();
+  }
+
+  let current = '';
+  if (Platform.implemented('getWirelessCountry')) {
+    current = Platform.getWirelessCountry();
+  }
+
+  const setImplemented = Platform.implemented('setWirelessCountry');
+  response.json({valid, current, setImplemented});
+});
+
+SettingsController.put('/localization/country', auth, (request, response) => {
+  if (!request.body || !request.body.hasOwnProperty('country')) {
+    response.status(400).send('Missing country property');
+    return;
+  }
+
+  if (Platform.implemented('setWirelessCountry')) {
+    if (Platform.setWirelessCountry(request.body.country)) {
+      response.status(200).json({});
+    } else {
+      response.status(500).send('Failed to update country');
+    }
+  } else {
+    response.status(500).send('Setting country not implemented');
+  }
+});
+
+SettingsController.get('/localization/timezone', auth, (request, response) => {
+  let valid = [];
+  if (Platform.implemented('getValidTimezones')) {
+    valid = Platform.getValidTimezones();
+  }
+
+  let current = '';
+  if (Platform.implemented('getTimezone')) {
+    current = Platform.getTimezone();
+  }
+
+  const setImplemented = Platform.implemented('setTimezone');
+  response.json({valid, current, setImplemented});
+});
+
+SettingsController.put('/localization/timezone', auth, (request, response) => {
+  if (!request.body || !request.body.hasOwnProperty('zone')) {
+    response.status(400).send('Missing zone property');
+    return;
+  }
+
+  if (Platform.implemented('setTimezone')) {
+    if (Platform.setTimezone(request.body.zone)) {
+      response.status(200).json({});
+    } else {
+      response.status(500).send('Failed to update timezone');
+    }
+  } else {
+    response.status(500).send('Setting timezone not implemented');
+  }
+});
+
+SettingsController.get(
+  '/localization/language',
+  auth,
+  async (request, response) => {
+    const fluentDir = path.join(Constants.BUILD_STATIC_PATH, 'fluent');
+    const valid = [];
+    try {
+      for (const dirname of fs.readdirSync(fluentDir)) {
+        const [language, country] = dirname.split('-');
+
+        valid.push({
+          code: dirname,
+          name: `${ISO6391.getName(language)}${country ? ` (${country})` : ''}`,
+        });
+      }
+
+      valid.sort((a, b) => a.name.localeCompare(b.name));
+    } catch (_) {
+      response.status(500).send('Failed to retrieve list of languages');
+      return;
+    }
+
+    try {
+      const current = await Settings.get('localization.language');
+      response.json({valid, current});
+    } catch (_) {
+      response.status(500).send('Failed to get current language');
+    }
+  }
+);
+
+SettingsController.put(
+  '/localization/language',
+  auth,
+  async (request, response) => {
+    if (!request.body || !request.body.hasOwnProperty('language')) {
+      response.status(400).send('Missing language property');
+      return;
+    }
+
+    try {
+      await Settings.set('localization.language', request.body.language);
+      response.json({});
+    } catch (_) {
+      response.status(500).send('Failed to set language');
+    }
+  }
+);
+
+SettingsController.get(
+  '/localization/units',
+  auth,
+  async (request, response) => {
+    let temperature;
+
+    try {
+      temperature = await Settings.get('localization.units.temperature');
+    } catch (e) {
+      // pass
+    }
+
+    response.json({
+      temperature: temperature || 'degree celsius',
+    });
+  }
+);
+
+SettingsController.put(
+  '/localization/units',
+  auth,
+  async (request, response) => {
+    for (const [key, value] of Object.entries(request.body)) {
+      try {
+        await Settings.set(`localization.units.${key}`, value);
+      } catch (_) {
+        response.status(500).send('Failed to set unit');
+        return;
+      }
+    }
+
+    response.json({});
+  }
+);
 
 module.exports = SettingsController;

@@ -10,7 +10,7 @@
 
 'use strict';
 
-const ActionDetail = require('../property/action');
+const ActionDetail = require('../action/action');
 const AlarmDetail = require('../property/alarm');
 const API = require('../../api');
 const App = require('../../app');
@@ -22,18 +22,26 @@ const Constants = require('../../constants');
 const CurrentDetail = require('../property/current');
 const EnumDetail = require('../property/enum');
 const FrequencyDetail = require('../property/frequency');
+const fluent = require('../../fluent');
+const HeatingCoolingDetail = require('../property/heating-cooling');
 const ImageDetail = require('../property/image');
 const InstantaneousPowerDetail = require('../property/instantaneous-power');
 const LeakDetail = require('../property/leak');
 const LevelDetail = require('../property/level');
+const LockActionDetail = require('../action/lock');
+const LockedDetail = require('../property/locked');
 const MotionDetail = require('../property/motion');
 const NumberDetail = require('../property/number');
 const OnOffDetail = require('../property/on-off');
 const OpenDetail = require('../property/open');
 const PushedDetail = require('../property/pushed');
 const StringDetail = require('../property/string');
+const TargetTemperatureDetail = require('../property/target-temperature');
 const TemperatureDetail = require('../property/temperature');
+const ThermostatModeDetail = require('../property/thermostat-mode');
 const ThingDetailLayout = require('./thing-detail-layout');
+const UnlockActionDetail = require('../action/unlock');
+const Units = require('../../units');
 const Utils = require('../../utils');
 const VideoDetail = require('../property/video');
 const VoltageDetail = require('../property/voltage');
@@ -76,7 +84,7 @@ class Thing {
     this.selectedCapability = description.selectedCapability;
     this.layoutIndex = description.layoutIndex;
     this.iconHref = description.iconHref || '';
-    this.baseIcon = opts.baseIcon || '/optimized-images/thing-icons/thing.svg';
+    this.baseIcon = opts.baseIcon || fluent.getMessage('thing-icons-thing-src');
     this.format = format;
     this.displayedProperties = this.displayedProperties || {};
     this.displayedActions = this.displayedActions || {};
@@ -96,7 +104,8 @@ class Thing {
           if (link.href.startsWith('/proxy/')) {
             this.uiHref = `${link.href}?jwt=${API.jwt}`;
           } else if (link.href.startsWith('http://') ||
-                     link.href.startsWith('https://')) {
+                     link.href.startsWith('https://') ||
+                     link.href.startsWith('/extensions/')) {
             this.uiHref = link.href;
           }
 
@@ -115,9 +124,38 @@ class Thing {
 
     // Parse properties
     if (description.properties) {
-      this.propertyDescriptions = {};
       for (const name in description.properties) {
         const property = description.properties[name];
+
+        // Convert units, if necessary
+        const convertedProperty = JSON.parse(JSON.stringify(property));
+        if (property.unit) {
+          const newUnit = Units.convert(0, property.unit).unit;
+          if (newUnit !== property.unit) {
+            convertedProperty.unit = newUnit;
+
+            if (property.hasOwnProperty('minimum')) {
+              convertedProperty.minimum =
+                Units.convert(property.minimum, property.unit).value;
+            }
+
+            if (property.hasOwnProperty('maximum')) {
+              convertedProperty.maximum =
+                Units.convert(property.maximum, property.unit).value;
+            }
+
+            if (property.hasOwnProperty('enum')) {
+              convertedProperty.enum =
+                property.enum.map((v) => Units.convert(v, property.unit).value);
+            }
+
+            if (property.hasOwnProperty('multipleOf')) {
+              // just delete this, as it's not really meaningful during
+              // conversions
+              delete convertedProperty.multipleOf;
+            }
+          }
+        }
 
         let href;
         for (const link of property.links) {
@@ -131,63 +169,74 @@ class Thing {
           continue;
         }
 
-        this.propertyDescriptions[name] = property;
-
         let detail;
         switch (property['@type']) {
           case 'BooleanProperty':
-            detail = new BooleanDetail(this, name, property);
+            detail = new BooleanDetail(this, name, convertedProperty);
             break;
           case 'OnOffProperty':
-            detail = new OnOffDetail(this, name, property);
+            detail = new OnOffDetail(this, name, convertedProperty);
             break;
           case 'LevelProperty':
-            detail = new LevelDetail(this, name, property);
+            detail = new LevelDetail(this, name, convertedProperty);
             break;
           case 'BrightnessProperty':
-            detail = new BrightnessDetail(this, name, property);
+            detail = new BrightnessDetail(this, name, convertedProperty);
             break;
           case 'ColorProperty':
-            detail = new ColorDetail(this, name, property);
+            detail = new ColorDetail(this, name, convertedProperty);
             break;
           case 'ColorTemperatureProperty':
-            detail = new ColorTemperatureDetail(this, name, property);
+            detail = new ColorTemperatureDetail(this, name, convertedProperty);
             break;
           case 'InstantaneousPowerProperty':
-            detail = new InstantaneousPowerDetail(this, name, property);
+            detail =
+              new InstantaneousPowerDetail(this, name, convertedProperty);
             break;
           case 'CurrentProperty':
-            detail = new CurrentDetail(this, name, property);
+            detail = new CurrentDetail(this, name, convertedProperty);
             break;
           case 'VoltageProperty':
-            detail = new VoltageDetail(this, name, property);
+            detail = new VoltageDetail(this, name, convertedProperty);
             break;
           case 'FrequencyProperty':
-            detail = new FrequencyDetail(this, name, property);
+            detail = new FrequencyDetail(this, name, convertedProperty);
             break;
           case 'MotionProperty':
-            detail = new MotionDetail(this, name, property);
+            detail = new MotionDetail(this, name, convertedProperty);
             break;
           case 'OpenProperty':
-            detail = new OpenDetail(this, name, property);
+            detail = new OpenDetail(this, name, convertedProperty);
             break;
           case 'LeakProperty':
-            detail = new LeakDetail(this, name, property);
+            detail = new LeakDetail(this, name, convertedProperty);
             break;
           case 'PushedProperty':
-            detail = new PushedDetail(this, name, property);
+            detail = new PushedDetail(this, name, convertedProperty);
             break;
           case 'ImageProperty':
-            detail = new ImageDetail(this, name, property);
+            detail = new ImageDetail(this, name, convertedProperty);
             break;
           case 'VideoProperty':
-            detail = new VideoDetail(this, name, property);
+            detail = new VideoDetail(this, name, convertedProperty);
             break;
           case 'TemperatureProperty':
-            detail = new TemperatureDetail(this, name, property);
+            detail = new TemperatureDetail(this, name, convertedProperty);
             break;
           case 'AlarmProperty':
-            detail = new AlarmDetail(this, name, property);
+            detail = new AlarmDetail(this, name, convertedProperty);
+            break;
+          case 'TargetTemperatureProperty':
+            detail = new TargetTemperatureDetail(this, name, convertedProperty);
+            break;
+          case 'ThermostatModeProperty':
+            detail = new ThermostatModeDetail(this, name, convertedProperty);
+            break;
+          case 'HeatingCoolingProperty':
+            detail = new HeatingCoolingDetail(this, name, convertedProperty);
+            break;
+          case 'LockedProperty':
+            detail = new LockedDetail(this, name, convertedProperty);
             break;
           default:
             if (defaults.hasOwnProperty(name)) {
@@ -196,20 +245,20 @@ class Thing {
                 detailType = defaults.brightness;
               }
 
-              detail = new detailType(this, name, property);
+              detail = new detailType(this, name, convertedProperty);
             } else if (property.enum) {
-              detail = new EnumDetail(this, name, property);
+              detail = new EnumDetail(this, name, convertedProperty);
             } else {
               switch (property.type) {
                 case 'string':
-                  detail = new StringDetail(this, name, property);
+                  detail = new StringDetail(this, name, convertedProperty);
                   break;
                 case 'integer':
                 case 'number':
-                  detail = new NumberDetail(this, name, property);
+                  detail = new NumberDetail(this, name, convertedProperty);
                   break;
                 case 'boolean':
-                  detail = new BooleanDetail(this, name, property);
+                  detail = new BooleanDetail(this, name, convertedProperty);
                   break;
                 default:
                   console.warn('Unable to build property detail for:',
@@ -223,6 +272,7 @@ class Thing {
           href,
           detail,
           property,
+          convertedProperty,
         };
       }
     }
@@ -241,9 +291,21 @@ class Thing {
         if (href) {
           for (const name in description.actions) {
             const action = description.actions[name];
-            this.displayedActions[name] = {
-              detail: new ActionDetail(this, name, action, href),
-            };
+
+            let detail;
+            switch (action['@type']) {
+              case 'LockAction':
+                detail = new LockActionDetail(this, name, action, href);
+                break;
+              case 'UnlockAction':
+                detail = new UnlockActionDetail(this, name, action, href);
+                break;
+              default:
+                detail = new ActionDetail(this, name, action, href);
+                break;
+            }
+
+            this.displayedActions[name] = {detail};
           }
         }
       }
@@ -254,7 +316,7 @@ class Thing {
         this.displayEvents = true;
         menu.push({
           href: this.eventsHref,
-          name: 'Event Log',
+          name: fluent.getMessage('event-log'),
           icon: '/optimized-images/rules-icon.png',
         });
       } else {
@@ -263,11 +325,11 @@ class Thing {
 
       menu.push({
         listener: this.handleEdit.bind(this),
-        name: 'Edit',
+        name: fluent.getMessage('edit'),
         icon: '/optimized-images/edit-plain.svg',
       }, {
         listener: this.handleRemove.bind(this),
-        name: 'Remove',
+        name: fluent.getMessage('remove'),
         icon: '/optimized-images/remove.svg',
       });
 
@@ -284,7 +346,7 @@ class Thing {
       this.attachExpandedView();
 
       if (!this.connected) {
-        App.showPersistentMessage('Disconnected');
+        App.showPersistentMessage(fluent.getMessage('disconnected'));
       }
     }
 
@@ -347,6 +409,11 @@ class Thing {
    * HTML link for custom UI.
    */
   uiLink() {
+    // If this is an internal link, don't open a new tab.
+    if (this.uiHref.startsWith('/extensions/')) {
+      return `<a href="${this.uiHref}" class="thing-ui-link"></a>`;
+    }
+
     return `<a href="${this.uiHref}" class="thing-ui-link"
               target="_blank" rel="noopener"></a>`;
   }
@@ -398,10 +465,20 @@ class Thing {
    * @param {*} value Value of the property
    */
   updateProperty(name, value) {
-    if (this.format === Constants.ThingFormat.EXPANDED &&
-        this.displayedProperties.hasOwnProperty(name)) {
-      this.displayedProperties[name].detail.update(value);
+    if (this.displayedProperties.hasOwnProperty(name)) {
+      // Convert units, if necessary
+      value = Units.convert(
+        value,
+        this.displayedProperties[name].property.unit,
+        this.displayedProperties[name].convertedProperty.unit
+      ).value;
+
+      if (this.format === Constants.ThingFormat.EXPANDED) {
+        this.displayedProperties[name].detail.update(value);
+      }
     }
+
+    return value;
   }
 
   /**
@@ -411,6 +488,17 @@ class Thing {
    * @param {*} value Value of the property
    */
   setProperty(name, value) {
+    // Convert units, if necessary
+    value = Units.convert(
+      value,
+      this.displayedProperties[name].convertedProperty.unit,
+      this.displayedProperties[name].property.unit
+    ).value;
+
+    // Adjust the value to match property limits
+    const property = this.displayedProperties[name].property;
+    value = Utils.adjustInputValue(value, property);
+
     this.model.setProperty(name, value);
   }
 
@@ -589,22 +677,7 @@ class Thing {
       node.dataset.layoutIndex = index;
 
       const id = Utils.unescapeHtml(node.id).replace(/^thing-/, '');
-      const payload = {
-        layoutIndex: index,
-      };
-      fetch(`/things/${id}`, {
-        method: 'PATCH',
-        body: JSON.stringify(payload),
-        headers: {
-          Authorization: `Bearer ${API.jwt}`,
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-        },
-      }).then((response) => {
-        if (!response.ok) {
-          console.error(`Failed to arrange thing ${id}`);
-        }
-
+      API.setThingLayoutIndex(id, index).then(() => {
         App.gatewayModel.refreshThings();
       }).catch((e) => {
         console.error(`Error trying to arrange thing ${id}: ${e}`);
@@ -700,7 +773,7 @@ class Thing {
         App.hidePersistentMessage();
       } else {
         this.layout.svg.classList.remove('connected');
-        App.showPersistentMessage('Disconnected');
+        App.showPersistentMessage(fluent.getMessage('disconnected'));
       }
     }
 

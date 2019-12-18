@@ -37,8 +37,6 @@ const RuleScreen = {
     this.view = document.getElementById('rule-view');
     this.titleBar = this.view.querySelector('.title-bar');
     this.ruleArea = document.getElementById('rule-area');
-    this.returnButton = document.getElementById('return-button');
-    
     this.ruleName = this.view.querySelector('.rule-name');
     this.ruleNameCustomize = this.view.querySelector('.rule-name-customize');
     this.animatePlayStop = this.view.querySelector('.rule-preview-button');
@@ -87,9 +85,7 @@ const RuleScreen = {
     this.deleteButton.addEventListener('click', () => {
       this.deleteOverlay.classList.add('active');
     });
-    this.returnButton.addEventListener('click', () => {
-      page(this.backPage);
-    });
+
     this.deleteCancel.addEventListener('click', () => {
       this.deleteOverlay.classList.remove('active');
     });
@@ -528,15 +524,10 @@ const RuleScreen = {
 
     // Fetch the rule description from the Engine or default to null
     let rulePromise = Promise.resolve(null);
-    if (ruleId !== 'new' || ruleId !== 'quickNew') {
-      rulePromise = fetch(`/rules/${encodeURIComponent(ruleId)}`, {
-        headers: API.headers(),
-      }).then((res) => {
-        return res.json();
-      });
+    if (ruleId !== 'new') {
+      rulePromise = API.getRule(ruleId);
     }
-    
-    this.backPage =(ruleId === 'quickNew')?"/vscad-rulesManager/1":"/rules"
+
     function remove(elt) {
       return elt.parentNode.removeChild(elt);
     }

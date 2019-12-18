@@ -34,12 +34,7 @@ module.exports.getAddons = async () => {
   const installedAddons = new Map();
   // Store a map of name->version.
   for (const s of res.body) {
-    try {
-      const settings = JSON.parse(s.value);
-      installedAddons.set(settings.name, settings);
-    } catch (err) {
-      console.error(`Failed to parse add-on settings: ${err}`);
-    }
+    installedAddons.set(s.id, s);
   }
   return installedAddons;
 };
@@ -74,7 +69,7 @@ module.exports.setProperty = async (id, property, value) => {
 
 let stepNumber = 0;
 module.exports.saveStepScreen = async (step) => {
-  let stepStr = stepNumber.toString();
+  let stepStr = (stepNumber++).toString();
   if (stepStr.length < 2) {
     stepStr = `0${stepStr}`;
   }
@@ -84,5 +79,17 @@ module.exports.saveStepScreen = async (step) => {
   }
   await getBrowser().saveScreenshot(
     `browser-test-output/${step}-${stepStr}.png`);
-  stepNumber += 1;
+};
+
+module.exports.escapeHtmlForIdClass = (text) => {
+  if (typeof (text) !== 'string') {
+    text = `${text}`;
+  }
+
+  text = text.replace(/[^_a-zA-Z0-9-]/g, '_');
+  if (/^[0-9-]/.test(text)) {
+    text = `_${text}`;
+  }
+
+  return text;
 };

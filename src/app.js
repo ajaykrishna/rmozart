@@ -41,6 +41,7 @@ const Logs = require('./models/logs');
 const platform = require('./platform');
 const Router = require('./router');
 const sleep = require('./sleep');
+const Things = require('./models/things');
 const TunnelService = require('./ssltunnel');
 const {RouterSetupApp, isRouterConfigured} = require('./router-setup');
 const {WiFiSetupApp, isWiFiConfigured} = require('./wifi-setup');
@@ -131,9 +132,12 @@ function startHttpsGateway() {
   promises.push(new Promise((resolve) => {
     servers.https.listen(port, () => {
       migration.then(() => {
+        // load existing things from the database
+        return Things.getThings();
+      }).then(() => {
         addonManager.loadAddons();
       });
-      rulesEngineConfigure(servers.https);
+      rulesEngineConfigure();
       console.log('HTTPS server listening on port',
                   servers.https.address().port);
       resolve();
@@ -162,9 +166,12 @@ function startHttpGateway() {
   return new Promise((resolve) => {
     servers.http.listen(port, () => {
       migration.then(() => {
+        // load existing things from the database
+        return Things.getThings();
+      }).then(() => {
         addonManager.loadAddons();
       });
-      rulesEngineConfigure(servers.http);
+      rulesEngineConfigure();
       console.log('HTTP server listening on port', servers.http.address().port);
       resolve();
     });
@@ -242,20 +249,11 @@ function getOptions() {
 }
 
 /**
- * Because the rules engine talks to the server over the public HTTP/WS API,
- * the gateway needs to configure it with a JWT and a server address
- * @param {http.Server|https.Server} server
+ * Set up the rules engine.
  */
-function rulesEngineConfigure(server) {
-  const rulesEngine = require('./rules-engine/index.js');
-  const composedrulesEngine = require('./vscad-rules-engine/VscadIndex.js');
-  let protocol = 'https';
-  if (server instanceof http.Server) {
-    protocol = 'http';
-  }
-  const gatewayHref = `${protocol}://127.0.0.1:${server.address().port}`;
-  rulesEngine.configure(gatewayHref);
-  composedrulesEngine.configure(gatewayHref);
+function rulesEngineConfigure() {
+  const rulesEngine = require('./rules-engine/index');
+  rulesEngine.configure();
 }
 
 function createApp() {
@@ -379,12 +377,18 @@ switch (platform.getOS()) {
 function startGateway() {
   // if we have the certificates installed, we start https
   if (TunnelService.hasCertificates()) {
-    serverStartup.promise = TunnelService.userSkipped().then((res) => {
-      if (res) {
-        return startHttpGateway();
+    serverStartup.promise = TunnelService.userSkipped().then((skipped) => {
+      const promise = startHttpsGateway();
+
+      // if the user opted to skip the tunnel, but still has certificates, go
+      // ahead and start up the https server.
+      if (skipped) {
+        return promise;
       }
 
-      return startHttpsGateway().then((server) => {
+      // if they did not opt to skip, check if they have a tunnel token. if so,
+      // start the tunnel.
+      return promise.then((server) => {
         TunnelService.hasTunnelToken().then((result) => {
           if (result) {
             TunnelService.setServerHandle(server);

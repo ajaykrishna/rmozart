@@ -5,7 +5,7 @@
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
-# file, You can obtain one at http://mozilla.org/MPL/2.0/.*
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 # The base image (tested with 2017-04-10-raspbian-jessie-lite.img)
 # will be fairly out of date, so we update all of the packages.
@@ -41,6 +41,7 @@ nvm use ${NODE_VERSION}
 
 # Install prerequisite packages
 sudo apt install -y \
+  arping \
   autoconf \
   dnsmasq \
   ffmpeg \
@@ -56,14 +57,14 @@ sudo apt install -y \
   libtool \
   libudev-dev \
   libusb-1.0-0-dev \
+  mosquitto \
   policykit-1 \
   python-pip \
   python3-pip \
   sqlite3
 
 # Install Python add-on bindings
-_url="git+https://github.com/mozilla-iot/gateway-addon-python@v0.9.0#egg=gateway_addon"
-sudo pip2 install "$_url"
+_url="git+https://github.com/mozilla-iot/gateway-addon-python@v0.10.0#egg=gateway_addon"
 sudo pip3 install "$_url"
 
 _url="git+https://github.com/mycroftai/adapt#egg=adapt-parser"

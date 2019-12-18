@@ -1,18 +1,23 @@
 const API = require('./api');
+const fluent = require('./fluent');
 const Utils = require('./utils');
 
 document.addEventListener('DOMContentLoaded', () => {
-  const jwt = document.getElementById('jwt');
-  jwt.value = API.jwt;
+  fluent.load().then(() => {
+    fluent.init();
 
-  const scope = document.getElementById('authorize-scope');
-  init(scope.value);
+    const jwt = document.getElementById('jwt');
+    jwt.value = API.jwt;
 
-  const backButton = document.getElementById('back-button');
-  const params = new URLSearchParams(window.location.search);
-  if (!params.has('client_id') || params.get('client_id') !== 'local-token') {
-    backButton.classList.add('hidden');
-  }
+    const scope = document.getElementById('authorize-scope');
+    init(scope.value);
+
+    const backButton = document.getElementById('back-button');
+    const params = new URLSearchParams(window.location.search);
+    if (!params.has('client_id') || params.get('client_id') !== 'local-token') {
+      backButton.classList.add('hidden');
+    }
+  });
 });
 
 function init(scope) {
@@ -36,11 +41,7 @@ function init(scope) {
     authorizeAllThings.setAttribute('checked', '');
   }
 
-  fetch('/things', {
-    headers: API.headers(),
-  }).then((res) => {
-    return res.json();
-  }).then((things) => {
+  API.getThings().then((things) => {
     let checkboxIndex = 0;
     for (const thing of things) {
       const included = global || (scope.indexOf(thing.href) >= 0);

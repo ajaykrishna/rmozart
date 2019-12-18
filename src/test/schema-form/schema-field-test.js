@@ -6,8 +6,8 @@ describe('SchemaField', () => {
     it('should warn on invalid field type', () => {
       const {node} = createSchemaForm({schema: {type: 'invalid'}});
 
-      expect(node.querySelector('.unsupported-field').textContent.trim())
-        .toContain('Unsupported field schema');
+      expect(node.querySelector('.unsupported-field'))
+        .toBeTruthy();
     });
   });
 
@@ -21,7 +21,7 @@ describe('SchemaField', () => {
 
     it('should render label by default', () => {
       const {node} = createSchemaForm({schema});
-      expect(node.querySelectorAll('label')).toHaveLength(1);
+      expect(node.querySelectorAll('.control-label')).toHaveLength(1);
     });
   });
 

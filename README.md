@@ -1,6 +1,6 @@
 # WebThings Gateway by Mozilla
 
-[![Build Status](https://travis-ci.org/mozilla-iot/gateway.svg?branch=master)](https://travis-ci.org/mozilla-iot/gateway)
+[![Build Status](https://github.com/mozilla-iot/gateway/workflows/Node.js%20application/badge.svg)](https://github.com/mozilla-iot/gateway/workflows/Node.js%20application)
 [![codecov](https://codecov.io/gh/mozilla-iot/gateway/branch/master/graph/badge.svg)](https://codecov.io/gh/mozilla-iot/gateway)
 [![dependencies](https://david-dm.org/mozilla-iot/gateway.svg)](https://david-dm.org/mozilla-iot/gateway)
 [![devDependencies](https://david-dm.org/mozilla-iot/gateway/dev-status.svg)](https://david-dm.org/mozilla-iot/gateway?type=dev)
@@ -170,6 +170,23 @@ Under Fedora Linux:
 $ sudo dnf install libpng-devel
 ```
 
+### Install libffi
+
+Under Ubuntu/Debian Linux:
+```
+$ sudo apt install libffi-dev
+```
+
+Under Fedora Linux:
+```
+$ sudo dnf install libffi-devel
+```
+
+Under macOS:
+```
+$ brew install libffi
+```
+
 ### Install git
 
 You'll need git to checkout the repositories.
@@ -211,6 +228,15 @@ Note: you may need to use libnanomsg5 instead of libnanomsg4 (under Debian buste
 * Follow the directions from [nanomsg](https://github.com/nanomsg/nanomsg) to install in the same bitness as your Python 3.X.
 * If you want to build for 64-bit, you need to execute cmake with `-DCMAKE_GENERATOR_PLATFORM=x64`.
 * Add `C:\path\to\nanomsg\bin` to `PATH`.
+
+#### MacOS
+
+Under macOS:
+```
+$ brew install nanomsg
+```
+
+
 
 ### Install OpenSSL (Windows only)
 
@@ -255,10 +281,9 @@ host_library = C:\path\to\nanomsg\bin\nanomsg.dll
 
 This is required in order to use Python 3 add-ons, e.g. [tplink-adapter](https://github.com/mozilla-iot/tplink-adapter/).
 
-Execute the following command as sudo (Linux) or administrator (Windows).
+Execute the following command. On Linux, use sudo. On Windows, run as administrator.
 
 ```
-python2 -m pip install git+https://github.com/mozilla-iot/gateway-addon-python#egg=gateway_addon
 python3 -m pip install git+https://github.com/mozilla-iot/gateway-addon-python#egg=gateway_addon
 ```
 

@@ -42,12 +42,12 @@ class User {
         </div>
         <div class="user-settings-controls">
           <button id="user-remove-${Utils.escapeHtml(this.id)}"
-            class="text-button user-settings-remove">
-            Remove
+            class="text-button user-settings-remove"
+            data-l10n-id="remove">
           </button>
           <button id="user-edit-${Utils.escapeHtml(this.id)}"
-            class="text-button user-settings-edit">
-            Edit
+            class="text-button user-settings-edit"
+            data-l10n-id="edit">
           </button>
         </div>
       </li>`;
@@ -71,7 +71,10 @@ class User {
   /**
    * Handle a click on the remove button.
    */
-  handleRemove() {
+  handleRemove(e) {
+    const button = e.target;
+    button.disabled = true;
+
     API.deleteUser(this.id)
       .then(() => {
         const el = document.getElementById(
@@ -86,6 +89,7 @@ class User {
       })
       .catch((err) => {
         console.error(`Failed to delete user: ${this.email}\n${err}`);
+        button.disabled = false;
       });
   }
 

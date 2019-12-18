@@ -1,5 +1,7 @@
-const Utils = require('../utils');
+const fluent = require('../fluent');
 const RuleUtils = require('./RuleUtils');
+const Units = require('../units');
+const Utils = require('../utils');
 
 function propertyEqual(a, b) {
   if ((!a) && (!b)) {
@@ -105,7 +107,7 @@ class PropertySelect {
    */
   clearOptions() {
     this.elt.innerHTML = '';
-    this.addOption('Select Property', null, true);
+    this.addOption(fluent.getMessage('rule-select-property'), null, true);
   }
 
   /**
@@ -178,30 +180,36 @@ class PropertySelect {
 
         for (const choice of property.enum) {
           const option = document.createElement('option');
-          option.value = choice;
-          option.innerText = choice;
+          option.value = Units.convert(choice, property.unit).value;
+          option.innerText = option.value;
           valueSelect.appendChild(option);
         }
 
         valueSelect.addEventListener('click', stopPropagation);
         elt.appendChild(valueSelect);
       } else {
+        const convert = Units.convert(0, property.unit).unit !== property.unit;
+
         valueInput = document.createElement('input');
         valueInput.classList.add('value-input');
         valueInput.type = 'number';
-        if (property.hasOwnProperty('multipleOf')) {
+
+        if (property.hasOwnProperty('multipleOf') && !convert) {
           valueInput.step = `${property.multipleOf}`;
         } else if (property.type === 'number') {
           valueInput.step = 'any';
         } else {
           valueInput.step = '1';
         }
+
         if (property.hasOwnProperty('minimum')) {
-          valueInput.min = `${property.minimum}`;
+          valueInput.min = `${Units.convert(property.minimum, property.unit)}`;
         }
+
         if (property.hasOwnProperty('maximum')) {
-          valueInput.max = `${property.maximum}`;
+          valueInput.max = `${Units.convert(property.maximum, property.unit)}`;
         }
+
         valueInput.addEventListener('click', stopPropagation);
         elt.appendChild(valueInput);
       }
@@ -215,18 +223,15 @@ class PropertySelect {
             parseFloat(valueSelect.options[valueSelect.selectedIndex].value);
         }
 
-        if (property.hasOwnProperty('multipleOf')) {
-          value = Math.round(value / property.multipleOf) * property.multipleOf;
-        }
-        if (property.type === 'integer') {
-          value = parseInt(value);
-        }
-        if (property.hasOwnProperty('minimum')) {
-          value = Math.max(value, property.minimum);
-        }
-        if (property.hasOwnProperty('maximum')) {
-          value = Math.min(value, property.maximum);
-        }
+        // convert value back
+        value = Units.convert(
+          value,
+          Units.convert(0, property.unit).unit,
+          property.unit
+        ).value;
+
+        // Adjust the value to match limits
+        value = Utils.adjustInputValue(value, property);
 
         if (valueInput) {
           valueInput.value = value;
@@ -341,7 +346,7 @@ class PropertySelect {
           optionElt.querySelector('.lt-option').setAttribute('selected', '');
         }
       }
-      input.value = fragmentValue;
+      input.value = Units.convert(fragmentValue, property.unit).value;
     } else if (property.name === 'color' || property.type === 'string') {
       input.value = fragmentValue;
     }
@@ -391,10 +396,10 @@ class PropertySelect {
             onValue: false,
           });
           let onName = name;
-          let offName = `Not ${onName}`;
+          let offName = `${fluent.getMessage('rule-not')} ${onName}`;
           if (property.name === 'on') {
-            onName = 'On';
-            offName = 'Off';
+            onName = fluent.getMessage('on');
+            offName = fluent.getMessage('off');
           }
           this.addOption(onName, {
             trigger: triggerOn,
@@ -446,10 +451,10 @@ class PropertySelect {
             value: false,
           });
           let onName = name;
-          let offName = `Not ${onName}`;
+          let offName = `${fluent.getMessage('rule-not')} ${onName}`;
           if (property.name === 'on') {
-            onName = 'On';
-            offName = 'Off';
+            onName = fluent.getMessage('on');
+            offName = fluent.getMessage('off');
           }
           this.addOption(onName, {
             effect: effectOn,
@@ -507,7 +512,7 @@ class PropertySelect {
         event: name,
         label,
       };
-      this.addOption(`Event "${eventTrigger.label}"`, {
+      this.addOption(`${fluent.getMessage('rule-event')} "${eventTrigger.label}"`, {
         trigger: eventTrigger,
       });
     }
@@ -528,7 +533,7 @@ class PropertySelect {
         label,
         parameters: {},
       };
-      this.addOption(`Action "${actionEffect.label}"`, {
+      this.addOption(`${fluent.getMessage('rule-action')} "${actionEffect.label}"`, {
         effect: actionEffect,
       });
     }

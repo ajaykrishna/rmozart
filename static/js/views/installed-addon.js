@@ -10,6 +10,7 @@
 'use strict';
 
 const API = require('../api');
+const fluent = require('../fluent');
 const Utils = require('../utils');
 const page = require('page');
 
@@ -24,24 +25,17 @@ class InstalledAddon {
    *                 SettingsScreen.
    */
   constructor(metadata, installedAddonsMap, availableAddonsMap) {
+    this.id = metadata.id;
     this.name = metadata.name;
-    this.displayName = metadata.display_name;
     this.description = metadata.description;
-    if (typeof metadata.author === 'object') {
-      this.author = metadata.author.name;
-    } else if (typeof metadata.author === 'string') {
-      this.author = metadata.author.split('<')[0].trim();
-    } else {
-      this.author = 'Unknown';
-    }
-    this.homepage = metadata.homepage;
-    this.license =
+    this.author = metadata.author;
+    this.homepageUrl = metadata.homepage_url;
+    this.licenseUrl =
       `/addons/${encodeURIComponent(this.name)}/license?jwt=${API.jwt}`;
     this.version = metadata.version;
-    this.type = metadata.moziot.type || 'adapter';
-    this.enabled = metadata.moziot.enabled;
-    this.config = metadata.moziot.config;
-    this.schema = metadata.moziot.schema;
+    this.primaryType = metadata.primary_type;
+    this.enabled = metadata.enabled;
+    this.schema = metadata.schema;
     this.updateUrl = null;
     this.updateVersion = null;
     this.updateChecksum = null;
@@ -57,21 +51,21 @@ class InstalledAddon {
   view() {
     let toggleButtonText, toggleButtonClass;
     if (this.enabled) {
-      toggleButtonText = 'Disable';
+      toggleButtonText = fluent.getMessage('disable');
       toggleButtonClass = 'addon-settings-disable';
     } else {
-      toggleButtonText = 'Enable';
+      toggleButtonText = fluent.getMessage('enable');
       toggleButtonClass = 'addon-settings-enable';
     }
 
     const configButtonClass = this.schema ? '' : 'hidden';
 
-    const name = this.displayName || this.name;
+    const name = this.name || this.id;
 
     return `
-      <li id="addon-item-${Utils.escapeHtmlForIdClass(this.name)}"
+      <li id="addon-item-${Utils.escapeHtmlForIdClass(this.id)}"
         class="addon-item">
-        <div class="addon-settings-header ${Utils.escapeHtmlForIdClass(this.type)}">
+        <div class="addon-settings-header ${Utils.escapeHtmlForIdClass(this.primaryType)}">
           <span class="addon-settings-name">
             ${Utils.escapeHtml(name)}
           </span>
@@ -82,27 +76,27 @@ class InstalledAddon {
             ${Utils.escapeHtml(this.description)}
           </span>
           <span class="addon-settings-author">
-            by <a href="${this.homepage}" target="_blank" rel="noopener">${Utils.escapeHtml(this.author)}</a>
+            ${fluent.getMessage('by')} <a href="${this.homepageUrl}" target="_blank" rel="noopener">${Utils.escapeHtml(this.author)}</a>
           </span>
           <span class="addon-settings-license">
-            (<a href="${this.license}" target="_blank" rel="noopener">license</a>)
+            (<a href="${this.licenseUrl}" target="_blank" rel="noopener">license</a>)
           </span>
         </div>
         <div class="addon-settings-controls">
-          <button id="addon-config-${Utils.escapeHtmlForIdClass(this.name)}"
-            class="text-button addon-settings-config ${configButtonClass}">
-            Configure
+          <button id="addon-config-${Utils.escapeHtmlForIdClass(this.id)}"
+            class="text-button addon-settings-config ${configButtonClass}"
+            data-l10n-id="addon-configure">
           </button>
-          <button id="addon-update-${Utils.escapeHtmlForIdClass(this.name)}"
-            class="text-button addon-settings-update hidden">
-            Update
+          <button id="addon-update-${Utils.escapeHtmlForIdClass(this.id)}"
+            class="text-button addon-settings-update hidden"
+            data-l10n-id="addon-update">
           </button>
           <span class="addon-settings-spacer"></span>
-          <button id="addon-remove-${Utils.escapeHtmlForIdClass(this.name)}"
-            class="text-button addon-settings-remove">
-            Remove
+          <button id="addon-remove-${Utils.escapeHtmlForIdClass(this.id)}"
+            class="text-button addon-settings-remove"
+            data-l10n-id="addon-remove">
           </button>
-          <button id="addon-toggle-${Utils.escapeHtmlForIdClass(this.name)}"
+          <button id="addon-toggle-${Utils.escapeHtmlForIdClass(this.id)}"
             class="text-button ${toggleButtonClass}">
             ${toggleButtonText}
           </button>
@@ -117,19 +111,19 @@ class InstalledAddon {
     this.container.insertAdjacentHTML('beforeend', this.view());
 
     const configButton = document.getElementById(
-      `addon-config-${Utils.escapeHtmlForIdClass(this.name)}`);
+      `addon-config-${Utils.escapeHtmlForIdClass(this.id)}`);
     configButton.addEventListener('click', this.handleConfig.bind(this));
 
     const updateButton = document.getElementById(
-      `addon-update-${Utils.escapeHtmlForIdClass(this.name)}`);
+      `addon-update-${Utils.escapeHtmlForIdClass(this.id)}`);
     updateButton.addEventListener('click', this.handleUpdate.bind(this));
 
     const removeButton = document.getElementById(
-      `addon-remove-${Utils.escapeHtmlForIdClass(this.name)}`);
+      `addon-remove-${Utils.escapeHtmlForIdClass(this.id)}`);
     removeButton.addEventListener('click', this.handleRemove.bind(this));
 
     const toggleButton = document.getElementById(
-      `addon-toggle-${Utils.escapeHtmlForIdClass(this.name)}`);
+      `addon-toggle-${Utils.escapeHtmlForIdClass(this.id)}`);
     toggleButton.addEventListener('click', this.handleToggle.bind(this));
   }
 
@@ -146,7 +140,7 @@ class InstalledAddon {
     this.updateChecksum = checksum;
 
     const button = document.getElementById(
-      `addon-update-${Utils.escapeHtmlForIdClass(this.name)}`);
+      `addon-update-${Utils.escapeHtmlForIdClass(this.id)}`);
     button.classList.remove('hidden');
   }
 
@@ -154,7 +148,7 @@ class InstalledAddon {
    * Handle a click on the config button.
    */
   handleConfig() {
-    page(`/settings/addons/config/${this.name}`);
+    page(`/settings/addons/config/${this.id}`);
   }
 
   /**
@@ -163,44 +157,48 @@ class InstalledAddon {
   handleUpdate(e) {
     const controlDiv = e.target.parentNode;
     const versionDiv = document.querySelector(
-      `#addon-item-${Utils.escapeHtmlForIdClass(this.name)} ` +
+      `#addon-item-${Utils.escapeHtmlForIdClass(this.id)} ` +
       '.addon-settings-version');
     const updating = document.createElement('span');
     updating.classList.add('addon-updating');
-    updating.innerText = 'Updating...';
+    updating.innerText = fluent.getMessage('addon-updating');
     controlDiv.replaceChild(updating, e.target);
 
-    API.updateAddon(this.name, this.updateUrl, this.updateChecksum)
+    API.updateAddon(this.id, this.updateUrl, this.updateChecksum)
       .then(() => {
         this.version = this.updateVersion;
-        const addon = this.installedAddonsMap.get(this.name);
+        const addon = this.installedAddonsMap.get(this.id);
         addon.version = this.version;
         versionDiv.innerText = this.version;
-        updating.innerText = 'Updated';
+        updating.innerText = fluent.getMessage('addon-updated');
       })
       .catch((err) => {
-        console.error(`Failed to update add-on: ${this.name}\n${err}`);
-        updating.innerText = 'Failed';
+        console.error(`Failed to update add-on: ${this.id}\n${err}`);
+        updating.innerText = fluent.getMessage('addon-update-failed');
       });
   }
 
   /**
    * Handle a click on the remove button.
    */
-  handleRemove() {
-    API.uninstallAddon(this.name)
+  handleRemove(e) {
+    const button = e.target;
+    button.disabled = true;
+
+    API.uninstallAddon(this.id)
       .then(() => {
         const el = document.getElementById(
-          `addon-item-${Utils.escapeHtmlForIdClass(this.name)}`);
+          `addon-item-${Utils.escapeHtmlForIdClass(this.id)}`);
         el.parentNode.removeChild(el);
-        this.installedAddonsMap.delete(this.name);
-        const addon = this.availableAddonsMap.get(this.name);
+        this.installedAddonsMap.delete(this.id);
+        const addon = this.availableAddonsMap.get(this.id);
         if (addon) {
           addon.installed = false;
         }
       })
       .catch((e) => {
-        console.error(`Failed to uninstall add-on: ${this.name}\n${e}`);
+        console.error(`Failed to uninstall add-on: ${this.id}\n${e}`);
+        button.disabled = false;
       });
   }
 
@@ -210,23 +208,29 @@ class InstalledAddon {
   handleToggle(e) {
     const button = e.target;
     const enabled = !this.enabled;
-    API.setAddonSetting(this.name, enabled)
+    button.disabled = true;
+
+    API.setAddonSetting(this.id, enabled)
       .then(() => {
         this.enabled = enabled;
-        const addon = this.installedAddonsMap.get(this.name);
-        addon.moziot.enabled = enabled;
+        const addon = this.installedAddonsMap.get(this.id);
+        addon.enabled = enabled;
+
         if (this.enabled) {
-          button.innerText = 'Disable';
+          button.innerText = fluent.getMessage('disable');
           button.classList.remove('addon-settings-enable');
           button.classList.add('addon-settings-disable');
         } else {
-          button.innerText = 'Enable';
+          button.innerText = fluent.getMessage('enable');
           button.classList.remove('addon-settings-disable');
           button.classList.add('addon-settings-enable');
         }
+
+        button.disabled = false;
       })
       .catch((err) => {
-        console.error(`Failed to toggle add-on: ${this.name}\n${err}`);
+        console.error(`Failed to toggle add-on: ${this.id}\n${err}`);
+        button.disabled = false;
       });
   }
 }

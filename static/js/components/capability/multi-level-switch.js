@@ -10,6 +10,7 @@
 'use strict';
 
 const BaseComponent = require('../base-component');
+const fluent = require('../../fluent');
 
 const template = document.createElement('template');
 template.innerHTML = `
@@ -61,6 +62,7 @@ template.innerHTML = `
     .webthing-multi-level-switch-capability-label {
       padding-top: 0.2rem;
       font-weight: bold;
+      text-transform: uppercase;
     }
   </style>
   <div id="container" class="webthing-multi-level-switch-capability-container">
@@ -149,7 +151,7 @@ class MultiLevelSwitchCapability extends BaseComponent {
     if (this._on) {
       this._container.classList.add('on');
     } else {
-      this._label.innerText = 'OFF';
+      this._label.innerText = fluent.getMessage('off');
       this._container.classList.remove('on');
     }
 

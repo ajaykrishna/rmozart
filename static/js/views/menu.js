@@ -8,6 +8,7 @@
 'use strict';
 
 const API = require('../api');
+const Utils = require('../utils');
 
 // eslint-disable-next-line no-unused-vars
 const Menu = {
@@ -34,6 +35,8 @@ const Menu = {
     this.items.rule = [document.getElementById('rules-menu-item')];
     this.items.logs = [document.getElementById('logs-menu-item')];
     this.currentItem = 'things';
+    this.menuButton = document.getElementById('menu-button');
+
     this.getExperimentSetting('assistant');
     this.getExperimentSetting('logs');
   },
@@ -61,6 +64,7 @@ const Menu = {
   show: function() {
     this.element.classList.remove('hidden');
     this.scrim.classList.remove('hidden');
+    this.menuButton.classList.add('menu-shown');
     this.hidden = false;
   },
 
@@ -70,6 +74,7 @@ const Menu = {
   hide: function() {
     this.element.classList.add('hidden');
     this.scrim.classList.add('hidden');
+    this.menuButton.classList.remove('menu-shown');
     this.hidden = true;
   },
 
@@ -112,7 +117,10 @@ const Menu = {
    */
   selectItem: function(item) {
     if (!this.items[item]) {
-      console.error(`Tried to select a menu item that didnt exist ${item}`);
+      if (!item.startsWith('extension-')) {
+        console.error('Tried to select a menu item that didn\'t exist:', item);
+      }
+
       return;
     }
     for (const elt of this.items[this.currentItem]) {
@@ -140,6 +148,27 @@ const Menu = {
     for (const elt of this.items[item]) {
       elt.classList.add('hidden');
     }
+  },
+
+  /**
+   * Add a new menu item for an extension.
+   */
+  addExtensionItem: function(extension, name) {
+    const escapedId = Utils.escapeHtmlForIdClass(extension.id);
+
+    const newLink = document.createElement('a');
+    newLink.id = `extension-${escapedId}-menu-item`;
+    newLink.href = `/extensions/${encodeURIComponent(extension.id)}`;
+    newLink.innerText = name;
+
+    const newItem = document.createElement('li');
+    newItem.appendChild(newLink);
+
+    const logoutItem = document.getElementById('logout').parentNode;
+    const list = document.querySelector('#main-menu > ul');
+    list.insertBefore(newItem, logoutItem);
+
+    this.items[extension.view.id] = [newLink];
   },
 };
 

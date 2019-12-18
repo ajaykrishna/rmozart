@@ -687,12 +687,15 @@ function scanWirelessNetworks() {
     .filter((l) => l.startsWith(' '))
     .map((l) => l.trim());
 
+  // Add an empty line so we don't miss the last cell.
+  lines.push('');
+
   const cells = new Map();
   let cell = {};
 
   for (const line of lines) {
     // New cell, start over
-    if (line.startsWith('Cell ')) {
+    if (line.startsWith('Cell ') || line.length === 0) {
       if (cell.hasOwnProperty('ssid') &&
           cell.hasOwnProperty('quality') &&
           cell.hasOwnProperty('encryption') &&
@@ -800,6 +803,210 @@ function update() {
   });
 }
 
+/**
+ * Get a list of all valid timezones for the system.
+ *
+ * @returns {string[]} List of timezones.
+ */
+function getValidTimezones() {
+  const tzdata = '/usr/share/zoneinfo/zone.tab';
+  if (!fs.existsSync(tzdata)) {
+    return [];
+  }
+
+  try {
+    const data = fs.readFileSync(tzdata, 'utf8');
+    const zones = data.split('\n')
+      .filter((l) => !l.startsWith('#') && l.length > 0)
+      .map((l) => l.split(/\s+/g)[2])
+      .sort();
+
+    return zones;
+  } catch (e) {
+    console.error('Failed to read zone file:', e);
+  }
+
+  return [];
+}
+
+/**
+ * Get the current timezone.
+ *
+ * @returns {string} Name of timezone.
+ */
+function getTimezone() {
+  const tzdata = '/etc/timezone';
+  if (!fs.existsSync(tzdata)) {
+    return '';
+  }
+
+  try {
+    const data = fs.readFileSync(tzdata, 'utf8');
+    return data.trim();
+  } catch (e) {
+    console.error('Failed to read timezone:', e);
+  }
+
+  return '';
+}
+
+/**
+ * Set the current timezone.
+ *
+ * @param {string} zone - The timezone to set
+ * @returns {boolean} Boolean indicating success of the command.
+ */
+function setTimezone(zone) {
+  const proc = child_process.spawnSync(
+    'sudo',
+    ['raspi-config', 'nonint', 'do_change_timezone', zone]
+  );
+  return proc.status === 0;
+}
+
+/**
+ * Get a list of all valid wi-fi countries for the system.
+ *
+ * @returns {string[]} List of countries.
+ */
+function getValidWirelessCountries() {
+  const fname = '/usr/share/zoneinfo/iso3166.tab';
+  if (!fs.existsSync(fname)) {
+    return [];
+  }
+
+  try {
+    const data = fs.readFileSync(fname, 'utf8');
+    const zones = data.split('\n')
+      .filter((l) => !l.startsWith('#') && l.length > 0)
+      .map((l) => l.split('\t')[1])
+      .sort();
+
+    return zones;
+  } catch (e) {
+    console.error('Failed to read zone file:', e);
+  }
+
+  return [];
+}
+
+/**
+ * Get the wi-fi country code.
+ *
+ * @returns {string} Country.
+ */
+function getWirelessCountry() {
+  const proc = child_process.spawnSync(
+    'sudo',
+    ['raspi-config', 'nonint', 'get_wifi_country'],
+    {encoding: 'utf8'}
+  );
+
+  if (proc.status !== 0) {
+    return '';
+  }
+
+  const code = proc.stdout.trim();
+
+  const fname = '/usr/share/zoneinfo/iso3166.tab';
+  if (!fs.existsSync(fname)) {
+    return '';
+  }
+
+  let countries;
+  try {
+    const data = fs.readFileSync(fname, 'utf8');
+    countries = data.split('\n')
+      .filter((l) => !l.startsWith('#') && l.length > 0)
+      .map((l) => l.split('\t'));
+  } catch (e) {
+    console.error('Failed to read country file:', e);
+    return '';
+  }
+
+  const data = countries.find((c) => c[0] === code);
+  if (!data) {
+    return '';
+  }
+
+  return data[1];
+}
+
+/**
+ * Set the wi-fi country code.
+ *
+ * @param {string} country - The country to set
+ * @returns {boolean} Boolean indicating success of the command.
+ */
+function setWirelessCountry(country) {
+  const fname = '/usr/share/zoneinfo/iso3166.tab';
+  if (!fs.existsSync(fname)) {
+    return false;
+  }
+
+  let countries;
+  try {
+    const data = fs.readFileSync(fname, 'utf8');
+    countries = data.split('\n')
+      .filter((l) => !l.startsWith('#') && l.length > 0)
+      .map((l) => l.split('\t'));
+  } catch (e) {
+    console.error('Failed to read country file:', e);
+    return false;
+  }
+
+  const data = countries.find((c) => c[1] === country);
+  if (!data) {
+    return false;
+  }
+
+  const proc = child_process.spawnSync(
+    'sudo',
+    ['raspi-config', 'nonint', 'do_wifi_country', data[0]]
+  );
+  return proc.status === 0;
+}
+
+/**
+ * Get the NTP synchronization status.
+ *
+ * @returns {boolean} Boolean indicating whether or not the time has been
+ *                    synchronized.
+ */
+function getNtpStatus() {
+  const proc = child_process.spawnSync(
+    'timedatectl',
+    ['status'],
+    {encoding: 'utf8'}
+  );
+
+  if (proc.status !== 0) {
+    return false;
+  }
+
+  const lines = proc.stdout.split('\n').map((l) => l.trim());
+  const status = lines.find((l) => l.startsWith('System clock synchronized:'));
+
+  if (!status) {
+    return false;
+  }
+
+  return status.split(':')[1].trim() === 'yes';
+}
+
+/**
+ * Restart the NTP sync service.
+ *
+ * @returns {boolean} Boolean indicating success of the command.
+ */
+function restartNtpSync() {
+  const proc = child_process.spawnSync(
+    'sudo',
+    ['systemctl', 'restart', 'systemd-timesyncd.service']
+  );
+  return proc.status === 0;
+}
+
 module.exports = {
   getDhcpServerStatus,
   setDhcpServerStatus,
@@ -819,4 +1026,12 @@ module.exports = {
   restartSystem,
   scanWirelessNetworks,
   update,
+  getValidTimezones,
+  getTimezone,
+  setTimezone,
+  getValidWirelessCountries,
+  getWirelessCountry,
+  setWirelessCountry,
+  getNtpStatus,
+  restartNtpSync,
 };

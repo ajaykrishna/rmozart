@@ -10,6 +10,7 @@
 'use strict';
 
 const BaseComponent = require('../base-component');
+const fluent = require('../../fluent');
 
 const template = document.createElement('template');
 template.innerHTML = `
@@ -45,13 +46,12 @@ template.innerHTML = `
       font-weight: bold;
       text-transform: uppercase;
       padding-top: 8.75rem;
-      font-size: 1.2rem;
+      font-size: 1.4rem;
     }
 
     .webthing-alarm-capability-icon.alarm
     .webthing-alarm-capability-label {
       color: #5d9bc7;
-      font-size: 1.4rem;
     }
   </style>
   <div id="icon" class="webthing-alarm-capability-icon">
@@ -83,13 +83,13 @@ class AlarmCapability extends BaseComponent {
 
     if (value === null) {
       this._icon.classList.remove('alarm');
-      this._label.innerText = '...';
+      this._label.innerText = fluent.getMessage('ellipses');
     } else if (this._alarm) {
       this._icon.classList.add('alarm');
-      this._label.innerText = 'ALARM';
+      this._label.innerText = fluent.getMessage('alarm');
     } else {
       this._icon.classList.remove('alarm');
-      this._label.innerText = 'OK';
+      this._label.innerText = fluent.getMessage('ok');
     }
   }
 }

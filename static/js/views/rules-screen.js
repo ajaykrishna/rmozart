@@ -1,7 +1,7 @@
 /**
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/.*
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
 const API = require('../api');
@@ -29,9 +29,7 @@ const RulesScreen = {
    * @return {Promise<Array<RuleDescription>>}
    */
   readRules: function readRules() {
-    return fetch('/rules', {headers: API.headers()}).then((res) => {
-      return res.json();
-    }).then((fetchedRules) => {
+    return API.getRules().then((fetchedRules) => {
       this.rulesList.querySelectorAll('.rule').forEach((elt) => {
         elt.parentNode.removeChild(elt);
       });

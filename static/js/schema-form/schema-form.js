@@ -18,6 +18,7 @@ const Validator = require('./validator');
 const SchemaField = require('./schema-field');
 const ErrorField = require('./error-field');
 const Utils = require('../utils');
+const fluent = require('../fluent');
 
 class SchemaForm {
   constructor(schema, id, name, formData, onSubmit, options = {}) {
@@ -34,7 +35,7 @@ class SchemaForm {
                                                     formData,
                                                     this.definitions);
     this.submitText =
-      options.hasOwnProperty('submitText') ? options.submitText : 'Submit';
+      options.hasOwnProperty('submitText') ? options.submitText : '';
     this.noValidate =
       options.hasOwnProperty('validate') ? !options.validate : false;
     this.liveValidate =
@@ -77,7 +78,11 @@ class SchemaForm {
     submitButton.id = `submit-${Utils.escapeHtml(this.id)}`;
     submitButton.type = 'button';
     submitButton.className = 'button-submit';
-    submitButton.innerText = this.submitText;
+    if (this.submitText) {
+      submitButton.innerText = this.submitText;
+    } else {
+      submitButton.innerText = fluent.getMessage('submit');
+    }
     submitButton.addEventListener('click', this.handleSubmit.bind(this));
     submitButton.disabled = true;
 

@@ -8,6 +8,8 @@
 
 'use strict';
 
+const fluent = require('./fluent');
+
 const Utils = {
   /**
    * @param {String} str
@@ -67,33 +69,33 @@ const Utils = {
 
     let fuzzy;
     if (delta < 5) {
-      fuzzy = 'now';
+      fuzzy = fluent.getMessage('utils-now');
     } else if (delta < minute) {
-      fuzzy = `${delta} secs ago`;
+      fuzzy = `${delta} ${fluent.getMessage('utils-secs-ago')}`;
     } else if (delta < 2 * minute) {
-      fuzzy = '1 min ago';
+      fuzzy = `1 ${fluent.getMessage('utils-min-ago')}`;
     } else if (delta < hour) {
-      fuzzy = `${Math.floor(delta / minute)} mins ago`;
+      fuzzy = `${Math.floor(delta / minute)} ${fluent.getMessage('utils-mins-ago')}`;
     } else if (delta < 2 * hour) {
-      fuzzy = '1 hour ago';
+      fuzzy = `1 ${fluent.getMessage('utils-hour-ago')}`;
     } else if (delta < day) {
-      fuzzy = `${Math.floor(delta / hour)} hours ago`;
+      fuzzy = `${Math.floor(delta / hour)} ${fluent.getMessage('utils-hours ago')}`;
     } else if (delta < 2 * day) {
-      fuzzy = '1 day ago';
+      fuzzy = `1 ${fluent.getMessage('utils-day-ago')}`;
     } else if (delta < week) {
-      fuzzy = `${Math.floor(delta / day)} days ago`;
+      fuzzy = `${Math.floor(delta / day)} ${fluent.getMessage('utils-days-ago')}`;
     } else if (delta < 2 * week) {
-      fuzzy = '1 week ago';
+      fuzzy = `1 ${fluent.getMessage('utils-week-ago')}`;
     } else if (delta < month) {
-      fuzzy = `${Math.floor(delta / week)} weeks ago`;
+      fuzzy = `${Math.floor(delta / week)} ${fluent.getMessage('utils-weeks-ago')}`;
     } else if (delta < 2 * month) {
-      fuzzy = '1 month ago';
+      fuzzy = `1 ${fluent.getMessage('utils-month-ago')}`;
     } else if (delta < year) {
-      fuzzy = `${Math.floor(delta / month)} months ago`;
+      fuzzy = `${Math.floor(delta / month)} ${fluent.getMessage('utils-months-ago')}`;
     } else if (delta < 2 * year) {
-      fuzzy = '1 year ago';
+      fuzzy = `1 ${fluent.getMessage('utils-year-ago')}`;
     } else {
-      fuzzy = `${Math.floor(delta / year)} years ago`;
+      fuzzy = `${Math.floor(delta / year)} ${fluent.getMessage('utils-years-ago')}`;
     }
 
     return fuzzy;
@@ -123,91 +125,6 @@ const Utils = {
         timeout = setTimeout(exec, debounceMode ? delay : delay - elapsed);
       }
     };
-  },
-  unitNameToAbbreviation: (unit) => {
-    if (!unit) {
-      return '';
-    }
-
-    switch (unit.toLowerCase()) {
-      case 'volt':
-      case 'volts':
-        return 'V';
-
-      case 'hertz':
-        return 'Hz';
-
-      case 'amp':
-      case 'amps':
-      case 'ampere':
-      case 'amperes':
-        return 'A';
-
-      case 'watt':
-      case 'watts':
-        return 'W';
-
-      case 'kilowatt hour':
-      case 'kilowatt-hour':
-      case 'kilowatt hours':
-      case 'kilowatt-hours':
-        return 'kW⋅h';
-
-      case 'percent':
-        return '%';
-
-      case 'degree fahrenheit':
-      case 'degrees fahrenheit':
-      case 'fahrenheit':
-        return '°F';
-
-      case 'degree celsius':
-      case 'degrees celsius':
-      case 'celsius':
-        return '°C';
-
-      case 'kelvin':
-        return 'K';
-
-      case 'meter':
-      case 'meters':
-      case 'metre':
-      case 'metres':
-        return 'm';
-
-      case 'kilometer':
-      case 'kilometers':
-      case 'kilometre':
-      case 'kilometres':
-        return 'km';
-
-      case 'day':
-      case 'days':
-        return 'd';
-
-      case 'hour':
-      case 'hours':
-        return 'h';
-
-      case 'minute':
-      case 'minutes':
-        return 'min';
-
-      case 'second':
-      case 'seconds':
-        return 's';
-
-      case 'millisecond':
-      case 'milliseconds':
-        return 'ms';
-
-      case 'foot':
-      case 'feet':
-        return 'ft';
-
-      default:
-        return unit;
-    }
   },
   colorTemperatureToRGB: (value) => {
     /**
@@ -284,6 +201,8 @@ const Utils = {
     const list = capabilities.slice();
 
     const priority = [
+      'Lock',
+      'Thermostat',
       'VideoCamera',
       'Camera',
       'SmartPlug',
@@ -291,6 +210,7 @@ const Utils = {
       'MultiLevelSwitch',
       'OnOffSwitch',
       'ColorControl',
+      'ColorSensor',
       'EnergyMonitor',
       'DoorSensor',
       'MotionSensor',
@@ -315,6 +235,60 @@ const Utils = {
     });
 
     return list;
+  },
+  /**
+   * Convert from a long description id (href) to a thing model id (just the
+   * last part of the href)
+   * @param {string} longId
+   * @return {string}
+   */
+  descriptionIdToModelId: function(longId) {
+    const parts = longId.split('/');
+    return parts[parts.length - 1];
+  },
+
+  /**
+   * Adjust an input value to match schema bounds.
+   *
+   * @param {number} value - Value to adjust
+   * @returns {number} Adjusted value
+   */
+  adjustInputValue: function(value, schema) {
+    if (typeof value !== 'number') {
+      return value;
+    }
+
+    let multipleOf = schema.multipleOf;
+    if (typeof multipleOf !== 'number' && schema.type === 'integer') {
+      multipleOf = 1;
+    }
+
+    if (typeof multipleOf === 'number') {
+      value = Math.round(value / multipleOf) * multipleOf;
+
+      // Deal with floating point nonsense
+      if (`${multipleOf}`.includes('.')) {
+        const precision = `${multipleOf}`.split('.')[1].length;
+        value = Number(value.toFixed(precision));
+      }
+    }
+
+    if (schema.hasOwnProperty('minimum')) {
+      value = Math.max(value, schema.minimum);
+    }
+
+    if (schema.hasOwnProperty('maximum')) {
+      value = Math.min(value, schema.maximum);
+    }
+
+    // If there is an enum, match the closest enum value
+    if (schema.hasOwnProperty('enum')) {
+      value = schema.enum.sort(
+        (a, b) => Math.abs(a - value) - Math.abs(b - value)
+      )[0];
+    }
+
+    return value;
   },
 };
 

@@ -40,6 +40,11 @@ class NumberProperty extends BaseComponent {
       transform: translate(-50%, -50%);
     }
 
+    .webthing-number-property-contents.one-line {
+      left: 5rem;
+      width: 100%;
+    }
+
     .webthing-number-property-input {
       height: 1.75rem;
       width: 6rem;
@@ -53,6 +58,16 @@ class NumberProperty extends BaseComponent {
       font-size: 1.6rem;
     }
 
+    .webthing-number-property-contents.one-line > form,
+    .webthing-number-property-contents.one-line > div {
+      display: inline-block;
+    }
+
+    .webthing-number-property-contents.one-line > form > input {
+      width: 5rem;
+      margin: 0;
+    }
+
     .webthing-number-property-input.hide-spinner::-webkit-inner-spin-button,
     .webthing-number-property-input.hide-spinner::-webkit-outer-spin-button {
       -webkit-appearance: textfield;
@@ -62,6 +77,7 @@ class NumberProperty extends BaseComponent {
       -moz-appearance: textfield;
     }
 
+    .webthing-number-property-unit.one-line.hidden,
     .webthing-number-property-unit.hidden {
       display: none;
     }
@@ -87,6 +103,8 @@ class NumberProperty extends BaseComponent {
 `;
     super(template);
 
+    this._contents = this.shadowRoot.querySelector(
+      '.webthing-number-property-contents');
     this._form = this.shadowRoot.querySelector(
       '.webthing-number-property-form');
     this._input = this.shadowRoot.querySelector(
@@ -101,6 +119,7 @@ class NumberProperty extends BaseComponent {
     this._onBlur = this.__onBlur.bind(this);
 
     this._haveClickListener = false;
+    this._oneLine = false;
   }
 
   connectedCallback() {
@@ -121,6 +140,10 @@ class NumberProperty extends BaseComponent {
 
     this._form.addEventListener('submit', this._onSubmit);
     this._input.addEventListener('blur', this._onBlur);
+
+    if (this._oneLine) {
+      this._contents.classList.add('one-line');
+    }
   }
 
   disconnectedCallback() {
@@ -156,6 +179,7 @@ class NumberProperty extends BaseComponent {
 
   set step(value) {
     this._input.step = value;
+    this._setInputClass();
   }
 
   get value() {
@@ -163,6 +187,19 @@ class NumberProperty extends BaseComponent {
   }
 
   set value(value) {
+    let step = this.step;
+    if (step !== '' && step !== 'any') {
+      step = parseFloat(step);
+      value = Math.round(value / step) * step;
+
+      let precision = 0;
+      if (`${step}`.includes('.')) {
+        precision = `${step}`.split('.')[1].length;
+      }
+
+      value = value.toFixed(precision);
+    }
+
     this._input.value = value;
   }
 
@@ -202,7 +239,8 @@ class NumberProperty extends BaseComponent {
     const min = parseInt(this.min, 10);
     const max = parseInt(this.max, 10);
 
-    if (isNaN(min) || min === null || isNaN(max) || max === null) {
+    if (isNaN(min) || min === null || isNaN(max) || max === null ||
+        this.step === '' || this.step === 'any') {
       this._input.classList.add('hide-spinner');
 
       if (this._haveClickListener) {

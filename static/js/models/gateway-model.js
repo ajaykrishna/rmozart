@@ -8,16 +8,21 @@
 'use strict';
 
 const API = require('../api');
-const Model = require('./model');
-const ThingModel = require('./thing-model');
+const Utils = require('../utils');
 const Constants = require('../constants');
+const Model = require('./model');
+const ReopeningWebSocket = require('./reopening-web-socket');
+const ThingModel = require('./thing-model');
 
 class GatewayModel extends Model {
   constructor() {
     super();
     this.thingModels = new Map();
     this.things = new Map();
+    this.connectedThings = new Map();
+    this.onMessage = this.onMessage.bind(this);
     this.queue = Promise.resolve(true);
+    this.connectWebSocket();
     this.refreshThings();
     return this;
   }
@@ -48,11 +53,14 @@ class GatewayModel extends Model {
 
   setThing(thingId, description) {
     if (!this.thingModels.has(thingId)) {
-      const thingModel = new ThingModel(description);
+      const thingModel = new ThingModel(description, this.ws);
       thingModel.subscribe(
         Constants.DELETE_THING,
         this.handleRemove.bind(this)
       );
+      if (this.connectedThings.has(thingId)) {
+        thingModel.onConnected(this.connectedThings.get(thingId));
+      }
       this.thingModels.set(thingId, thingModel);
     }
     this.things.set(thingId, description);
@@ -127,22 +135,26 @@ class GatewayModel extends Model {
     return this.handleEvent(Constants.DELETE_THINGS, this.things);
   }
 
-  refreshThings() {
-    const opts = {
-      headers: {
-        Authorization: `Bearer ${API.jwt}`,
-        Accept: 'application/json',
-      },
-    };
+  connectWebSocket() {
+    const thingsHref = `${window.location.origin}/things?jwt=${API.jwt}`;
+    const wsHref = thingsHref.replace(/^http/, 'ws');
+    this.ws = new ReopeningWebSocket(wsHref);
+    this.ws.addEventListener('message', this.onMessage);
+  }
 
+  onMessage(event) {
+    const message = JSON.parse(event.data);
+
+    if (message.messageType !== 'connected') {
+      return;
+    }
+    this.connectedThings.set(Utils.descriptionIdToModelId(message.id),
+                             message.data);
+  }
+
+  refreshThings() {
     return this.addQueue(() => {
-      return fetch('/things', opts).then((response) => {
-        if (response.ok) {
-          return response.json();
-        } else {
-          throw new Error(`response status:${response.statusText}`);
-        }
-      }).then((things) => {
+      return API.getThings().then((things) => {
         things.forEach((description) => {
           const thingId = description.href.split('/').pop();
           this.setThing(thingId, description);
@@ -155,22 +167,8 @@ class GatewayModel extends Model {
   }
 
   refreshThing(thingId) {
-    const opts = {
-      headers: {
-        Authorization: `Bearer ${API.jwt}`,
-        Accept: 'application/json',
-      },
-    };
-
     return this.addQueue(() => {
-      return fetch(`/things/${encodeURIComponent(thingId)}`,
-                   opts).then((response) => {
-        if (response.ok) {
-          return response.json();
-        } else {
-          throw new Error(`response status:${response.statusText}`);
-        }
-      }).then((description) => {
+      return API.getThing(thingId).then((description) => {
         if (!description) {
           throw new Error(`Unavailable Thing Description: ${description}`);
         }

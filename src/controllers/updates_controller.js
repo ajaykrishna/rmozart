@@ -6,6 +6,7 @@ const fs = require('fs');
 const fetch = require('node-fetch');
 const semver = require('semver');
 const PromiseRouter = require('express-promise-router');
+const Utils = require('../utils');
 
 const pkg = require('../../package.json');
 
@@ -79,7 +80,8 @@ UpdatesController.get('/latest', async (request, response) => {
 
   const res = await fetch(
     config.get('updateUrl'),
-    {headers: {'User-Agent': `mozilla-iot-gateway/${pkg.version}`}});
+    {headers: {'User-Agent': Utils.getGatewayUserAgent()}}
+  );
 
   const releases = await res.json();
   if (!releases || !releases.filter) {
@@ -161,7 +163,7 @@ UpdatesController.post('/update', async (request, response) => {
   childProcess.exec('sudo systemctl start ' +
     'mozilla-iot-gateway.check-for-update.service');
 
-  response.end();
+  response.json({});
 });
 
 module.exports = UpdatesController;

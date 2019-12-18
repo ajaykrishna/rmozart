@@ -13,7 +13,9 @@
 const App = require('../app');
 const Constants = require('../constants');
 const Icons = require('../icons');
+const Units = require('../units');
 const Utils = require('../utils');
+const fluent = require('../fluent');
 
 const LEFT_MOUSE_BUTTON = 1;
 const RIGHT_MOUSE_BUTTON = 2;
@@ -183,10 +185,10 @@ class Log {
     const oneDayMs = 24 * oneHourMs;
     const oneWeekMs = 7 * oneDayMs;
     const options = [
-      {name: 'Minute', value: oneMinuteMs},
-      {name: 'Hour', value: oneHourMs},
-      {name: 'Day', value: oneDayMs},
-      {name: 'Week', value: oneWeekMs},
+      {name: fluent.getMessage('minute'), value: oneMinuteMs},
+      {name: fluent.getMessage('hour'), value: oneHourMs},
+      {name: fluent.getMessage('day'), value: oneDayMs},
+      {name: fluent.getMessage('week'), value: oneWeekMs},
     ];
     const currentValue = this.end.getTime() - this.start.getTime();
     let anySelected = false;
@@ -254,8 +256,8 @@ class Log {
     }
     const thingName = thing.title;
     this.property = this.thingModel.propertyDescriptions[this.propertyId];
-    const propertyName = this.property.title ||
-      Utils.capitalize(this.propertyId);
+    const propertyName = (this.property && this.property.title) ||
+      (this.propertyId && Utils.capitalize(this.propertyId)) || '';
     const formattedName = `${thingName} ${propertyName}`;
     if (this.soloView) {
       document.querySelector('.logs-header').textContent = formattedName;
@@ -273,8 +275,9 @@ class Log {
       this.icon.style.backgroundImage = `url(${iconUrl})`;
     }
 
-    const propertyUnit = this.property.unit || '';
-    this.yAxisLabel.textContent = Utils.unitNameToAbbreviation(propertyUnit);
+    const propertyUnit =
+      Units.convert(0, (this.property && this.property.unit) || '').unit;
+    this.yAxisLabel.textContent = Units.nameToAbbreviation(propertyUnit);
 
     this.thingModel.subscribe(Constants.PROPERTY_STATUS, this.onPropertyStatus);
 
@@ -289,7 +292,7 @@ class Log {
 
   addRawPoint(point) {
     this.rawPoints.push({
-      value: point.value,
+      value: Units.convert(point.value, this.property.unit).value,
       time: point.date,
     });
 
@@ -325,8 +328,8 @@ class Log {
       if (this.property.hasOwnProperty('minimum') &&
           this.property.hasOwnProperty('maximum')) {
         return {
-          min: this.property.minimum,
-          max: this.property.maximum,
+          min: Units.convert(this.property.minimum, this.property.unit).value,
+          max: Units.convert(this.property.maximum, this.property.unit).value,
         };
       } else {
         return {
@@ -350,8 +353,10 @@ class Log {
 
     if (this.property.hasOwnProperty('minimum') &&
         this.property.hasOwnProperty('maximum')) {
-      const propMin = this.property.minimum;
-      const propMax = this.property.maximum;
+      const propMin =
+        Units.convert(this.property.minimum, this.property.unit).value;
+      const propMax =
+        Units.convert(this.property.maximum, this.property.unit).value;
       // If the description's min and max aren't ridiculously out of proportion
       // use them since they likely have good properties
       if ((propMax - propMin) / (max - min + 0.001) < 3 &&
@@ -594,7 +599,7 @@ class Log {
     bonusPlaces = bonusPlaces || 0;
     let labelText;
     if (this.property.type === 'boolean') {
-      labelText = this.propertyLabel(value);
+      labelText = this.propertyLabel(value).toLocaleUpperCase();
     } else if (Math.floor(value) === value) {
       labelText = value.toFixed(0);
     } else {
@@ -827,18 +832,30 @@ class Log {
     if (this.property.type === 'boolean') {
       switch (this.property['@type']) {
         case 'OnOffProperty':
-          return value ? 'ON' : 'OFF';
+          return value ?
+            fluent.getMessage('on') :
+            fluent.getMessage('off');
         case 'MotionProperty':
-          return value ? 'MOTION' : 'NO MOTION';
+          return value ?
+            fluent.getMessage('motion') :
+            fluent.getMessage('no-motion');
         case 'OpenProperty':
-          return value ? 'OPEN' : 'CLOSED';
+          return value ?
+            fluent.getMessage('open') :
+            fluent.getMessage('closed');
         case 'LeakProperty':
-          return value ? 'LEAK' : 'DRY';
+          return value ?
+            fluent.getMessage('leak') :
+            fluent.getMessage('dry');
         case 'PushedProperty':
-          return value ? 'PUSHED' : 'NOT PUSHED';
+          return value ?
+            fluent.getMessage('pushed') :
+            fluent.getMessage('not-pushed');
         case 'BooleanProperty':
         default:
-          return value ? 'TRUE' : 'FALSE';
+          return value ?
+            fluent.getMessage('true') :
+            fluent.getMessage('false');
       }
     }
     return `${value}`;
@@ -1033,7 +1050,9 @@ class Log {
     this.tooltip.style.transform = `translate(${x}px,${y}px)`;
     const valueLabel = this.valueToLabel(point.value, 2);
 
-    const unit = Utils.unitNameToAbbreviation(this.property.unit || '');
+    const unit = Units.nameToAbbreviation(
+      Units.convert(0, this.property.unit || '').unit
+    );
     this.tooltipValue.textContent = `${valueLabel} ${unit}`;
 
     // const dateParts = new Date(point.time).toDateString().split(' ');
@@ -1188,8 +1207,13 @@ class Log {
     if (this.elt.parentNode) {
       this.elt.parentNode.removeChild(this.elt);
     }
-    this.thingModel.unsubscribe(Constants.PROPERTY_STATUS,
-                                this.onPropertyStatus);
+
+    // this model can get in a weird state if the thing is removed
+    if (this.thingModel) {
+      this.thingModel.unsubscribe(Constants.PROPERTY_STATUS,
+                                  this.onPropertyStatus);
+    }
+
     if (this.liveScrollFrameRequest) {
       window.cancelAnimationFrame(this.liveScrollFrameRequest);
       this.liveScrollFrameRequest = null;

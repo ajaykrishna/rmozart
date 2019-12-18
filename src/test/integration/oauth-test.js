@@ -75,8 +75,8 @@ describe('oauth/', function() {
       expect(req.query.state).toEqual('somethingrandom');
 
       oauth2.authorizationCode.getToken({code: code}).then((result) => {
-        const token = oauth2.accessToken.create(result);
-        res.json(token);
+        const {token} = oauth2.accessToken.create(result);
+        res.json({token});
       }).catch((err) => {
         res.status(400).json(err.data.payload);
       });
@@ -93,8 +93,8 @@ describe('oauth/', function() {
       expect(req.query.state).toEqual('somethingrandom');
 
       oauth2.authorizationCode.getToken({code: code}).then((result) => {
-        const token = oauth2.accessToken.create(result);
-        res.json(Object.assign({bonus: true}, token));
+        const {token} = oauth2.accessToken.create(result);
+        res.json(Object.assign({bonus: true}, {token}));
       }).catch((err) => {
         res.status(400).json(err.data.payload);
       });
@@ -110,6 +110,7 @@ describe('oauth/', function() {
     clientServer.close();
     oauth2 = null;
     await e2p(clientServer, 'close');
+    // eslint-disable-next-line require-atomic-updates
     clientServer = null;
   });
 
@@ -131,8 +132,7 @@ describe('oauth/', function() {
         authorizationMethod,
       },
       http: {
-        headers: {
-        },
+        headers: {},
       },
     }, configProvided || {});
 
@@ -187,7 +187,7 @@ describe('oauth/', function() {
       .delete(`${Constants.OAUTHCLIENTS_PATH}/${CLIENT_ID}`)
       .set('Accept', 'application/json')
       .set(...headerAuth(userJWT));
-    expect(res.status).toEqual(200);
+    expect(res.status).toEqual(204);
 
     res = await chai.request(server)
       .get(Constants.OAUTHCLIENTS_PATH)

@@ -15,6 +15,7 @@ const API = require('../api');
 const App = require('../app');
 const AddonConfig = require('./addon-config');
 const DiscoveredAddon = require('./discovered-addon');
+const fluent = require('../fluent');
 const InstalledAddon = require('./installed-addon');
 const ipRegex = require('ip-regex')({exact: true});
 const Menu = require('./menu');
@@ -49,6 +50,8 @@ const SettingsScreen = {
     this.discoverAddonsButton =
       document.getElementById('discover-addons-button');
     this.experimentSettings = document.getElementById('experiment-settings');
+    this.localizationSettings =
+      document.getElementById('localization-settings');
     this.updateSettings = document.getElementById('update-settings');
     this.authorizationSettings =
       document.getElementById('authorization-settings');
@@ -61,37 +64,45 @@ const SettingsScreen = {
     this.fetchAvailableAddonsDeferred = null;
     this.availableAddonsLastFetched = null;
 
-    this.insertTitleElement(this.menu, 'Settings',
+    this.insertTitleElement(this.menu, fluent.getMessage('settings'),
                             '/optimized-images/settings-icon.png');
-    this.insertTitleElement(this.domainSettings, 'Domain',
+    this.insertTitleElement(this.domainSettings, fluent.getMessage('domain'),
                             '/optimized-images/domain-icon.png');
-    this.insertTitleElement(this.userSettingsMain, 'Users',
+    this.insertTitleElement(this.userSettingsMain, fluent.getMessage('users'),
                             '/optimized-images/users-icon.png');
-    this.insertTitleElement(this.userSettingsEdit, 'Edit User',
+    this.insertTitleElement(this.userSettingsEdit,
+                            fluent.getMessage('edit-user'),
                             '/optimized-images/user.svg');
-    this.insertTitleElement(this.userSettingsAdd, 'Add User',
+    this.insertTitleElement(this.userSettingsAdd, fluent.getMessage('add-user'),
                             '/optimized-images/user.svg');
-    this.insertTitleElement(this.adapterSettings, 'Adapters',
+    this.insertTitleElement(this.adapterSettings, fluent.getMessage('adapters'),
                             '/optimized-images/adapters-icon.png');
-    this.insertTitleElement(this.addonMainSettings, 'Add-ons',
+    this.insertTitleElement(this.addonMainSettings, fluent.getMessage('addons'),
                             '/optimized-images/add-on.svg');
     const addonConfigTitle =
       this.insertTitleElement(this.addonConfigSettings,
-                              'Configure Add-on',
+                              fluent.getMessage('addon-config'),
                               '/optimized-images/add-on.svg');
     this.addonConfigTitleName =
       addonConfigTitle.querySelector('.section-title-name');
 
     this.insertTitleElement(this.addonDiscoverySettings,
-                            'Discover New Add-ons',
+                            fluent.getMessage('addon-discovery'),
                             '/optimized-images/add-on.svg');
-    this.insertTitleElement(this.experimentSettings, 'Experiments',
+    this.insertTitleElement(this.experimentSettings,
+                            fluent.getMessage('experiments'),
                             '/optimized-images/experiments-icon.png');
-    this.insertTitleElement(this.updateSettings, 'Updates',
+    this.insertTitleElement(this.localizationSettings,
+                            fluent.getMessage('localization'),
+                            '/optimized-images/localization-icon.svg');
+    this.insertTitleElement(this.updateSettings,
+                            fluent.getMessage('updates'),
                             '/optimized-images/update-icon.svg');
-    this.insertTitleElement(this.authorizationSettings, 'Authorizations',
+    this.insertTitleElement(this.authorizationSettings,
+                            fluent.getMessage('authorizations'),
                             '/optimized-images/authorization.svg');
-    this.insertTitleElement(this.developerSettings, 'Developer',
+    this.insertTitleElement(this.developerSettings,
+                            fluent.getMessage('developer'),
                             '/optimized-images/developer-icon.svg');
 
     this.discoverAddonsButton.addEventListener('click', () => {
@@ -101,7 +112,32 @@ const SettingsScreen = {
       page('/settings/users/add');
     });
 
+    this.setupDomainElements();
     this.setupNetworkElements();
+    this.setupUserElements();
+    this.setupLocalizationElements();
+    this.setupUpdateElements();
+    this.setupExperimentElements();
+    this.setupDeveloperElements();
+  },
+
+  setupDomainElements: function() {
+    this.elements.domain = {
+      update: document.getElementById('domain-settings-local-update'),
+      localName: document.getElementById('domain-settings-local-name'),
+      localCheckbox: document.getElementById('domain-settings-local-checkbox'),
+      tunnelName: document.getElementById('domain-settings-tunnel-name'),
+    };
+
+    this.elements.domain.update.addEventListener(
+      'click',
+      this.onLocalDomainClick.bind(this)
+    );
+
+    this.elements.domain.localCheckbox.addEventListener(
+      'change',
+      this.onLocalDomainCheckboxChange.bind(this)
+    );
   },
 
   /* eslint-disable max-len */
@@ -184,42 +220,42 @@ const SettingsScreen = {
     // Set up title elements
     this.insertTitleElement(
       this.elements.network.unsupported.main,
-      'Network',
+      fluent.getMessage('network'),
       '/optimized-images/network.svg'
     );
     this.insertTitleElement(
       this.elements.network.client.main,
-      'Network',
+      fluent.getMessage('network'),
       '/optimized-images/network.svg'
     );
     this.insertTitleElement(
       this.elements.network.client.ethernet.main,
-      'Ethernet',
+      fluent.getMessage('network-settings-ethernet'),
       '/optimized-images/ethernet.svg'
     );
     this.elements.network.client.wifi.title = this.insertTitleElement(
       this.elements.network.client.wifi.main,
-      'Wi-Fi',
+      fluent.getMessage('network-settings-wifi'),
       '/optimized-images/wifi.svg'
     ).querySelector('.section-title-name');
     this.insertTitleElement(
       this.elements.network.router.main,
-      'Network',
+      fluent.getMessage('network'),
       '/optimized-images/network.svg'
     );
     this.insertTitleElement(
       this.elements.network.router.wan.main,
-      'Internet (WAN)',
+      fluent.getMessage('network-settings-internet-wan'),
       '/optimized-images/internet.svg'
     );
     this.insertTitleElement(
       this.elements.network.router.lan.main,
-      'Home Network (LAN)',
+      fluent.getMessage('network-settings-home-network-lan'),
       '/optimized-images/network.svg'
     );
     this.insertTitleElement(
       this.elements.network.router.wlan.main,
-      'Wi-Fi (WLAN)',
+      fluent.getMessage('network-settings-wifi-wlan'),
       '/optimized-images/wifi.svg'
     );
 
@@ -285,7 +321,7 @@ const SettingsScreen = {
       (ev) => {
         ev.target.disabled = true;
         App.showMessage(
-          'Changing network settings. This may take a minute.',
+          fluent.getMessage('network-settings-changing'),
           3000
         );
 
@@ -301,23 +337,11 @@ const SettingsScreen = {
           };
         }
 
-        fetch('/settings/network/lan', {
-          method: 'PUT',
-          headers: {
-            Authorization: `Bearer ${API.jwt}`,
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(body),
-        }).then((res) => {
-          if (!res.ok) {
-            throw new Error(`Error status: ${res.status}`);
-          }
-
+        API.setLanSettings(body).then(() => {
           page('/settings/network');
           ev.target.disabled = false;
         }).catch((e) => {
-          App.showMessage('Failed to configure ethernet.', 3000);
+          App.showMessage(fluent.getMessage('failed-ethernet-configure'), 3000);
           console.error(`Failed to set ethernet config: ${e}`);
           ev.target.disabled = false;
         });
@@ -350,7 +374,7 @@ const SettingsScreen = {
       (ev) => {
         ev.target.disabled = true;
         App.showMessage(
-          'Changing network settings. This may take a minute.',
+          fluent.getMessage('network-settings-changing'),
           3000
         );
 
@@ -363,24 +387,12 @@ const SettingsScreen = {
           },
         };
 
-        fetch('/settings/network/wireless', {
-          method: 'PUT',
-          headers: {
-            Authorization: `Bearer ${API.jwt}`,
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(body),
-        }).then((res) => {
-          if (!res.ok) {
-            throw new Error(`Error status: ${res.status}`);
-          }
-
+        API.setWlanSettings(body).then(() => {
           page('/settings/network');
           ev.target.disabled = false;
         }).catch((e) => {
-          App.showMessage('Failed to configure wi-fi.', 3000);
-          console.error(`Failed to set wi-fi config: ${e}`);
+          App.showMessage(fluent.getMessage('failed-wifi-configure'), 3000);
+          console.error(`Failed to set Wi-Fi config: ${e}`);
           ev.target.disabled = false;
         });
       }
@@ -451,7 +463,7 @@ const SettingsScreen = {
       (ev) => {
         ev.target.disabled = true;
         App.showMessage(
-          'Changing network settings. This may take a minute.',
+          fluent.getMessage('network-settings-changing'),
           3000
         );
 
@@ -472,23 +484,11 @@ const SettingsScreen = {
           };
         }
 
-        fetch('/settings/network/wan', {
-          method: 'PUT',
-          headers: {
-            Authorization: `Bearer ${API.jwt}`,
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(body),
-        }).then((res) => {
-          if (!res.ok) {
-            throw new Error(`Error status: ${res.status}`);
-          }
-
+        API.setWanSettings(body).then(() => {
           page('/settings/network');
           ev.target.disabled = false;
         }).catch((e) => {
-          App.showMessage('Failed to configure WAN.', 3000);
+          App.showMessage(fluent.getMessage('failed-wan-configure'), 3000);
           console.error(`Failed to set WAN config: ${e}`);
           ev.target.disabled = false;
         });
@@ -509,7 +509,7 @@ const SettingsScreen = {
       (ev) => {
         ev.target.disabled = true;
         App.showMessage(
-          'Changing network settings. This may take a minute.',
+          fluent.getMessage('network-settings-changing'),
           3000
         );
 
@@ -525,37 +525,13 @@ const SettingsScreen = {
           enabled: this.elements.network.router.lan.dhcp.checked,
         };
 
-        fetch('/settings/network/lan', {
-          method: 'PUT',
-          headers: {
-            Authorization: `Bearer ${API.jwt}`,
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(lanBody),
-        }).then((res) => {
-          if (!res.ok) {
-            throw new Error(`Error status: ${res.status}`);
-          }
-
-          return fetch('/settings/network/dhcp', {
-            method: 'PUT',
-            headers: {
-              Authorization: `Bearer ${API.jwt}`,
-              Accept: 'application/json',
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(dhcpBody),
-          });
-        }).then((res) => {
-          if (!res.ok) {
-            throw new Error(`Error status: ${res.status}`);
-          }
-
+        API.setLanSettings(lanBody).then(() => {
+          return API.setDhcpSettings(dhcpBody);
+        }).then(() => {
           page('/settings/network');
           ev.target.disabled = false;
         }).catch((e) => {
-          App.showMessage('Failed to configure LAN.', 3000);
+          App.showMessage(fluent.getMessage('failed-lan-configure'), 3000);
           console.error(`Failed to set LAN config: ${e}`);
           ev.target.disabled = false;
         });
@@ -593,7 +569,7 @@ const SettingsScreen = {
       (ev) => {
         ev.target.disabled = true;
         App.showMessage(
-          'Changing network settings. This may take a minute.',
+          fluent.getMessage('network-settings-changing'),
           3000
         );
 
@@ -609,23 +585,11 @@ const SettingsScreen = {
           };
         }
 
-        fetch('/settings/network/wireless', {
-          method: 'PUT',
-          headers: {
-            Authorization: `Bearer ${API.jwt}`,
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(body),
-        }).then((res) => {
-          if (!res.ok) {
-            throw new Error(`Error status: ${res.status}`);
-          }
-
+        API.setWlanSettings(body).then(() => {
           page('/settings/network');
           ev.target.disabled = false;
         }).catch((e) => {
-          App.showMessage('Failed to configure WLAN.', 3000);
+          App.showMessage(fluent.getMessage('failed-configure-wlan'), 3000);
           console.error(`Failed to set WLAN config: ${e}`);
           ev.target.disabled = false;
         });
@@ -634,6 +598,179 @@ const SettingsScreen = {
     this.validateWlan();
   },
   /* eslint-enable max-len */
+
+  /* eslint-disable max-len */
+  setupUserElements: function() {
+    this.elements.user = {
+      edit: {
+        save: document.getElementById('user-settings-edit-save'),
+        form: document.getElementById('edit-user-form'),
+        id: document.getElementById('user-settings-edit-id'),
+        email: document.getElementById('user-settings-edit-email'),
+        name: document.getElementById('user-settings-edit-name'),
+        password: document.getElementById('user-settings-edit-password'),
+        newPassword: document.getElementById('user-settings-edit-new-password'),
+        confirmPassword: document.getElementById('user-settings-edit-confirm-password'),
+        passwordMismatch: document.getElementById('user-settings-edit-password-mismatch'),
+        error: document.getElementById('user-settings-edit-error'),
+      },
+      add: {
+        save: document.getElementById('user-settings-add-save'),
+        form: document.getElementById('add-user-form'),
+        email: document.getElementById('user-settings-add-email'),
+        name: document.getElementById('user-settings-add-name'),
+        password: document.getElementById('user-settings-add-password'),
+        confirmPassword: document.getElementById('user-settings-add-confirm-password'),
+        passwordMismatch: document.getElementById('user-settings-add-password-mismatch'),
+        error: document.getElementById('user-settings-add-error'),
+      },
+    };
+
+    this.elements.user.edit.form.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      this.elements.user.edit.save.disabled = true;
+      this.elements.user.edit.error.classList.add('hidden');
+      if (this.elements.user.edit.newPassword.value !== '' &&
+          this.elements.user.edit.newPassword.value !==
+            this.elements.user.edit.confirmPassword.value) {
+        this.elements.user.edit.passwordMismatch.classList.remove('hidden');
+        return;
+      } else {
+        this.elements.user.edit.passwordMismatch.classList.add('hidden');
+      }
+
+      const id = parseInt(this.elements.user.edit.id.value, 10);
+      const emailValue = this.elements.user.edit.email.value;
+      const nameValue = this.elements.user.edit.name.value;
+      const passwordValue = this.elements.user.edit.password.value;
+      const newPasswordValue =
+        this.elements.user.edit.newPassword.value !== '' ?
+          this.elements.user.edit.newPassword.value :
+          null;
+
+      API.editUser(id, nameValue, emailValue, passwordValue, newPasswordValue)
+        .then(() => {
+          this.elements.user.edit.save.disabled = false;
+          page('/settings/users');
+        })
+        .catch((err) => {
+          this.elements.user.edit.save.disabled = false;
+          this.elements.user.edit.error.classList.remove('hidden');
+          this.elements.user.edit.error.textContent = err.message;
+          console.error(err);
+        });
+    });
+
+    this.elements.user.add.form.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      this.elements.user.add.save.disabled = true;
+      this.elements.user.add.error.classList.add('hidden');
+      if (this.elements.user.add.password.value !==
+            this.elements.user.add.confirmPassword.value) {
+        this.elements.user.add.passwordMismatch.classList.remove('hidden');
+        return;
+      } else {
+        this.elements.user.add.passwordMismatch.classList.add('hidden');
+      }
+
+      const emailValue = this.elements.user.add.email.value;
+      const nameValue = this.elements.user.add.name.value;
+      const passwordValue = this.elements.user.add.password.value;
+
+      API.addUser(nameValue, emailValue, passwordValue)
+        .then(() => {
+          this.elements.user.add.save.disabled = false;
+          page('/settings/users');
+        })
+        .catch((err) => {
+          this.elements.user.add.save.disabled = false;
+          this.elements.user.add.error.classList.remove('hidden');
+          this.elements.user.add.error.textContent = err.message;
+          console.error(err);
+        });
+    });
+  },
+  /* eslint-enable max-len */
+
+  /* eslint-disable max-len */
+  setupLocalizationElements: function() {
+    this.elements.localization = {
+      country: document.getElementById('localization-settings-country'),
+      timezone: document.getElementById('localization-settings-timezone'),
+      language: document.getElementById('localization-settings-language'),
+      units: {
+        temperature: document.getElementById('localization-settings-units-temperature'),
+      },
+    };
+
+    this.elements.localization.country.addEventListener(
+      'change',
+      (ev) => {
+        API.setCountry(ev.target.value)
+          .catch(console.error);
+      }
+    );
+
+    this.elements.localization.timezone.addEventListener(
+      'change',
+      (ev) => {
+        API.setTimezone(ev.target.value)
+          .then(() => window.location.reload())
+          .catch(console.error);
+      }
+    );
+
+    this.elements.localization.language.addEventListener(
+      'change',
+      (ev) => {
+        API.setLanguage(ev.target.value)
+          .then(() => window.location.reload())
+          .catch(console.error);
+      }
+    );
+
+    this.elements.localization.units.temperature.addEventListener(
+      'change',
+      (ev) => {
+        API.setUnits({temperature: ev.target.value})
+          .then(() => window.location.reload())
+          .catch(console.error);
+      }
+    );
+  },
+  /* eslint-enable max-len */
+
+  setupUpdateElements: function() {
+    this.elements.update = {
+      updateNow: document.getElementById('update-now'),
+    };
+
+    this.elements.update.updateNow.addEventListener(
+      'click',
+      this.onUpdateClick
+    );
+  },
+
+  setupExperimentElements: function() {
+    this.showExperimentCheckbox('assistant', 'assistant-experiment-checkbox');
+    this.showExperimentCheckbox('logs', 'logs-experiment-checkbox');
+  },
+
+  setupDeveloperElements: function() {
+    this.elements.developer = {
+      sshCheckbox: document.getElementById('enable-ssh-checkbox'),
+      logsLink: document.getElementById('view-internal-logs'),
+    };
+
+    this.elements.developer.sshCheckbox.addEventListener('change', (e) => {
+      const value = e.target.checked;
+      API.setSshStatus(value).catch((e) => {
+        console.error(`Failed to toggle SSH: ${e}`);
+      });
+    });
+  },
 
   validateEthernet: function() {
     const valid =
@@ -701,7 +838,7 @@ const SettingsScreen = {
     elt.innerHTML = `
       <div class="section-title-back-flex"></div>
       <div class="section-title-container">
-        <img class="section-title-icon" alt="${name} Icon" src="${icon}" />
+        <img class="section-title-icon" alt="${name} ${fluent.getMessage('icon')}" src="${icon}" />
         <span class="section-title-name">${name}</span>
       </div>
       <div class="section-title-speech-flex"></div>
@@ -740,6 +877,7 @@ const SettingsScreen = {
     this.addonConfigSettings.classList.add('hidden');
     this.addonDiscoverySettings.classList.add('hidden');
     this.experimentSettings.classList.add('hidden');
+    this.localizationSettings.classList.add('hidden');
     this.updateSettings.classList.add('hidden');
     this.authorizationSettings.classList.add('hidden');
     this.developerSettings.classList.add('hidden');
@@ -835,6 +973,9 @@ const SettingsScreen = {
       case 'experiments':
         this.showExperimentSettings();
         break;
+      case 'localization':
+        this.showLocalizationSettings();
+        break;
       case 'updates':
         this.showUpdateSettings();
         break;
@@ -855,19 +996,6 @@ const SettingsScreen = {
 
   showDomainSettings: function() {
     this.domainSettings.classList.remove('hidden');
-    const opts = {
-      headers: API.headers(),
-    };
-
-    const addDomainLocalButton =
-      document.getElementById('domain-settings-local-update');
-    const localDomainName =
-        document.getElementById('domain-settings-local-name');
-    const tunnelDomainName =
-        document.getElementById('domain-settings-tunnel-name');
-
-    addDomainLocalButton.addEventListener(
-      'click', this.onLocalDomainClick.bind(this));
 
     // Comented out until full integration of Dynamic tunnel creation
     // with Service Discovery
@@ -877,28 +1005,22 @@ const SettingsScreen = {
     //     this.onTunnelDomainClick();
     // });
 
-    fetch('/settings/tunnelinfo', opts).then((response) => {
-      return response.json();
-    }).then((body) => {
-      const localDomainCheckbox =
-        document.getElementById('domain-settings-local-checkbox');
-
+    API.getTunnelInfo().then((body) => {
       if (body) {
-        localDomainCheckbox.checked = body.mDNSstate;
-        localDomainName.value = body.localDomain;
-        tunnelDomainName.innerText = body.tunnelDomain;
+        this.elements.domain.localCheckbox.checked = body.mDNSstate;
+        this.elements.domain.localName.value = body.localDomain;
+        this.elements.domain.tunnelName.innerText = body.tunnelDomain;
       } else {
-        localDomainName.value = 'Unknown state.';
-        tunnelDomainName.innerText = 'Unknown state.';
+        this.elements.domain.localName.value =
+          fluent.getMessage('unknown-state');
+        this.elements.domain.tunnelName.innerText =
+          fluent.getMessage('unknown-state');
       }
 
-      if (!localDomainCheckbox.checked) {
-        localDomainName.disabled = true;
-        addDomainLocalButton.disabled = true;
+      if (!this.elements.domain.localCheckbox.checked) {
+        this.elements.domain.localName.disabled = true;
+        this.elements.domain.update.disabled = true;
       }
-
-      localDomainCheckbox.addEventListener(
-        'change', this.onLocalDomainCheckboxChange.bind(this));
     });
   },
 
@@ -906,20 +1028,12 @@ const SettingsScreen = {
     const error = document.getElementById('domain-settings-error');
     const value = e.target.checked ? true : false;
 
-    fetch('/settings/domain', {
-      method: 'PUT',
-      body: JSON.stringify({local: {multicastDNSstate: value}}),
-      headers: {
-        Authorization: `Bearer ${window.API.jwt}`,
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-    }).then(() => {
+    API.setDomainSettings({local: {multicastDNSstate: value}}).then(() => {
       document.getElementById('domain-settings-local-update').disabled = !value;
       document.getElementById('domain-settings-local-name').disabled = !value;
       error.classList.add('hidden');
     }).catch((err) => {
-      const errorMessage = `Error: ${err}`;
+      const errorMessage = `${fluent.getMessage('error')}: ${err}`;
       console.error(errorMessage);
       error.classList.remove('hidden');
       error.textContent = err;
@@ -936,35 +1050,26 @@ const SettingsScreen = {
       document.getElementById('domain-settings-local-name');
     const error = document.getElementById('domain-settings-error');
 
-    fetch('/settings/domain', {
-      method: 'PUT',
-      body: JSON.stringify({local: {localDNSname: localDomainName.value}}),
-      headers: {
-        Authorization: `Bearer ${API.jwt}`,
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-    }).then((response) => {
-      return response.json();
-    }).then((domainJson) => {
-      // if the update was successful, we have a legit local domain and mDNS
-      // is active then redirect
-      if (domainJson.update && domainJson.localDomain.length > 0) {
-        if (domainJson.mDNSstate) {
-          App.showMessage('Update succeeded.', 3000);
+    API.setDomainSettings({local: {localDNSname: localDomainName.value}})
+      .then((domainJson) => {
+        // if the update was successful, we have a legit local domain and mDNS
+        // is active then redirect
+        if (domainJson.update && domainJson.localDomain.length > 0) {
+          if (domainJson.mDNSstate) {
+            App.showMessage('Update succeeded.', 3000);
+          }
+        } else {
+          error.classList.remove('hidden');
+          error.textContent = domainJson.error;
+          document.getElementById('domain-settings-local-name')
+            .value = domainJson.localDomain;
         }
-      } else {
+      }).catch((err) => {
+        const errorMessage = `${fluent.getMessage('error')}: ${err}`;
+        console.error(errorMessage);
         error.classList.remove('hidden');
-        error.textContent = domainJson.error;
-        document.getElementById('domain-settings-local-name')
-          .value = domainJson.localDomain;
-      }
-    }).catch((err) => {
-      const errorMessage = `Error: ${err}`;
-      console.error(errorMessage);
-      error.classList.remove('hidden');
-      error.textContent = err;
-    });
+        error.textContent = err;
+      });
   },
 
   // The button controller to update the mozilla tunnel domain settings.
@@ -1009,11 +1114,7 @@ const SettingsScreen = {
     this.hideNetworkElements();
     this.elements.network.main.classList.remove('hidden');
 
-    fetch('/settings/system/platform', {
-      headers: API.headers(),
-    }).then((res) => {
-      return res.json();
-    }).then((body) => {
+    API.getPlatform().then((body) => {
       switch (body.os) {
         case 'linux-raspbian':
           this.elements.network.client.main.classList.remove('hidden');
@@ -1023,19 +1124,15 @@ const SettingsScreen = {
           break;
         default:
           this.elements.network.unsupported.main.classList.remove('hidden');
-          break;
+          return Promise.resolve(null);
       }
 
-      return fetch('/settings/network/addresses', {
-        headers: API.headers(),
-      });
-    }).then((res) => {
-      if (!res.ok) {
-        throw new Error(`Error status: ${res.status}`);
-      }
-
-      return res.json();
+      return API.getNetworkAddresses();
     }).then((body) => {
+      if (!body) {
+        return;
+      }
+
       this.elements.network.client.ethernet.mainIp.innerText = body.lan;
       this.elements.network.router.lan.mainIp.innerText = body.lan;
       this.elements.network.client.wifi.mainIp.innerText = body.wlan.ip;
@@ -1058,18 +1155,7 @@ const SettingsScreen = {
 
     this.elements.network.client.ethernet.main.classList.remove('hidden');
 
-    fetch('/settings/network/lan', {
-      headers: {
-        Authorization: `Bearer ${API.jwt}`,
-        Accept: 'application/json',
-      },
-    }).then((res) => {
-      if (!res.ok) {
-        throw new Error(`Error status: ${res.status}`);
-      }
-
-      return res.json();
-    }).then((body) => {
+    API.getLanSettings().then((body) => {
       this.elements.network.client.ethernet.mode.value = body.mode || 'dhcp';
       this.elements.network.client.ethernet.ip.value = body.ipdaddr || '';
       this.elements.network.client.ethernet.netmask.value =
@@ -1091,14 +1177,7 @@ const SettingsScreen = {
     this.elements.network.main.classList.remove('hidden');
     this.elements.network.client.wifi.main.classList.remove('hidden');
 
-    fetch('/settings/network/wireless/networks', {
-      headers: {
-        Authorization: `Bearer ${API.jwt}`,
-        Accept: 'application/json',
-      },
-    }).then((res) => {
-      return res.json();
-    }).then((body) => {
+    API.getWirelessNetworks().then((body) => {
       this.elements.network.client.wifi.list.innerHTML = '';
       body.forEach((network) => new WirelessNetwork(network));
     }).catch((e) => {
@@ -1130,18 +1209,7 @@ const SettingsScreen = {
 
     this.elements.network.router.wan.main.classList.remove('hidden');
 
-    fetch('/settings/network/wan', {
-      headers: {
-        Authorization: `Bearer ${API.jwt}`,
-        Accept: 'application/json',
-      },
-    }).then((res) => {
-      if (!res.ok) {
-        throw new Error(`Error status: ${res.status}`);
-      }
-
-      return res.json();
-    }).then((body) => {
+    API.getWanSettings().then((body) => {
       this.elements.network.router.wan.mode.value = body.mode || 'dhcp';
       this.elements.network.router.wan.ip.value = body.ipdaddr || '';
       this.elements.network.router.wan.netmask.value = body.netmask || '';
@@ -1168,34 +1236,12 @@ const SettingsScreen = {
 
     this.elements.network.router.lan.main.classList.remove('hidden');
 
-    fetch('/settings/network/lan', {
-      headers: {
-        Authorization: `Bearer ${API.jwt}`,
-        Accept: 'application/json',
-      },
-    }).then((res) => {
-      if (!res.ok) {
-        throw new Error(`Error status: ${res.status}`);
-      }
-
-      return res.json();
-    }).then((body) => {
+    API.getLanSettings().then((body) => {
       this.elements.network.router.lan.ip.value = body.ipdaddr || '192.168.2.1';
       this.elements.network.router.lan.netmask.value =
         body.netmask || '255.255.255.0';
 
-      return fetch('/settings/network/dhcp', {
-        headers: {
-          Authorization: `Bearer ${API.jwt}`,
-          Accept: 'application/json',
-        },
-      });
-    }).then((res) => {
-      if (!res.ok) {
-        throw new Error(`Error status: ${res.status}`);
-      }
-
-      return res.json();
+      return API.getDhcpSettings();
     }).then((body) => {
       this.elements.network.router.lan.dhcp.checked = body.enabled;
     }).catch((e) => {
@@ -1212,18 +1258,7 @@ const SettingsScreen = {
     this.elements.network.main.classList.remove('hidden');
     this.elements.network.router.wlan.main.classList.remove('hidden');
 
-    fetch('/settings/network/wireless', {
-      headers: {
-        Authorization: `Bearer ${API.jwt}`,
-        Accept: 'application/json',
-      },
-    }).then((res) => {
-      if (!res.ok) {
-        throw new Error(`Error status: ${res.status}`);
-      }
-
-      return res.json();
-    }).then((body) => {
+    API.getWlanSettings().then((body) => {
       this.elements.network.router.wlan.enable.checked = body.enabled;
       this.elements.network.router.wlan.ssid.value = body.options.ssid || '';
       this.elements.network.router.wlan.password.value = body.options.key || '';
@@ -1259,56 +1294,14 @@ const SettingsScreen = {
     this.userSettingsEdit.classList.remove('hidden');
     this.view.classList.add('dark');
 
+    this.elements.user.edit.id.value = id;
     API.getUser(id).then((user) => {
-      const form = document.getElementById('edit-user-form');
-      const email = document.getElementById('user-settings-edit-email');
-      const name = document.getElementById('user-settings-edit-name');
-      const password = document.getElementById('user-settings-edit-password');
-      const newPassword =
-        document.getElementById('user-settings-edit-new-password');
-      const confirmPassword =
-        document.getElementById('user-settings-edit-confirm-password');
-      const passwordMismatch =
-        document.getElementById('user-settings-edit-password-mismatch');
-      const error = document.getElementById('user-settings-edit-error');
-
-      email.value = user.email;
-      name.value = user.name;
-      password.value = '';
-      newPassword.value = '';
-      confirmPassword.value = '';
-      name.focus();
-
-      form.addEventListener('submit', (e) => {
-        e.preventDefault();
-        error.classList.add('hidden');
-        if (newPassword.value !== '' &&
-            newPassword.value !== confirmPassword.value) {
-          passwordMismatch.classList.remove('hidden');
-          return;
-        } else {
-          passwordMismatch.classList.add('hidden');
-        }
-
-        const emailValue = email.value;
-        const nameValue = name.value;
-        const passwordValue = password.value;
-        const newPasswordValue =
-          newPassword.value !== '' ? newPassword.value : null;
-
-        API.editUser(id, nameValue, emailValue, passwordValue,
-                     newPasswordValue)
-          .then(() => {
-            page('/settings/users');
-          })
-          .catch((err) => {
-            error.classList.remove('hidden');
-            error.textContent = err.message;
-            console.error(err);
-          });
-
-        return false;
-      });
+      this.elements.user.edit.email.value = user.email;
+      this.elements.user.edit.name.value = user.name;
+      this.elements.user.edit.password.value = '';
+      this.elements.user.edit.newPassword.value = '';
+      this.elements.user.edit.confirmPassword.value = '';
+      this.elements.user.edit.name.focus();
     });
   },
 
@@ -1320,61 +1313,18 @@ const SettingsScreen = {
     this.userSettingsAdd.classList.remove('hidden');
     this.view.classList.add('dark');
 
-    const form = document.getElementById('add-user-form');
-    const email = document.getElementById('user-settings-add-email');
-    const name = document.getElementById('user-settings-add-name');
-    const password = document.getElementById('user-settings-add-password');
-    const confirmPassword =
-      document.getElementById('user-settings-add-confirm-password');
-    const passwordMismatch =
-      document.getElementById('user-settings-add-password-mismatch');
-    const error = document.getElementById('user-settings-add-error');
-
-    email.value = '';
-    name.value = '';
-    password.value = '';
-    confirmPassword.value = '';
-    name.focus();
-
-    form.addEventListener('submit', (e) => {
-      e.preventDefault();
-      error.classList.add('hidden');
-      if (password.value !== confirmPassword.value) {
-        passwordMismatch.classList.remove('hidden');
-        return;
-      } else {
-        passwordMismatch.classList.add('hidden');
-      }
-
-      const emailValue = email.value;
-      const nameValue = name.value;
-      const passwordValue = password.value;
-
-      API.addUser(nameValue, emailValue, passwordValue)
-        .then(() => {
-          page('/settings/users');
-        })
-        .catch((err) => {
-          error.classList.remove('hidden');
-          error.textContent = err.message;
-          console.error(err);
-        });
-
-      return false;
-    });
+    this.elements.user.add.email.value = '';
+    this.elements.user.add.name.value = '';
+    this.elements.user.add.password.value = '';
+    this.elements.user.add.confirmPassword.value = '';
+    this.elements.user.add.name.focus();
   },
 
   showAdapterSettings: function() {
     this.adapterSettings.classList.remove('hidden');
 
-    const opts = {
-      headers: API.headers(),
-    };
-
     // Fetch a list of adapters from the server
-    fetch('/adapters', opts).then((response) => {
-      return response.json();
-    }).then((adapters) => {
+    API.getAdapters().then((adapters) => {
       const noAdapters = document.getElementById('no-adapters');
       const adaptersList = document.getElementById('adapters-list');
       adaptersList.innerHTML = '';
@@ -1405,26 +1355,22 @@ const SettingsScreen = {
       });
     }
 
-    this.fetchInstalledAddonsDeferred = fetch('/addons', {
-      headers: API.headers(),
-    }).then((response) => {
-      return response.json();
-    }).then((body) => {
-      if (!body) {
-        return;
-      }
-
-      // Store a map of name->version.
-      this.installedAddons.clear();
-      for (const s of body) {
-        try {
-          const settings = JSON.parse(s.value);
-          this.installedAddons.set(settings.name, settings);
-        } catch (err) {
-          console.error(`Failed to parse add-on settings: ${err}`);
+    this.fetchInstalledAddonsDeferred =
+      API.getInstalledAddons().then((body) => {
+        if (!body) {
+          return;
         }
-      }
-    });
+
+        // Store a map of id->version.
+        this.installedAddons.clear();
+        for (const s of body) {
+          try {
+            this.installedAddons.set(s.id, s);
+          } catch (err) {
+            console.error(`Failed to parse add-on settings: ${err}`);
+          }
+        }
+      });
 
     return this.fetchInstalledAddonsDeferred;
   },
@@ -1448,18 +1394,13 @@ const SettingsScreen = {
       });
     }
 
-    this.fetchAvailableAddonsDeferred = fetch('/settings/addonsInfo', {
-      headers: API.headers(),
-    }).then((response) => {
-      return response.json();
-    }).then((data) => {
-      if (!data || !data.urls || !data.api || !data.architecture ||
-          !data.version || !data.nodeVersion) {
+    this.fetchAvailableAddonsDeferred = API.getAddonsInfo().then((data) => {
+      if (!data || !data.urls || !data.architecture || !data.version ||
+          !data.nodeVersion) {
         return;
       }
 
       const params = new URLSearchParams();
-      params.set('api', data.api);
       params.set('arch', data.architecture);
       params.set('version', data.version);
       params.set('node', data.nodeVersion);
@@ -1499,27 +1440,27 @@ const SettingsScreen = {
       for (const body of bodies) {
         for (const addon of body) {
           const entry = {
+            id: addon.id,
             name: addon.name,
-            displayName: addon.display_name,
             description: addon.description,
             author: addon.author,
-            homepage: addon.homepage,
-            license: addon.license,
+            homepage_url: addon.homepage_url,
+            license_url: addon.license_url,
             version: addon.version,
             url: addon.url,
             checksum: addon.checksum,
-            type: addon.type,
-            installed: this.installedAddons.has(addon.name),
+            primary_type: addon.primary_type,
+            installed: this.installedAddons.has(addon.id),
           };
 
           // Check for duplicates, keep newest.
-          if (this.availableAddons.has(addon.name) &&
-              this.compareSemver(this.availableAddons.get(addon.name).version,
+          if (this.availableAddons.has(addon.id) &&
+              this.compareSemver(this.availableAddons.get(addon.id).version,
                                  entry.version) >= 0) {
             continue;
           }
 
-          this.availableAddons.set(addon.name, entry);
+          this.availableAddons.set(addon.id, entry);
         }
       }
     });
@@ -1545,8 +1486,8 @@ const SettingsScreen = {
 
       Array.from(this.installedAddons.entries())
         .sort((a, b) => {
-          const aName = a[1].display_name || a[1].name || '';
-          const bName = b[1].display_name || b[1].name || '';
+          const aName = a[1].name || a[1].id || '';
+          const bName = b[1].name || b[1].id || '';
           return aName.localeCompare(bName);
         })
         .forEach((x) => {
@@ -1561,15 +1502,15 @@ const SettingsScreen = {
     }).then(() => {
       // Compare versions of installed and available add-ons, signaling
       // available updates where necessary.
-      for (const name of Array.from(this.installedAddons.keys()).sort()) {
-        const addon = this.installedAddons.get(name);
+      for (const id of Array.from(this.installedAddons.keys()).sort()) {
+        const addon = this.installedAddons.get(id);
 
-        if (this.availableAddons.has(name)) {
-          const available = this.availableAddons.get(name);
+        if (this.availableAddons.has(id)) {
+          const available = this.availableAddons.get(id);
           const cmp = this.compareSemver(addon.version, available.version);
 
           if (cmp < 0) {
-            const component = components.get(name);
+            const component = components.get(id);
 
             if (component) {
               component.setUpdateAvailable(
@@ -1620,7 +1561,7 @@ const SettingsScreen = {
       addonList.innerHTML = '';
 
       Array.from(this.availableAddons.entries())
-        .sort((a, b) => a[1].displayName.localeCompare(b[1].displayName))
+        .sort((a, b) => a[1].name.localeCompare(b[1].name))
         .forEach((x) => new DiscoveredAddon(x[1],
                                             this.installedAddons,
                                             this.availableAddons));
@@ -1654,8 +1595,6 @@ const SettingsScreen = {
 
   showExperimentSettings: function() {
     this.experimentSettings.classList.remove('hidden');
-    this.showExperimentCheckbox('assistant', 'assistant-experiment-checkbox');
-    this.showExperimentCheckbox('logs', 'logs-experiment-checkbox');
   },
 
   /**
@@ -1690,11 +1629,77 @@ const SettingsScreen = {
     return 0;
   },
 
+  showLocalizationSettings: function() {
+    this.localizationSettings.classList.remove('hidden');
+
+    const countrySelect = this.elements.localization.country;
+    countrySelect.innerHTML = '';
+    countrySelect.disabled = true;
+
+    API.getCountry().then((response) => {
+      for (const country of response.valid) {
+        const option = document.createElement('option');
+        option.value = country;
+        option.innerText = country;
+
+        if (country === response.current) {
+          option.selected = 'selected';
+        }
+
+        countrySelect.appendChild(option);
+      }
+
+      countrySelect.disabled =
+        !response.setImplemented || response.valid.length === 0;
+    }).catch(console.error);
+
+    const timezoneSelect = this.elements.localization.timezone;
+    timezoneSelect.innerHTML = '';
+    timezoneSelect.disabled = true;
+
+    API.getTimezone().then((response) => {
+      for (const zone of response.valid) {
+        const option = document.createElement('option');
+        option.value = zone;
+        option.innerText = zone;
+
+        if (zone === response.current) {
+          option.selected = 'selected';
+        }
+
+        timezoneSelect.appendChild(option);
+      }
+
+      timezoneSelect.disabled =
+        !response.setImplemented || response.valid.length === 0;
+    }).catch(console.error);
+
+    const languageSelect = this.elements.localization.language;
+    languageSelect.innerHTML = '';
+
+    API.getLanguage().then((response) => {
+      for (const lang of response.valid) {
+        const option = document.createElement('option');
+        option.value = lang.code;
+        option.innerText = lang.name;
+
+        if (lang.code === response.current) {
+          option.selected = 'selected';
+        }
+
+        languageSelect.appendChild(option);
+      }
+    }).catch(console.error);
+
+    const temperatureSelect = this.elements.localization.units.temperature;
+
+    API.getUnits().then((response) => {
+      temperatureSelect.value = response.temperature;
+    }).catch(console.error);
+  },
+
   showUpdateSettings: function() {
     this.updateSettings.classList.remove('hidden');
-    const updateNow = document.getElementById('update-now');
-
-    updateNow.addEventListener('click', this.onUpdateClick);
     this.fetchUpdateInfo();
   },
 
@@ -1714,26 +1719,26 @@ const SettingsScreen = {
       }
       if (cmp < 0) {
         // Update available
-        upToDateElt.textContent = 'New version available';
+        upToDateElt.textContent = fluent.getMessage('update-available');
         updateNow.classList.remove('hidden');
         updateNow.classList.remove('disabled');
       } else {
         // All up to date!
-        upToDateElt.textContent = 'Your system is up to date';
+        upToDateElt.textContent = fluent.getMessage('update-up-to-date');
         updateNow.classList.add('hidden');
       }
       versionElt.textContent =
-        `Current version: ${Utils.escapeHtml(status.version)}`;
-      let statusText = 'Last update: ';
+        `${fluent.getMessage('current-version')}: ${Utils.escapeHtml(status.version)}`;
+      let statusText = `${fluent.getMessage('last-update')}: `;
 
       if (status.timestamp) {
         statusText += new Date(status.timestamp).toString();
 
         if (!status.success) {
-          statusText += ' (failed)';
+          statusText += ` (${fluent.getMessage('failed')})`;
         }
       } else {
-        statusText += 'Never';
+        statusText += fluent.getMessage('never');
       }
 
       statusElt.textContent = statusText;
@@ -1745,11 +1750,8 @@ const SettingsScreen = {
     updateNow.removeEventListener('click', this.onUpdateClick);
     updateNow.classList.add('disabled');
 
-    fetch('/updates/update', {
-      headers: API.headers(),
-      method: 'POST',
-    }).then(() => {
-      updateNow.textContent = 'In Progress';
+    API.startUpdate().then(() => {
+      updateNow.textContent = fluent.getMessage('in-progress');
       let isDown = false;
       function checkStatus() {
         API.getUpdateStatus().then(() => {
@@ -1760,7 +1762,7 @@ const SettingsScreen = {
           }
         }).catch(() => {
           if (!isDown) {
-            updateNow.textContent = 'Restarting';
+            updateNow.textContent = fluent.getMessage('restarting');
             isDown = true;
           }
           setTimeout(checkStatus, 5000);
@@ -1768,18 +1770,14 @@ const SettingsScreen = {
       }
       checkStatus();
     }).catch(() => {
-      updateNow.textContent = 'Error';
+      updateNow.textContent = fluent.getMessage('error');
     });
   },
 
   showAuthorizationSettings: function() {
     this.authorizationSettings.classList.remove('hidden');
 
-    fetch('/authorizations', {
-      headers: API.headers(),
-    }).then((response) => {
-      return response.json();
-    }).then((clients) => {
+    API.getAuthorizations().then((clients) => {
       const authorizationsList = document.getElementById('authorizations');
       const noAuthorizations = document.getElementById('no-authorizations');
 
@@ -1829,10 +1827,7 @@ const SettingsScreen = {
     }
     const clientId = revoke.dataset.clientId;
 
-    fetch(`/authorizations/${encodeURIComponent(clientId)}`, {
-      headers: API.headers(),
-      method: 'DELETE',
-    }).then(() => {
+    API.revokeAuthorization(clientId).then(() => {
       const authorization = revoke.parentNode;
       const authorizationsList = authorization.parentNode;
       authorizationsList.removeChild(authorization);
@@ -1849,32 +1844,12 @@ const SettingsScreen = {
   showDeveloperSettings: function() {
     this.developerSettings.classList.remove('hidden');
 
-    document.getElementById('view-internal-logs').href = `/internal-logs?jwt=${API.jwt}`;
-    const sshCheckbox = document.getElementById('enable-ssh-checkbox');
+    this.elements.developer.logsLink.href = `/internal-logs?jwt=${API.jwt}`;
 
-    fetch('/settings/system/ssh', {
-      headers: API.headers(),
-    }).then((response) => {
-      return response.json();
-    }).then((body) => {
-      sshCheckbox.checked = body.enabled;
-      if (body.toggleImplemented) {
-        sshCheckbox.addEventListener('change', (e) => {
-          const value = e.target.checked ? true : false;
-          fetch('/settings/system/ssh', {
-            method: 'PUT',
-            headers: {
-              Authorization: `Bearer ${API.jwt}`,
-              Accept: 'application/json',
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({enabled: value}),
-          }).catch((e) => {
-            console.error(`Failed to toggle SSH: ${e}`);
-          });
-        });
-      } else {
-        sshCheckbox.disabled = true;
+    API.getSshStatus().then((body) => {
+      this.elements.developer.sshCheckbox.checked = body.enabled;
+      if (!body.toggleImplemented) {
+        this.elements.developer.sshCheckbox.disabled = true;
       }
     }).catch((e) => {
       console.error(`Error getting SSH setting: ${e}`);

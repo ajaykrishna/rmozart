@@ -69,6 +69,16 @@ function getArchitecture() {
 }
 
 /**
+ * Determine whether or not we're running inside Docker.
+ */
+function isDocker() {
+  return fs.existsSync('/.dockerenv') ||
+    (fs.existsSync('/proc/1/cgroup') &&
+     fs.readFileSync('/proc/1/cgroup').indexOf(':/docker/') >= 0) ||
+    fs.existsSync('/pantavisor');
+}
+
+/**
  * Get the current node version.
  */
 function getNodeVersion() {
@@ -112,6 +122,7 @@ module.exports = {
   getNodeVersion,
   getOS,
   getPythonVersions,
+  isDocker,
   NotImplementedError,
 };
 
@@ -136,7 +147,10 @@ try {
                                                    'platforms',
                                                    getOS())));
 } catch (_) {
-  console.error(`Failed to import platform utilities for ${getOS()}`);
+  console.log(
+    `Failed to import platform utilities for ${getOS()}.`,
+    'Network and system configuration features will be disabled.'
+  );
   platform = null;
 }
 
@@ -165,6 +179,14 @@ const wrappedMethods = [
   'restartSystem',
   'scanWirelessNetworks',
   'update',
+  'getValidTimezones',
+  'getTimezone',
+  'setTimezone',
+  'getValidWirelessCountries',
+  'getWirelessCountry',
+  'setWirelessCountry',
+  'getNtpStatus',
+  'restartNtpSync',
 ];
 
 for (const method of wrappedMethods) {

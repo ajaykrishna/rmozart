@@ -37,6 +37,7 @@ exports.LOGS_PATH = '/logs';
 exports.PUSH_PATH = '/push';
 exports.PING_PATH = '/ping';
 exports.PROXY_PATH = '/proxy';
+exports.EXTENSIONS_PATH = '/extensions';
 // Remember we end up in the build/* directory so these paths looks slightly
 // different than you might expect.
 exports.STATIC_PATH = path.join(__dirname, '../static');
@@ -52,12 +53,9 @@ exports.ADAPTER_UNLOADED = 'adapterUnloaded';
 exports.ADD_ADAPTER = 'addAdapter';
 exports.ADD_NOTIFIER = 'addNotifier';
 exports.ADD_EVENT_SUBSCRIPTION = 'addEventSubscription';
-exports.ADD_MOCK_DEVICE = 'addMockDevice';
-exports.CANCEL_PAIRING = 'cancelPairing';
-exports.CANCEL_REMOVE_THING = 'cancelRemoveThing';
-exports.CLEAR_MOCK_ADAPTER_STATE = 'clearMockAdapterState';
+exports.API_HANDLER_ADDED = 'apiHandlerAdded';
 exports.CONNECTED = 'connected';
-exports.DEBUG_CMD = 'debugCmd';
+exports.ERROR = 'error';
 exports.EVENT = 'event';
 exports.ERROR = 'error';
 exports.HANDLE_DEVICE_ADDED = 'handleDeviceAdded';
@@ -81,12 +79,7 @@ exports.PLUGIN_ERROR = 'pluginError';
 exports.PLUGIN_UNLOADED = 'pluginUnloaded';
 exports.PROPERTY_CHANGED = 'propertyChanged';
 exports.PROPERTY_STATUS = 'propertyStatus';
-exports.REGISTER_PLUGIN = 'registerPlugin';
-exports.REGISTER_PLUGIN_REPLY = 'registerPluginReply';
-exports.REMOVE_ACTION = 'removeAction';
-exports.REMOVE_ACTION_REJECTED = 'removeActionRejected';
-exports.REMOVE_ACTION_RESOLVED = 'removeActionResolved';
-exports.REMOVE_THING = 'removeThing';
+exports.REMOVED = 'removed';
 exports.REQUEST_ACTION = 'requestAction';
 exports.REQUEST_ACTION_REJECTED = 'requestActionRejected';
 exports.REQUEST_ACTION_RESOLVED = 'requestActionResolved';
@@ -138,4 +131,3 @@ exports.LogSeverity = {
   ERROR: 3,
   PROMPT: 4,
 };
-

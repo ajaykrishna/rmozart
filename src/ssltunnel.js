@@ -1,5 +1,5 @@
 /**
- * MozIoT Gateway Tunnelservice.
+ * Gateway tunnel service.
  *
  * Manages the tunnel service.
  *
@@ -99,16 +99,18 @@ const TunnelService = {
           const needToSend = response && !responseSent;
 
           if (data.indexOf('err=Error in connect') > -1) {
+            console.error('PageKite failed to connect');
             this.connected.reject();
             if (needToSend) {
               responseSent = true;
-              response.status(400).end();
+              response.sendStatus(400);
             }
           } else if (data.indexOf('connect=') > -1) {
+            console.log('PageKite connected!');
             this.connected.resolve();
             if (needToSend) {
               responseSent = true;
-              response.send(urlredirect);
+              response.status(200).json(urlredirect);
             }
           }
         });
@@ -127,11 +129,13 @@ const TunnelService = {
           // Enable push service
           PushService.init(`https://${endpoint}`);
 
+          const renew = () => {
+            return CertificateManager.renew(this.server).catch(() => {});
+          };
+
           // Try to renew certificates immediately, then daily.
-          CertificateManager.renew(this.server).then(() => {
-            this.renewInterval = setInterval(() => {
-              CertificateManager.renew(this.server);
-            }, 24 * 60 * 60 * 1000);
+          renew().then(() => {
+            this.renewInterval = setInterval(renew, 24 * 60 * 60 * 1000);
           });
         }).catch(() => {});
       } else {
@@ -141,8 +145,7 @@ const TunnelService = {
         }
       }
     }).catch((e) => {
-      console.error('Failed to get tunneltoken setting');
-      console.error(e);
+      console.error('Failed to get tunneltoken setting:', e);
 
       if (response) {
         response.status(400).send(e);

@@ -11,6 +11,7 @@
 'use strict';
 
 const Ajv = require('ajv');
+const EventEmitter = require('events');
 
 const AddonManager = require('../addon-manager');
 const Database = require('../db');
@@ -38,6 +39,15 @@ const Things = {
   getThingsPromise: null,
 
   /**
+   * An EventEmitter used to bubble up added things
+   *
+   * Note that this differs from AddonManager's THING_ADDED because that thing
+   * added is when the addon discovers a thing, not when the model is
+   * instantiated
+   */
+  emitter: new EventEmitter(),
+
+  /**
    * Get all Things known to the Gateway, initially loading them from the
    * database,
    *
@@ -47,12 +57,12 @@ const Things = {
     if (this.things.size > 0) {
       return Promise.resolve(this.things);
     }
+
     if (this.getThingsPromise) {
       // We're still waiting for the database request.
-      return this.getThingsPromise.then((things) => {
-        return things;
-      });
+      return this.getThingsPromise;
     }
+
     this.getThingsPromise = Database.getThings().then((things) => {
       this.getThingsPromise = null;
 
@@ -69,6 +79,7 @@ const Things = {
 
       return this.things;
     });
+
     return this.getThingsPromise;
   },
 
@@ -182,10 +193,11 @@ const Things = {
     thing.layoutIndex = this.things.size;
 
     return Database.createThing(thing.id, thing.getDescription())
-      .then(function(thingDesc) {
+      .then((thingDesc) => {
         this.things.set(thing.id, thing);
+        this.emitter.emit(Constants.THING_ADDED, thing);
         return thingDesc;
-      }.bind(this));
+      });
   },
 
   /**
@@ -274,6 +286,9 @@ const Things = {
       }
 
       throw new Error(`Unable to find thing with title: ${title}`);
+    }).catch((e) => {
+      console.warn('Unexpected thing retrieval error', e);
+      return null;
     });
   },
 
@@ -391,9 +406,18 @@ const Things = {
     }
   },
 
+  on: function(name, listener) {
+    this.emitter.on(name, listener);
+  },
+
+  removeListener: function(name, listener) {
+    this.emitter.removeListener(name, listener);
+  },
+
   clearState: function() {
     this.websockets = [];
     this.things = new Map();
+    this.emitter.removeAllListeners();
   },
 };
 

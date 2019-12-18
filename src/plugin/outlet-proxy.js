@@ -4,12 +4,12 @@
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/.*
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
 'use strict';
 
-const Constants = require('../constants');
+const {MessageType} = require('gateway-addon').Constants;
 const {Outlet, Deferred} = require('gateway-addon');
 
 class OutletProxy extends Outlet {
@@ -33,12 +33,15 @@ class OutletProxy extends Outlet {
       });
 
       this.notifier.sendMsg(
-        Constants.NOTIFY, {
+        MessageType.OUTLET_NOTIFY_REQUEST,
+        {
           outletId: this.id,
           title,
           message,
           level,
-        }, deferredSet);
+        },
+        deferredSet
+      );
     });
   }
 }

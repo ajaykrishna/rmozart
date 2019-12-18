@@ -12,6 +12,7 @@
 const API = require('../api');
 const App = require('../app');
 const Constants = require('../constants');
+const fluent = require('../fluent');
 const Log = require('../logs/log');
 const page = require('page');
 const Utils = require('../utils');
@@ -99,7 +100,7 @@ class LogsScreen {
         // },
         {
           listener: this.handleRemove.bind(this),
-          name: 'Remove',
+          name: fluent.getMessage('remove'),
           icon: '/optimized-images/remove.svg',
         },
       ];
@@ -116,9 +117,7 @@ class LogsScreen {
       this.logsHeader.textContent = 'Logs';
     }
 
-    fetch(`/logs/.schema`, {headers: API.headers()}).then((res) => {
-      return res.json();
-    }).then((schema) => {
+    API.getLogs().then((schema) => {
       for (const id in this.logs) {
         const log = this.logs[id];
         log.remove();
@@ -200,21 +199,34 @@ class LogsScreen {
     this.createLogDevice.innerHTML = '';
     this.things = things;
     things.forEach((description, thingId) => {
-      const opt = document.createElement('option');
-      opt.innerText = description.title;
-      opt.value = thingId;
-      this.createLogDevice.appendChild(opt);
+      for (const propId in description.properties) {
+        const prop = description.properties[propId];
+
+        // Only add an option for the device if it has loggable properties.
+        if (prop.type === 'boolean' ||
+            prop.type === 'number' ||
+            prop.type === 'integer') {
+          const opt = document.createElement('option');
+          opt.innerText = description.title;
+          opt.value = thingId;
+          this.createLogDevice.appendChild(opt);
+          break;
+        }
+      }
     });
+    this.createLogSaveButton.disabled =
+      this.createLogDevice.childNodes.length === 0;
     this.onCreateLogDeviceSelect();
   }
 
   onCreateLogDeviceSelect() {
+    this.createLogProperty.innerHTML = '';
+
     const thing = this.things.get(this.createLogDevice.value);
     if (!thing) {
       return;
     }
 
-    this.createLogProperty.innerHTML = '';
     for (const propId in thing.properties) {
       const prop = thing.properties[propId];
       if (prop.type !== 'boolean' &&
@@ -259,32 +271,29 @@ class LogsScreen {
         break;
     }
 
-    const res = await fetch('/logs', {
-      method: 'POST',
-      headers: Object.assign(API.headers(),
-                             {'Content-Type': 'application/json'}),
-      body: JSON.stringify({
-        descr: {
-          type: 'property',
-          thing: this.createLogDevice.value,
-          property: this.createLogProperty.value,
-        },
-        maxAge,
-      }),
+    API.addLog({
+      descr: {
+        type: 'property',
+        thing: this.createLogDevice.value,
+        property: this.createLogProperty.value,
+      },
+      maxAge,
+    }).then(([ok, body]) => {
+      if (ok) {
+        this.createLogHint.classList.add('hidden');
+        this.hideCreateLog();
+        return;
+      }
+
+      if (body) {
+        App.showMessage(
+          `${fluent.getMessage('logs-unable-to-create')}: ${body}`,
+          5000
+        );
+      } else {
+        App.showMessage(fluent.getMessage('logs-unable-to-create'), 5000);
+      }
     });
-
-    if (res.ok) {
-      this.createLogHint.classList.add('hidden');
-      this.hideCreateLog();
-      return;
-    }
-
-    try {
-      const message = await res.text();
-      App.showMessage(`Unable to create log: ${message}`, 5000);
-    } catch (_) {
-      App.showMessage('Unable to create log', 5000);
-    }
   }
 
   onWindowResize() {
@@ -322,16 +331,10 @@ class LogsScreen {
     }
     const thing = this.logDescr.thing;
     const property = this.logDescr.property;
-    const path = `/logs/things/${thing}/properties/${property}`;
-    fetch(path, {
-      method: 'DELETE',
-      headers: API.headers(),
-    }).then((res) => {
-      if (!res.ok) {
-        App.showMessage('Server error: unable to remove log', 5000);
-      } else {
-        page('/logs');
-      }
+    API.deleteLog(thing, property).then(() => {
+      page('/logs');
+    }).catch(() => {
+      App.showMessage(fluent.getMessage('logs-server-remove-error'), 5000);
     });
   }
 }

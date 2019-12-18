@@ -1,12 +1,12 @@
 /**
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/.*
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
 const API = require('../api');
 const RuleUtils = require('./RuleUtils');
-const TimeTriggerBlock = require('./TimeTriggerBlock');
+const Units = require('../units');
 
 class Rule {
   /**
@@ -43,26 +43,17 @@ class Rule {
     if (this.onUpdate) {
       this.onUpdate();
     }
+
     const desc = this.toDescription();
     if (!desc) {
       return Promise.reject('invalid description');
     }
 
-    const fetchOptions = {
-      headers: API.headers(),
-      method: 'PUT',
-      body: JSON.stringify(desc),
-    };
-    fetchOptions.headers['Content-Type'] = 'application/json';
-
     let request = null;
     if (typeof this.id !== 'undefined') {
-      request = fetch(`/rules/${encodeURIComponent(this.id)}`, fetchOptions);
+      request = API.updateRule(this.id, desc);
     } else {
-      fetchOptions.method = 'POST';
-      request = fetch('/rules/', fetchOptions).then((res) => {
-        return res.json();
-      }).then((rule) => {
+      request = API.addRule(desc).then((rule) => {
         this.id = rule.id;
       });
     }
@@ -74,16 +65,11 @@ class Rule {
    * @return {Promise}
    */
   delete() {
-    const fetchOptions = {
-      headers: API.headers(),
-      method: 'DELETE',
-    };
-
     if (typeof this.id === 'undefined') {
       return;
     }
 
-    return fetch(`/rules/${encodeURIComponent(this.id)}`, fetchOptions);
+    return API.deleteRule(this.id);
   }
 
   /**
@@ -151,8 +137,7 @@ class Rule {
     }
 
     if (trigger.type === 'TimeTrigger') {
-      return `the time of day is ${
-        TimeTriggerBlock.utcToLocal(trigger.time)}`;
+      return `the time of day is ${trigger.time}`;
     }
 
     if (trigger.type === 'EventTrigger') {
@@ -177,6 +162,11 @@ class Rule {
       return null;
     }
 
+    let convertedValue;
+    if (trigger.hasOwnProperty('value')) {
+      convertedValue = Units.convert(trigger.value, triggerProp.unit).value;
+    }
+
     let triggerStr = `${triggerThing.title} `;
     if (trigger.type === 'BooleanTrigger') {
       triggerStr += 'is ';
@@ -198,9 +188,9 @@ class Rule {
       } else {
         triggerStr += 'greater than ';
       }
-      triggerStr += trigger.value;
+      triggerStr += `${convertedValue}`;
     } else if (trigger.type === 'EqualityTrigger') {
-      triggerStr += `${trigger.label} is ${trigger.value}`;
+      triggerStr += `${trigger.label} is ${convertedValue}`;
     } else {
       console.error('Unknown trigger type', trigger);
       return null;
@@ -288,7 +278,7 @@ class Rule {
       }
     } else {
       effectStr += `set ${effectThing.title} ${effect.label} to `;
-      effectStr += effect.value;
+      effectStr += `${Units.convert(effect.value, effectProp.unit).value}`;
     }
     return effectStr;
   }
