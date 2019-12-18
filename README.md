@@ -1,4 +1,5 @@
-# mozART: Advanced Web of Things Applications. Powered by Mozilla WebThings Gateway
+# mozART: Advanced Web of Things Applications 
+## Powered by Mozilla WebThings Gateway
 
 [![license](https://img.shields.io/badge/license-MPL--2.0-blue.svg)](LICENSE)
 
