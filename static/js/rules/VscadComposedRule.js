@@ -5,7 +5,6 @@
  */
 
 const API = require('../api');
-const RuleUtils = require('./RuleUtils');
 
 /* { 
   "id": 1,
@@ -112,6 +111,20 @@ ComposedRule.prototype.toDescription = function() {
     rules :  this.rules,
     expression: this.expression
   } ;
+};
+
+ComposedRule.prototype.getBpmnDescription = function(fetchedRules) {
+  var description = this.toDescription();
+  var rulesMap = {}
+  fetchedRules.forEach(rule=>{
+    if(description.rules.indexOf(""+rule.id) !== -1){
+      rulesMap[rule.name] = rule.id;
+    }
+  })
+  description.mapedRules = rulesMap ;
+  console.log(description);
+  
+  return  description;
 };
 
 

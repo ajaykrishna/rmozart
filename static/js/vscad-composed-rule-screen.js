@@ -186,7 +186,7 @@ const VscadRulesScreen = {
         },
         redirect: "follow", 
         referrer: "no-referrer",
-        body: JSON.stringify(this.cRule.toDescription()),
+        body: JSON.stringify(this.cRule.getBpmnDescription(this.fetchedRules)),
       }
       //10.138.2.9:8080
       this.showLoader()

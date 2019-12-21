@@ -230,7 +230,7 @@
 }
 
 const instance = new MasterEngine();
-Object.freeze(instance);
+//Object.freeze(instance);
 
 export default instance;
 
