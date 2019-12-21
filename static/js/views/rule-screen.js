@@ -524,7 +524,7 @@ const RuleScreen = {
 
     // Fetch the rule description from the Engine or default to null
     let rulePromise = Promise.resolve(null);
-    if (ruleId !== 'new' || ruleId !== 'quickNew') {
+    if (ruleId !== 'new' && ruleId !== 'quickNew') {
       rulePromise = API.getRule(ruleId);
     }
 
