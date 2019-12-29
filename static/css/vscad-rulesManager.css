@@ -93,8 +93,20 @@ transform: translate(6.9rem,-5rem);
   margin: auto;
   text-align: center;
   background: #76a6c8;
-  width: 30%;
+  width: 40%;
   border-radius: 10px;
+}
+
+#mcl-formula{
+  width: 70%;
+}
+
+#mcl-dialog h3{
+  font-family: 'Open Sans', sans-serif;
+  margin: auto;
+  text-align: center;
+  color: white;
+  font-size: medium;
 }
 
 #confirm-button{
