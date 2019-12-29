@@ -26,6 +26,7 @@ const VscadRulesScreen = {
     this.loader = document.getElementById('loader-holder')
     this.diagramButton = document.getElementById('diagram-button');
     this.verificationButton = document.getElementById('verification-button');
+    this.mclButton = document.getElementById('mcl-button');
     this.saveButton = document.getElementById('save-button');
     this.deployButton = document.getElementById('deploy-button');
 
@@ -69,7 +70,10 @@ const VscadRulesScreen = {
     });
     this.verificationButton.addEventListener('click',()=>{
       this.requestVerify();
-    })
+    });
+    this.mclButton.addEventListener('click',()=>{
+      this.requestMcl();
+    });
     this.diagramButton.addEventListener('click',()=>{
       this.requestDiagram();
     });
@@ -287,6 +291,88 @@ const VscadRulesScreen = {
     });
     
   },
+
+  requestMcl:function(cRule){
+   
+    fetch(`/rules`, {headers: API.headers(),}).then((res) => {
+      return res.json();
+    }).then((res) => {
+      this.showLoader();
+      var info = {}
+      info.expression = this.cRule.expression;
+      info.objects = [];
+      info.rules = [];
+
+      var usedRules = [];
+      var usedObjects = {};
+      //get te used rules
+      res.forEach(rule => {
+         if(this.cRule.rules.includes(`${rule.id}`))
+          usedRules.push(rule);
+      });
+      // 
+      usedRules.forEach(rule => {
+        var tempRule = {}
+        tempRule.id =  rule.id.toString();
+        tempRule.type = rule.trigger.op;
+        tempRule.events = []
+        tempRule.actions = []
+        rule.trigger.triggers.forEach(trigger => {
+          if(trigger.property){
+            tempRule.actions.push(`${trigger.property.thing}|${trigger.property.id}`)
+            usedObjects[trigger.property.thing] = true;
+          }else{ 
+            tempRule.actions.push(`${trigger.type}|${Object.keys(trigger)[1]}`)
+            usedObjects[trigger.type] = true;
+          }
+        });
+        rule.effect.effects.forEach(effect => {
+          if(effect.property){
+            tempRule.events.push(`${effect.property.thing}|${effect.property.id}`)
+            usedObjects[effect.property.thing] = true;
+          }else{
+            tempRule.events.push(`${effect.type}|${Object.keys(effect)[1]}`)
+            usedObjects[effect.type] = true;
+          }
+         
+        });
+        info.rules.push(tempRule);
+     });
+
+     info.objects = Object.keys(usedObjects);
+      //console.log('final info ', info);
+     return info;
+
+    }).then((info) =>{
+        return fetch("/composed-rules/things",{headers: API.headers()}).then((res) => {
+          return res.json();
+        }).then((things)=>{
+         info.fullThings = things;
+         return info; 
+        });
+      }).then((info)=>{
+      const fetchOptions = 
+      {
+        method: "POST",
+        mode: 'cors',
+        headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+        },
+        redirect: "follow", 
+        referrer: "no-referrer", 
+        body: JSON.stringify(info),
+    }
+    fetch('http://localhost:9001/mcl', fetchOptions).then((res)=>{
+       return res.json()
+     }).then( data =>{
+      this.showVerification(data);
+      this.hiddeLoader();
+     })
+    });
+    
+  },
+
     saveRule:function(){
       var longest = ""
       var   foundRules = 0;
