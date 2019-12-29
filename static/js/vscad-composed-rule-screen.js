@@ -31,6 +31,7 @@ const VscadRulesScreen = {
     this.mclButton = document.getElementById('mcl-button');
     this.mclCheckButton = document.getElementById('mcl-check-button');
     this.mclFormula = document.getElementById('mcl-formula');
+    this.mclDialog = document.getElementById('mcl-dialog');
 
 
     this.saveRule = this.saveRule.bind(this);
@@ -60,6 +61,9 @@ const VscadRulesScreen = {
       this.hiddeVerification();
       this.hiddeDiagram();
       this.hideMclDialog();
+    })
+    this.mclDialog.addEventListener('click',(event)=>{
+     event.stopPropagation()
     })
 
     this.testButton.addEventListener('click',()=>{
@@ -190,16 +194,14 @@ const VscadRulesScreen = {
   },
 
   hideMclDialog(){
-    var  mclDialog = document.getElementById('mcl-dialog');
-    mclDialog.style.display = "none"
+    this.mclDialog.style.display = "none"
   },
   showMclDialog:function(){
     this.diagramView.classList.add('selected');
     this.diagramView.style.display = "flex";
     this.hiddeDiagram();
     this.hiddeVerification();
-    var  mclDialog = document.getElementById('mcl-dialog');
-    mclDialog.style.display = "block"
+    this.mclDialog.style.display = "block"
   },
    
   requestDiagram:function(){
