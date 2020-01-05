@@ -3,10 +3,6 @@
 
 [![license](https://img.shields.io/badge/license-MPL--2.0-blue.svg)](LICENSE)
 
-Web of Things gateway.
-
-If you have a Rasberry Pi, the easiest way to use the gateway is to [download and flash](http://iot.mozilla.org/gateway/) a pre-built software image from Mozilla to an SD card. Otherwise you can build it from source yourself (see below).
-
 ## Prerequisites for Building
 
 ### Install OS
@@ -14,6 +10,10 @@ If you have a Rasberry Pi, the easiest way to use the gateway is to [download an
 (If you're just installing on your PC, you can skip this step).
 
 If you're installing on a Raspberry Pi then you may need to set up the OS on the Raspberry Pi first. [See here](https://github.com/mozilla-iot/wiki/wiki/Setting-up-Raspberry-Pi) for instructions.
+
+### Important!
+
+If you plan to use the verification services, you will have to acquire a license for [CADP](https://cadp.inria.fr/) and install it locally. mozART invokes [CADP](https://cadp.inria.fr/) tools from the terminal. [CADP](https://cadp.inria.fr/) does not support Raspberry Pi, yet. 
 
 ### Update Package Cache (Linux only)
 
