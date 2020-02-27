@@ -1,0 +1,25 @@
+% CAESAR_OPEN_OPTIONS="-silent -warning"
+% CAESAR_OPTIONS="-more cat"
+
+% echo "---------- Results ----------------" > results.txt
+"wot.bcg" = generation of "wot.lnt";
+
+% echo "--- wot.bcg (raw) ----" >> results.txt
+% bcg_info "wot.bcg" >> results.txt
+
+"wot_ren.bcg" = 
+		total rename
+			"\([A-Z]*\) !R\([0-9]*\) \(.*\)" -> "\1 !R \3"
+		in
+			"wot.bcg" ;
+
+% echo "--- wot_ren.bcg (minimized) ----" >> results.txt
+"wot_ren_min.bcg" = strong reduction of "wot_ren.bcg";
+% bcg_info "wot_ren_min.bcg" >> results.txt
+
+% echo "--- Verification ----" >> results.txt
+% bcg_open "wot_ren_min.bcg" evaluator5 "prop.mcl" >> results.txt
+
+-- cleanup
+% /bin/rm -f "wot.bcg"
+% /bin/rm -f "wot_ren.bcg"

@@ -1,0 +1,44 @@
+module cameradevice(config) with "get" is
+	(* camera device model. Property image *)
+	process camera [cameraevent:any, cameraaction:any, cameraenvaction:any, done:any] is
+	  var q:QUEUE, cameraimage:nat, element:QELEMENT, hasProperty:bool in
+	  q := nil;
+	  element := elem(image, 0); cameraimage := 0;
+		loop
+			select
+				cameraevent(?any RULE, !camera, !elem(image, cameraimage), ?any bool)
+			[]
+				var elementAction:QELEMENT in 
+					cameraaction(?any RULE, !camera, ?elementAction of QELEMENT);
+						q := append(elementAction,q)
+				end var
+			[]
+				eval hasProperty := queue_has_property(image, q, !?element); 
+				if (hasProperty) then 
+					 case element in 
+						var imagevalue:nat in 
+						elem(image, imagevalue) -> 
+							cameraimage := imagevalue
+						| any -> null
+					end case;
+					q := delete(element, q)
+				end if
+			[]
+				var elementAction:QELEMENT in 
+					cameraenvaction(!camera, ?elementAction of QELEMENT);
+					case elementAction in 
+							var imagevalue:nat in 
+							elem(image, imagevalue) -> 
+								cameraimage := imagevalue
+							| any -> null
+					end case
+				end var
+			[]
+				if empty(q) then
+					done
+				end if
+			end select
+		end loop
+	  end var
+	end process
+end module

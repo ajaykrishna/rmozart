@@ -1,0 +1,8 @@
+prob
+    (not "DONE")* .
+    "ENVACTION !THERMO !ELEM (TEMPERATURE, 30)" .
+    (not "DONE")* .
+    "ACTION !R2 !LIGHT !ELEM (COLOR, 123)"
+is
+    >=? 0
+end prob

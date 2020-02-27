@@ -1,0 +1,44 @@
+module thermodevice(config) with "get" is
+	(* Thermometre device model. Property temperature *)
+	process thermo [thermoevent:any, thermoaction:any, thermoenvaction:any, done:any] is
+	  var q:QUEUE, thermotemperature:nat, element:QELEMENT, hasProperty:bool in
+	  q := nil;
+	  element := elem(temperature, 0); thermotemperature := 0;
+		loop
+			select
+				thermoevent(?any RULE, !thermo, !elem(temperature, thermotemperature), ?any bool)
+			[]
+				var elementAction:QELEMENT in 
+					thermoaction(?any RULE, !thermo, ?elementAction of QELEMENT);
+						q := append(elementAction,q)
+				end var
+			[]
+				eval hasProperty := queue_has_property(temperature, q, !?element); 
+				if (hasProperty) then 
+					 case element in 
+						var tempvalue:nat in 
+						elem(temperature, tempvalue) -> 
+							thermotemperature := tempvalue
+						| any -> null
+					end case;
+					q := delete(element, q)
+				end if
+			[]
+				var elementAction:QELEMENT in 
+					thermoenvaction(!thermo, ?elementAction of QELEMENT);
+					case elementAction in 
+							var tempvalue:nat in 
+							elem(temperature, tempvalue) -> 
+								thermotemperature := tempvalue
+							| any -> null
+					end case
+				end var
+			[]
+				if empty(q) then
+					done
+				end if
+			end select
+		end loop
+	  end var
+	end process
+end module

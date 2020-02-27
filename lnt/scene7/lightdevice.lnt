@@ -1,0 +1,64 @@
+module lightdevice(config) with "get" is
+	(* Play light device model. Two properties: on/off and color *)
+	process light [lightevent:any, lightaction:any, lightenvaction:any, done:any] is
+	  var q:QUEUE, lighton:bool, lightcolor:nat, element:QELEMENT, hasProperty:bool in
+	  lighton := false; q := nil;
+	  element := elem(on, false); lightcolor := 0;
+		loop
+			select
+				(* emit event onoff *)
+				lightevent(?any RULE, !light, !elem(on, lighton), ?any bool)
+			[]
+				(* emit event color *)
+				lightevent(?any RULE, !light, !elem(color, lightcolor), ?any bool)
+			[]
+				(* append to queue *)
+				var elementAction:QELEMENT in 
+					lightaction(?any RULE, !light, ?elementAction of QELEMENT);
+						q := append(elementAction,q)
+				end var
+			[]
+				(* remove from queue *)
+				eval hasProperty := queue_has_property(on, q, !?element);
+				if (hasProperty) then 
+					case element in 
+						var onvalue:bool in 
+						elem(on, onvalue) -> 
+							lighton := onvalue
+						| any -> null
+					end case;
+					q := delete(element, q)
+				end if;
+				eval hasProperty := queue_has_property(color, q, !?element); 
+				if (hasProperty) then 
+					 case element in 
+						var colorvalue:nat in 
+						elem(color, colorvalue) -> 
+							lightcolor := colorvalue
+						| any -> null
+					end case;
+					q := delete(element, q)
+				end if
+			[]
+				(* handle onoff and color values from environment *)
+				var elementAction:QELEMENT in 
+					lightenvaction(!light, ?elementAction of QELEMENT);
+					case elementAction in 
+							var colorvalue:nat, onvalue:bool in 
+							elem(on, onvalue) -> 
+								lighton := onvalue
+							| elem(color, colorvalue) -> 
+								lightcolor := colorvalue
+							| any -> null
+					end case
+				end var
+			[]
+				(* used for track to one complete execution of the composition expression *)
+				if empty(q) then
+					done
+				end if
+			end select
+		end loop
+	  end var
+	end process
+end module

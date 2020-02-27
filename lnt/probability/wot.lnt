@@ -1,0 +1,284 @@
+module wot with "get" is
+
+(* Properties type *)
+type PROPERTYID is
+    on, color, temperature
+    with "==", "!="
+end type
+
+(* Devices used *)
+type DEVICE is
+	motion, light, thermo
+    with "==", "!="
+end type
+
+(* Constructor for different properties and their types*)
+type QELEMENT is
+	elem(p:PROPERTYID, bvalue:bool),
+    elem(p:PROPERTYID, nvalue:nat)
+	with "==", "!=", "get"
+end type
+
+(* Action queue *)
+type QUEUE is 
+	list of QELEMENT
+    with "==","!=", "length", "empty", "member", "remove", "append", "delete", "head"
+end type
+
+type RULE is 
+    r1, r2
+    with "==", "!="
+end type
+
+(* Function that checks if given property is available in the queue and returns the 
+  matching property and its value *)
+function queue_has_property(pid:PROPERTYID, q:QUEUE, in out element:QELEMENT):bool is
+	case q in
+		var p:PROPERTYID, tl:QUEUE in
+			 nil -> return false
+			| cons(elem(p, any bool), tl)  
+			| cons(elem(p, any nat), tl) -> 
+				if p == pid then
+					element := head(q);
+					return true
+				else
+                    var hasProperty:bool in 
+                        hasProperty := queue_has_property(pid, tl, !?element);
+                        return hasProperty
+                    end var
+				end if	
+	end case
+end function
+
+(* Motion sensor device model *)
+process motion [motionevent:any, motionaction:any, motionenvaction:any, done:any] is
+  var q:QUEUE, motionon:bool, element:QELEMENT, hasProperty:bool in
+  motionon := false; q := nil;
+  element := elem(on, false);
+    loop
+		select
+			(* emit event *)
+			motionevent(?any RULE, !motion, !elem(on, motionon), ?any bool) --any bool used to ignore irrelevant events based on rules
+		[]
+			(* push to action queue *)
+            var elementAction:QELEMENT in 
+                motionaction(?any RULE, !motion, ?elementAction of QELEMENT);
+                    q := append(elementAction,q)
+            end var
+		[]
+			(* consume event from action queue *)
+            eval hasProperty := queue_has_property(on, q, !?element);
+            if (hasProperty) then 
+                case element in 
+                    var onvalue:bool in 
+					elem(on, onvalue) -> 
+						motionon := onvalue
+					| any -> null
+				end case;
+                q := delete(element, q)
+            end if
+        []
+			(* handle action value from environment *)
+            var elementAction:QELEMENT in 
+                motionenvaction(!motion, ?elementAction of QELEMENT);
+                case elementAction in 
+                        var onvalue:bool in 
+                        elem(on, onvalue) -> 
+                            motionon := onvalue
+                        | any -> null
+                end case
+            end var
+        []
+			(* used for track to one complete execution of the composition expression *)
+            if empty(q) then
+                done
+            end if
+		end select
+    end loop
+  end var
+end process
+
+(* Motion sensor device model. Two properties: on/off and color *)
+process light [lightevent:any, lightaction:any, lightenvaction:any, done:any] is
+  var q:QUEUE, lighton:bool, lightcolor:nat, element:QELEMENT, hasProperty:bool in
+  lighton := false; q := nil;
+  element := elem(on, false); lightcolor := 0;
+    loop
+		select
+			(* emit event onoff *)
+			lightevent(?any RULE, !light, !elem(on, lighton), ?any bool)
+		[]
+			(* emit event color *)
+			lightevent(?any RULE, !light, !elem(color, lightcolor), ?any bool)
+		[]
+			(* append to queue *)
+            var elementAction:QELEMENT in 
+                lightaction(?any RULE, !light, ?elementAction of QELEMENT);
+                    q := append(elementAction,q)
+            end var
+		[]
+			(* remove from queue *)
+            eval hasProperty := queue_has_property(on, q, !?element);
+            if (hasProperty) then 
+                case element in 
+                    var onvalue:bool in 
+					elem(on, onvalue) -> 
+						lighton := onvalue
+					| any -> null
+				end case;
+                q := delete(element, q)
+            end if;
+            eval hasProperty := queue_has_property(color, q, !?element); 
+            if (hasProperty) then 
+                 case element in 
+                    var colorvalue:nat in 
+					elem(color, colorvalue) -> 
+						lightcolor := colorvalue
+					| any -> null
+				end case;
+                q := delete(element, q)
+            end if
+        []
+			(* handle onoff and color values from environment *)
+            var elementAction:QELEMENT in 
+                lightenvaction(!light, ?elementAction of QELEMENT);
+                case elementAction in 
+                        var colorvalue:nat, onvalue:bool in 
+                        elem(on, onvalue) -> 
+                            lighton := onvalue
+                        | elem(color, colorvalue) -> 
+                            lightcolor := colorvalue
+                        | any -> null
+                end case
+            end var
+        []
+			(* used for track to one complete execution of the composition expression *)
+            if empty(q) then
+                done
+            end if
+		end select
+    end loop
+  end var
+end process
+
+(* Thermometre device model. Property temperature *)
+process thermo [thermoevent:any, thermoaction:any, thermoenvaction:any, done:any] is
+  var q:QUEUE, thermotemperature:nat, element:QELEMENT, hasProperty:bool in
+  q := nil;
+  element := elem(temperature, 0); thermotemperature := 0;
+    loop
+		select
+			thermoevent(?any RULE, !thermo, !elem(temperature, thermotemperature), ?any bool)
+		[]
+            var elementAction:QELEMENT in 
+                thermoaction(?any RULE, !thermo, ?elementAction of QELEMENT);
+                    q := append(elementAction,q)
+            end var
+		[]
+            eval hasProperty := queue_has_property(temperature, q, !?element); 
+            if (hasProperty) then 
+                 case element in 
+                    var tempvalue:nat in 
+					elem(temperature, tempvalue) -> 
+						thermotemperature := tempvalue
+					| any -> null
+				end case;
+                q := delete(element, q)
+            end if
+        []
+            var elementAction:QELEMENT in 
+                thermoenvaction(!thermo, ?elementAction of QELEMENT);
+                case elementAction in 
+                        var tempvalue:nat in 
+                        elem(temperature, tempvalue) -> 
+                            thermotemperature := tempvalue
+                        | any -> null
+                end case
+            end var
+        []
+            if empty(q) then
+                done
+            end if
+		end select
+    end loop
+  end var
+end process
+
+(* IF motion_detected THEN light-on *)
+process rule1[event:any, action:any] is
+	(* Event corresponding to motion == true *)
+	event(!r1, !motion, !elem(on, true), !true);
+	action(!r1, !light, !elem(on, true))
+end process
+
+(* IF thermo_(temp > 25) THEN light_(color=123) *)
+process rule2[event:any, action:any] is
+	var tval:nat in
+		event(!r2, !thermo, ?elem(temperature, tval of nat) of QELEMENT, !true) where tval > 25;
+		action(!r2, !light, !elem(color, 123))
+	end var
+end process
+
+process globallistener[event:any] is
+    loop
+    select
+        event(?any RULE, !thermo, ?elem(temperature, any nat) of QELEMENT, !false)
+    []
+        event(?any RULE, !motion, ?elem(on, any bool) of QELEMENT, !false)
+    end select
+    end loop
+end process
+
+(* Composition expression *)
+process compo[event:any, action:any, done:any] is 
+    loop
+	select
+        	rule1[...] 
+	[]
+		rule2[...] 
+	end select;
+	done		--done represent one execution of the expression
+    end loop
+end process
+
+(* Process to simulate the environment *)
+process environment[done:any, envaction:any] is
+    loop
+        select
+            envaction(!motion, !elem(on, true))
+        []
+            envaction(!motion, !elem(on, false))
+	[]
+	    envaction(!thermo, !elem(temperature, 12))
+        []
+            envaction(!thermo, !elem(temperature, 30))
+        end select
+    end loop
+end process
+
+(* Main process *)
+process MAIN [event:any, action:any, done:any, envaction:any] is
+    --hide envaction:any in --actions from the environment
+        par event, action, done in
+            par
+                compo[event, action, done]
+            ||
+                globallistener[event]
+            end par
+        ||
+            par envaction in 		-- environment interacts with devices
+                par done in 		--devices don't interact with each other
+                    motion[event, action, envaction, done]
+                ||
+                    light[event, action, envaction, done]
+                ||
+                    thermo[event, action, envaction, done]
+                end par
+            ||
+                environment[done, envaction]	--environment
+            end par
+        end par
+    --end hide
+end process
+
+end module

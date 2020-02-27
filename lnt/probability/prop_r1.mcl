@@ -1,0 +1,8 @@
+prob
+    (not "DONE")* .
+    "ENVACTION !MOTION !ELEM (ON, TRUE)" .
+    (not "DONE")* .
+    "ACTION !R1 !LIGHT !ELEM (ON, TRUE)"
+is
+    >=? 0
+end prob

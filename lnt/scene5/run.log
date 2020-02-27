@@ -1,0 +1,127 @@
+
+svl clean info: [persistent] composition.bcg
+
+"composition.bcg" = generation of "composition.lnt"
+
+svl clean info: [temporary] generator
+
+svl clean info: [temporary] generator.o
+
+svl clean info: [temporary] composition.o
+
+svl clean info: [temporary] composition.err
+
+% lnt.open   "composition.lnt"  generator  "composition.bcg"
+
+lnt.open: translating ``config.lnt'' to ``/tmp/silverquick_lnt.open_4Pre52/CONFIG.lib'' ...
+
+lnt.open: translating ``lightdevice.lnt'' to ``/tmp/silverquick_lnt.open_4Pre52/LIGHTDEVICE.lib'' ...
+
+lnt.open: translating ``motiondevice.lnt'' to ``/tmp/silverquick_lnt.open_4Pre52/MOTIONDEVICE.lib'' ...
+
+lnt.open: translating ``thermodevice.lnt'' to ``/tmp/silverquick_lnt.open_4Pre52/THERMODEVICE.lib'' ...
+
+lnt.open: translating ``daylightdevice.lnt'' to ``/tmp/silverquick_lnt.open_4Pre52/DAYLIGHTDEVICE.lib'' ...
+
+lnt.open: translating ``doordevice.lnt'' to ``/tmp/silverquick_lnt.open_4Pre52/DOORDEVICE.lib'' ...
+
+lnt.open: translating ``cameradevice.lnt'' to ``/tmp/silverquick_lnt.open_4Pre52/CAMERADEVICE.lib'' ...
+
+lnt.open: translating ``rules.lnt'' to ``/tmp/silverquick_lnt.open_4Pre52/RULES.lib'' ...
+
+lnt.open: translating ``env.lnt'' to ``/tmp/silverquick_lnt.open_4Pre52/ENV.lib'' ...
+/tmp/silverquick_lnt.open_4Pre52/env.lnt:3: warning: gate DONE is declared but not used
+
+lnt.open: translating ``composition.lnt'' to ``/tmp/silverquick_lnt.open_4Pre52/composition.lotos'' ...
+/tmp/silverquick_lnt.open_4Pre52/composition.lnt:33: warning: gate ENVACTION is declared but not used
+
+lnt.open: calling caesar.open for ``composition.lotos'' ...
+caesar.open: using ``(direct) caesar''
+caesar.open: calling ``caesar.adt -debug -silent composition''
+cadp_indent: cannot find ``indent''
+             file ``composition.h'' will not be formatted
+caesar.open: calling ``lnt_check'' for ``composition.h''
+caesar.open: calling ``caesar -silent composition''
+#134 warning during generation:
+     impossible rendez-vous detected
+In specification COMPOSITION [3]
+
+   - a deadlock exists for rendez-vous:
+        ENVACTION [136] !(DOOR [CONFIG:40]) of DEVICE [CONFIG:6] ?COMM__VAR__1 [DOORDEVICE:61] : QELEMENT [CONFIG:7]
+     synchronized by parallel operator ``|[exit, ENVACTION]|''
+     this gate/offer combination is used in the left operand:
+        MOTION [exit, EVENT, ACTION, ENVACTION, DONE] |[exit, DONE]| LIGHT [exit, EVENT, ACTION, ENVACTION, DONE] |[exit, DONE]| THERMO [exit, EVENT, ACTION, ENVACTION, DONE] |[exit, DONE]| DAYLIGHT [exit, EVENT, ACTION, ENVACTION, DONE] |[exit, DONE]| DOOR [exit, EVENT, ACTION, ENVACTION, DONE] |[exit, DONE]| CAMERA [exit, EVENT, ACTION, ENVACTION, DONE]
+     but not in the right operand:
+        ENVIRONMENT [exit, DONE, ENVACTION]
+
+   - a deadlock exists for rendez-vous:
+        ACTION [3] !(R4 [RULES:11]) of RULE [RULES:5] !(DOOR [CONFIG:40]) of DEVICE [CONFIG:6] !(ELEM (OPEN, FALSE)) of QELEMENT [CONFIG:7] ?COMM__VAR__3 [RULES:93] : BOOL [X_BOOLEAN:3]
+     synchronized by parallel operator ``|[exit, EVENT, ACTION, DONE]|''
+     this gate/offer combination is used in the left operand:
+        COMPO [exit, EVENT, ACTION, DONE] |[exit]| GLOBALLISTENER [exit, EVENT]
+     but not in the right operand:
+        MOTION [exit, EVENT, ACTION, ENVACTION, DONE] |[exit, DONE]| LIGHT [exit, EVENT, ACTION, ENVACTION, DONE] |[exit, DONE]| THERMO [exit, EVENT, ACTION, ENVACTION, DONE] |[exit, DONE]| DAYLIGHT [exit, EVENT, ACTION, ENVACTION, DONE] |[exit, DONE]| DOOR [exit, EVENT, ACTION, ENVACTION, DONE] |[exit, DONE]| CAMERA [exit, EVENT, ACTION, ENVACTION, DONE] |[exit, ENVACTION]| ENVIRONMENT [exit, DONE, ENVACTION]
+
+   - a deadlock exists for rendez-vous:
+        ACTION [3] ?COMM__VAR__0 [MOTIONDEVICE:24] : RULE [RULES:5] !(MOTION [CONFIG:37]) of DEVICE [CONFIG:6] ?COMM__VAR__2 [MOTIONDEVICE:24] : QELEMENT [CONFIG:7]
+     synchronized by parallel operator ``|[exit, EVENT, ACTION, DONE]|''
+     this gate/offer combination is used in the right operand:
+        MOTION [exit, EVENT, ACTION, ENVACTION, DONE] |[exit, DONE]| LIGHT [exit, EVENT, ACTION, ENVACTION, DONE] |[exit, DONE]| THERMO [exit, EVENT, ACTION, ENVACTION, DONE] |[exit, DONE]| DAYLIGHT [exit, EVENT, ACTION, ENVACTION, DONE] |[exit, DONE]| DOOR [exit, EVENT, ACTION, ENVACTION, DONE] |[exit, DONE]| CAMERA [exit, EVENT, ACTION, ENVACTION, DONE] |[exit, ENVACTION]| ENVIRONMENT [exit, DONE, ENVACTION]
+     but not in the left operand:
+        COMPO [exit, EVENT, ACTION, DONE] |[exit]| GLOBALLISTENER [exit, EVENT]
+
+   - a deadlock exists for rendez-vous:
+        ACTION [3] ?COMM__VAR__0 [THERMODEVICE:24] : RULE [RULES:5] !(THERMO [CONFIG:39]) of DEVICE [CONFIG:6] ?COMM__VAR__2 [THERMODEVICE:24] : QELEMENT [CONFIG:7]
+     synchronized by parallel operator ``|[exit, EVENT, ACTION, DONE]|''
+     this gate/offer combination is used in the right operand:
+        MOTION [exit, EVENT, ACTION, ENVACTION, DONE] |[exit, DONE]| LIGHT [exit, EVENT, ACTION, ENVACTION, DONE] |[exit, DONE]| THERMO [exit, EVENT, ACTION, ENVACTION, DONE] |[exit, DONE]| DAYLIGHT [exit, EVENT, ACTION, ENVACTION, DONE] |[exit, DONE]| DOOR [exit, EVENT, ACTION, ENVACTION, DONE] |[exit, DONE]| CAMERA [exit, EVENT, ACTION, ENVACTION, DONE] |[exit, ENVACTION]| ENVIRONMENT [exit, DONE, ENVACTION]
+     but not in the left operand:
+        COMPO [exit, EVENT, ACTION, DONE] |[exit]| GLOBALLISTENER [exit, EVENT]
+
+   - a deadlock exists for rendez-vous:
+        ACTION [3] ?COMM__VAR__0 [CAMERADEVICE:24] : RULE [RULES:5] !(CAMERA [CONFIG:41]) of DEVICE [CONFIG:6] ?COMM__VAR__2 [CAMERADEVICE:24] : QELEMENT [CONFIG:7]
+     synchronized by parallel operator ``|[exit, EVENT, ACTION, DONE]|''
+     this gate/offer combination is used in the right operand:
+        MOTION [exit, EVENT, ACTION, ENVACTION, DONE] |[exit, DONE]| LIGHT [exit, EVENT, ACTION, ENVACTION, DONE] |[exit, DONE]| THERMO [exit, EVENT, ACTION, ENVACTION, DONE] |[exit, DONE]| DAYLIGHT [exit, EVENT, ACTION, ENVACTION, DONE] |[exit, DONE]| DOOR [exit, EVENT, ACTION, ENVACTION, DONE] |[exit, DONE]| CAMERA [exit, EVENT, ACTION, ENVACTION, DONE] |[exit, ENVACTION]| ENVIRONMENT [exit, DONE, ENVACTION]
+     but not in the left operand:
+        COMPO [exit, EVENT, ACTION, DONE] |[exit]| GLOBALLISTENER [exit, EVENT]
+
+   - a deadlock exists for rendez-vous:
+        ACTION [3] ?COMM__VAR__0 [DAYLIGHTDEVICE:24] : RULE [RULES:5] !(DAYLIGHT [CONFIG:43]) of DEVICE [CONFIG:6] ?COMM__VAR__2 [DAYLIGHTDEVICE:24] : QELEMENT [CONFIG:7]
+     synchronized by parallel operator ``|[exit, EVENT, ACTION, DONE]|''
+     this gate/offer combination is used in the right operand:
+        MOTION [exit, EVENT, ACTION, ENVACTION, DONE] |[exit, DONE]| LIGHT [exit, EVENT, ACTION, ENVACTION, DONE] |[exit, DONE]| THERMO [exit, EVENT, ACTION, ENVACTION, DONE] |[exit, DONE]| DAYLIGHT [exit, EVENT, ACTION, ENVACTION, DONE] |[exit, DONE]| DOOR [exit, EVENT, ACTION, ENVACTION, DONE] |[exit, DONE]| CAMERA [exit, EVENT, ACTION, ENVACTION, DONE] |[exit, ENVACTION]| ENVIRONMENT [exit, DONE, ENVACTION]
+     but not in the left operand:
+        COMPO [exit, EVENT, ACTION, DONE] |[exit]| GLOBALLISTENER [exit, EVENT]
+command exit with status 0
+
+info about composition.bcg:
+    (* 294193 states, 14321046 transitions, 34171.3 Kbytes *)
+
+svl clean info: [persistent] composition_ren.bcg
+
+svl clean info: [temporary] svl001_labels.ren
+
+% 2>>"run.log" rm -f "svl001_labels.ren" ; touch "svl001_labels.ren"
+command exit with status 0
+
+"svl001_labels.ren" =
+    rename
+    "\([A-Z]*\) !R\([0-9]*\) \(.*\)" -> "\1 !R \3"
+
+"composition_ren.bcg" = total rename "\([A-Z]*\) !R\([0-9]*\) \(.*\)" -> "\1 !R \3"
+    in "composition.bcg"
+
+% bcg_labels   -rename -total "svl001_labels.ren" "composition.bcg" "composition_ren.bcg"
+command exit with status 0
+
+svl clean info: [persistent] composition_ren_min.bcg
+
+"composition_ren_min.bcg" = strong reduction of "composition_ren.bcg"
+
+% bcg_min   -strong  "composition_ren.bcg" "composition_ren_min.bcg"
+command exit with status 0
+
+info about composition_ren_min.bcg:
+    (* 12096 states, 280288 transitions, 595.5 Kbytes *)
+

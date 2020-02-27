@@ -1,0 +1,49 @@
+module heaterdevice(config) with "get" is
+(* heater sensor device model *)
+	process heater [heaterevent:any, heateraction:any, heaterenvaction:any, done:any] is
+	  var q:QUEUE, heateron:bool, element:QELEMENT, hasProperty:bool in
+	  heateron := false; q := nil;
+	  element := elem(on, false);
+		loop
+			select
+				(* emit event *)
+				heaterevent(?any RULE, !heater, !elem(on, heateron), ?any bool) --any bool used to ignore irrelevant events based on rules
+			[]
+				(* push to action queue *)
+				var elementAction:QELEMENT in 
+					heateraction(?any RULE, !heater, ?elementAction of QELEMENT);
+						q := append(elementAction,q)
+				end var
+			[]
+				(* consume event from action queue *)
+				eval hasProperty := queue_has_property(on, q, !?element);
+				if (hasProperty) then 
+					case element in 
+						var onvalue:bool in 
+						elem(on, onvalue) -> 
+							heateron := onvalue
+						| any -> null
+					end case;
+					q := delete(element, q)
+				end if
+			[]
+				(* handle action value from environment *)
+				var elementAction:QELEMENT in 
+					heaterenvaction(!heater, ?elementAction of QELEMENT);
+					case elementAction in 
+							var onvalue:bool in 
+							elem(on, onvalue) -> 
+								heateron := onvalue
+							| any -> null
+					end case
+				end var
+			[]
+				(* used for track to one complete execution of the composition expression *)
+				if empty(q) then
+					done
+				end if
+			end select
+		end loop
+	  end var
+	end process
+end module

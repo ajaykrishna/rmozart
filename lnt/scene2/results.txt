@@ -1,0 +1,54 @@
+---------- Results ----------------
+--- composition.bcg (raw) ----
+./composition.bcg:
+created by caesar
+	1423 states
+	19162 transitions
+	21 labels
+	initial state: 0
+	no deadlock state
+	branching factor: average = 13.47, minimal = 10, maximal = 24
+	7060 transition(s) with a hidden label ("i")
+	non-deterministic behavior for:
+	   label "i" at state(s): 0 1 2 3 4 5 6 ... (1423 states in total)
+	   label "EVENT !R1 !THERMO !ELEM (TEMPERATURE, 0) !FALSE" at state(s): 55 114 118 202 203 204 
+	   label "EVENT !R2 !THERMO !ELEM (TEMPERATURE, 0) !FALSE" at state(s): 55 114 118 202 203 204 
+	   label "EVENT !R1 !MOTION !ELEM (ON, FALSE) !FALSE" at state(s): 114 165 187 202 203 237 245 ... (171 states in total)
+	   label "EVENT !R2 !MOTION !ELEM (ON, FALSE) !FALSE" at state(s): 114 165 187 202 203 237 245 ... (171 states in total)
+	   label "EVENT !R1 !MOTION !ELEM (ON, TRUE) !FALSE" at state(s): 55 98 113 118 156 159 162 ... (171 states in total)
+	   label "EVENT !R2 !MOTION !ELEM (ON, TRUE) !FALSE" at state(s): 55 98 113 118 156 159 162 ... (171 states in total)
+	   label "EVENT !R1 !THERMO !ELEM (TEMPERATURE, 30) !FALSE" at state(s): 98 156 159 165 169 177 181 ... (168 states in total)
+	   label "EVENT !R2 !THERMO !ELEM (TEMPERATURE, 30) !FALSE" at state(s): 98 156 159 165 169 177 181 ... (168 states in total)
+	   label "EVENT !R1 !THERMO !ELEM (TEMPERATURE, 12) !FALSE" at state(s): 113 162 178 184 187 191 253 ... (168 states in total)
+	   label "EVENT !R2 !THERMO !ELEM (TEMPERATURE, 12) !FALSE" at state(s): 113 162 178 184 187 191 253 ... (168 states in total)
+	   label "EVENT !R2 !LIGHT !ELEM (ON, TRUE) !TRUE" at state(s): 766 827 842 843 844 845 846 ... (72 states in total)
+	   label "EVENT !R1 !LIGHT !ELEM (ON, TRUE) !FALSE" at state(s): 443 527 565 577 578 609 613 ... (252 states in total)
+	   label "EVENT !R2 !LIGHT !ELEM (ON, TRUE) !FALSE" at state(s): 443 527 565 577 578 609 613 ... (252 states in total)
+	   label "EVENT !R2 !THERMO !ELEM (TEMPERATURE, 30) !TRUE" at state(s): 98 156 159 165 169 181 237 ... (60 states in total)
+	   label "ACTION !R2 !LIGHT !ELEM (COLOR, 123)" at state(s): 907 1005 1006 1007 1008 1149 1150 ... (36 states in total)
+--- composition_ren.bcg (minimized) ----
+./composition_ren_min.bcg:
+created by caesar
+labels renamed by bcg_labels using "svl001_labels.ren"
+reduced by bcg_min using strong bisimulation
+	54 states
+	447 transitions
+	14 labels
+	initial state: 0
+	no deadlock state
+	branching factor: average = 8.28, minimal = 6, maximal = 15
+	204 transition(s) with a hidden label ("i")
+	non-deterministic behavior for:
+	   label "i" at state(s): 0 1 2 3 4 5 6 ... (54 states in total)
+	   label "EVENT !R !THERMO !ELEM (TEMPERATURE, 0) !FALSE" at state(s): 45 46 
+	   label "EVENT !R !MOTION !ELEM (ON, FALSE) !FALSE" at state(s): 5 32 34 36 46 
+	   label "EVENT !R !MOTION !ELEM (ON, TRUE) !FALSE" at state(s): 4 31 33 35 45 
+	   label "EVENT !R !THERMO !ELEM (TEMPERATURE, 12) !FALSE" at state(s): 4 5 31 32 
+	   label "EVENT !R !THERMO !ELEM (TEMPERATURE, 30) !FALSE" at state(s): 33 34 35 36 
+	   label "EVENT !R !THERMO !ELEM (TEMPERATURE, 30) !TRUE" at state(s): 35 36 
+--- Verification ----
+bcg_open: using ``/home/silverquick/cadp/bin.x64/evaluator5.a''
+bcg_open: running ``evaluator5 prop.mcl'' for ``./composition_ren_min.bcg''
+0
+
+TRUE

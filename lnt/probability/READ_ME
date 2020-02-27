@@ -1,0 +1,33 @@
+Here are the files for computing the probability of a rule
+execution when a fixed probability was assigned to the environment
+action triggering the rule.
+
+The BCG model is not renamed, i.e., it contains the rule identifiers
+on the transition labels, and the properties are expressed taking this
+into account.
+
+The properties concern the first execution of the composition expression,
+i.e., before the first "DONE" is executed.
+
+Files:
+
+prop_r1.mcl		probabilistic properties attached to each rule
+prop_r2.mcl
+prob_r1.ren		assignments of envaction probabilities for each rule
+prob_r2.ren		(not used here, but online in the SVL file)
+check_proba.svl		SVL script launching the probabilistic verifications
+
+Commands:
+
+svl ./check_proba.svl "r1" "ENVACTION \!MOTION \!ELEM (ON, TRUE)"
+
+creates a file "r1.dat" containing the values of the probabilities,
+that can be used for plotting.
+
+Similarly:
+
+svl check_proba.svl "r2" "ENVACTION \!THERMO \!ELEM (TEMPERATURE, 30)"
+
+creates a file "r2.dat", which is identical to "r1.dat" because of the
+symmetry of the system (choice between the two rules).
+

@@ -1,0 +1,52 @@
+module rules(lightdevice, motiondevice, thermodevice, heaterdevice, doordevice, windowdevice) with "get" is
+	type RULE is 
+		r1, r2, r3, r4, r5
+		with "==", "!="
+	end type
+	
+	(* IF door_open THEN light-on *)
+	process rule1[event:any, action:any] is
+		(* Event corresponding to door open == true *)
+		event(!r1, !door, !elem(open, true), !true);
+		action(!r1, !light, !elem(on, true));
+		event(!r1, !light, !elem(on, true), ?any bool)
+	end process
+	
+	(* IF motion_on THEN window_blinds_open *)
+	process rule2[event:any, action:any] is
+		event(!r2, !motion, !elem(on, true), !true);
+		action(!r2, !window, !elem(open, true));
+		event(!r2, !window, !elem(open, true), ?any bool)
+	end process
+	
+	(* IF temp < 19 THEN heater_on *)
+	process rule3[event:any, action:any] is
+		var tval:nat in
+			event(!r3, !thermo, ?elem(temperature, tval of nat) of QELEMENT, !true) where tval < 19;
+			action(!r3, !heater, !elem(on, true));
+			event(!r3, !heater, !elem(on, true), ?any bool)
+		end var
+	end process
+	
+		(* IF temp >= 19 THEN window_open *)
+	process rule4[event:any, action:any] is
+		var tval:nat in
+			event(!r4, !thermo, ?elem(temperature, tval of nat) of QELEMENT, !true) where tval == 23;
+			action(!r4, !window, !elem(on, true));
+			event(!r4, !window, !elem(on, true), ?any bool)
+		end var
+	end process
+	
+	(* IF door_close THEN light_off, heater_off, window_close *)
+	process rule5[event:any, action:any] is
+			event(!r5, !light, !elem(on, true), !true);
+			par
+				action(!r5, !light, !elem(on, false)); event(!r5, !light, !elem(on, false), ?any bool)
+			||
+				action(!r5, !heater, !elem(on, false)); event(!r5, !heater, !elem(on, false), ?any bool)
+			||
+				action(!r5, !window, !elem(on, false)); event(!r5, !window, !elem(on, false), ?any bool)
+			end par
+	end process
+
+end module

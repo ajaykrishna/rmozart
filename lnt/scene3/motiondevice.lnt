@@ -1,0 +1,49 @@
+module motiondevice(config) with "get" is
+(* Motion sensor device model *)
+	process motion [motionevent:any, motionaction:any, motionenvaction:any, done:any] is
+	  var q:QUEUE, motionon:bool, element:QELEMENT, hasProperty:bool in
+	  motionon := false; q := nil;
+	  element := elem(on, false);
+		loop
+			select
+				(* emit event *)
+				motionevent(?any RULE, !motion, !elem(on, motionon), ?any bool) --any bool used to ignore irrelevant events based on rules
+			[]
+				(* push to action queue *)
+				var elementAction:QELEMENT in 
+					motionaction(?any RULE, !motion, ?elementAction of QELEMENT);
+						q := append(elementAction,q)
+				end var
+			[]
+				(* consume event from action queue *)
+				eval hasProperty := queue_has_property(on, q, !?element);
+				if (hasProperty) then 
+					case element in 
+						var onvalue:bool in 
+						elem(on, onvalue) -> 
+							motionon := onvalue
+						| any -> null
+					end case;
+					q := delete(element, q)
+				end if
+			[]
+				(* handle action value from environment *)
+				var elementAction:QELEMENT in 
+					motionenvaction(!motion, ?elementAction of QELEMENT);
+					case elementAction in 
+							var onvalue:bool in 
+							elem(on, onvalue) -> 
+								motionon := onvalue
+							| any -> null
+					end case
+				end var
+			[]
+				(* used for track to one complete execution of the composition expression *)
+				if empty(q) then
+					done
+				end if
+			end select
+		end loop
+	  end var
+	end process
+end module

@@ -1,0 +1,64 @@
+module windowdevice(config) with "get" is
+	(* Window device model. Two properties: window on/off and blinds open close *)
+	process window [windowevent:any, windowaction:any, windowenvaction:any, done:any] is
+	  var q:QUEUE, windowon:bool, windowopen:bool, element:QELEMENT, hasProperty:bool in
+	  windowon := false; q := nil;
+	  element := elem(on, false); windowopen := false;
+		loop
+			select
+				(* emit event onoff *)
+				windowevent(?any RULE, !window, !elem(on, windowon), ?any bool)
+			[]
+				(* emit event open *)
+				windowevent(?any RULE, !window, !elem(open, windowopen), ?any bool)
+			[]
+				(* append to queue *)
+				var elementAction:QELEMENT in 
+					windowaction(?any RULE, !window, ?elementAction of QELEMENT);
+						q := append(elementAction,q)
+				end var
+			[]
+				(* remove from queue *)
+				eval hasProperty := queue_has_property(on, q, !?element);
+				if (hasProperty) then 
+					case element in 
+						var onvalue:bool in 
+						elem(on, onvalue) -> 
+							windowon := onvalue
+						| any -> null
+					end case;
+					q := delete(element, q)
+				end if;
+				eval hasProperty := queue_has_property(open, q, !?element); 
+				if (hasProperty) then 
+					 case element in 
+						var openvalue:bool in 
+						elem(open, openvalue) -> 
+							windowopen := openvalue
+						| any -> null
+					end case;
+					q := delete(element, q)
+				end if
+			[]
+				(* handle onoff and open values from environment *)
+				var elementAction:QELEMENT in 
+					windowenvaction(!window, ?elementAction of QELEMENT);
+					case elementAction in 
+							var openvalue:bool, onvalue:bool in 
+							elem(on, onvalue) -> 
+								windowon := onvalue
+							| elem(open, openvalue) -> 
+								windowopen := openvalue
+							| any -> null
+					end case
+				end var
+			[]
+				(* used for track to one complete execution of the composition expression *)
+				if empty(q) then
+					done
+				end if
+			end select
+		end loop
+	  end var
+	end process
+end module

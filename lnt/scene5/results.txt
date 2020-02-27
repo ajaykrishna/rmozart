@@ -1,0 +1,102 @@
+---------- Results ----------------
+--- composition.bcg (raw) ----
+./composition.bcg:
+created by caesar
+	294193 states
+	14321046 transitions
+	57 labels
+	initial state: 0
+	no deadlock state
+	branching factor: average = 48.68, minimal = 30, maximal = 124
+	4637962 transition(s) with a hidden label ("i")
+	non-deterministic behavior for:
+	   label "i" at state(s): 0 1 2 3 4 5 6 ... (294193 states in total)
+	   label "EVENT !R1 !LIGHT !ELEM (ON, FALSE) !FALSE" at state(s): 29068 29071 36507 36528 36938 36959 43029 ... (17496 states in total)
+	   label "EVENT !R2 !LIGHT !ELEM (ON, FALSE) !FALSE" at state(s): 29068 29071 36507 36528 36938 36959 43029 ... (17496 states in total)
+	   label "EVENT !R3 !LIGHT !ELEM (ON, FALSE) !FALSE" at state(s): 29068 29071 36507 36528 36938 36959 43029 ... (17496 states in total)
+	   label "EVENT !R4 !LIGHT !ELEM (ON, FALSE) !FALSE" at state(s): 29068 29071 36507 36528 36938 36959 43029 ... (17496 states in total)
+	   label "EVENT !R1 !THERMO !ELEM (TEMPERATURE, 0) !FALSE" at state(s): 215 806 866 884 923 936 939 ... (5616 states in total)
+	   label "EVENT !R2 !THERMO !ELEM (TEMPERATURE, 0) !FALSE" at state(s): 215 806 866 884 923 936 939 ... (5616 states in total)
+	   label "EVENT !R3 !THERMO !ELEM (TEMPERATURE, 0) !FALSE" at state(s): 215 806 866 884 923 936 939 ... (5616 states in total)
+	   label "EVENT !R4 !THERMO !ELEM (TEMPERATURE, 0) !FALSE" at state(s): 215 806 866 884 923 936 939 ... (5616 states in total)
+	   label "EVENT !R1 !MOTION !ELEM (ON, FALSE) !FALSE" at state(s): 18 19 82 83 94 95 104 ... (77976 states in total)
+	   label "EVENT !R2 !MOTION !ELEM (ON, FALSE) !FALSE" at state(s): 18 19 82 83 94 95 104 ... (77976 states in total)
+	   label "EVENT !R3 !MOTION !ELEM (ON, FALSE) !FALSE" at state(s): 18 19 82 83 94 95 104 ... (77976 states in total)
+	   label "EVENT !R4 !MOTION !ELEM (ON, FALSE) !FALSE" at state(s): 18 19 82 83 94 95 104 ... (77976 states in total)
+	   label "EVENT !R1 !DAYLIGHT !ELEM (ON, FALSE) !FALSE" at state(s): 66 67 117 118 183 184 215 ... (77976 states in total)
+	   label "EVENT !R2 !DAYLIGHT !ELEM (ON, FALSE) !FALSE" at state(s): 66 67 117 118 183 184 215 ... (77976 states in total)
+	   label "EVENT !R3 !DAYLIGHT !ELEM (ON, FALSE) !FALSE" at state(s): 66 67 117 118 183 184 215 ... (77976 states in total)
+	   label "EVENT !R4 !DAYLIGHT !ELEM (ON, FALSE) !FALSE" at state(s): 66 67 117 118 183 184 215 ... (77976 states in total)
+	   label "EVENT !R1 !CAMERA !ELEM (IMAGE, 0) !FALSE" at state(s): 55 56 104 105 166 167 215 ... (77976 states in total)
+	   label "EVENT !R2 !CAMERA !ELEM (IMAGE, 0) !FALSE" at state(s): 55 56 104 105 166 167 215 ... (77976 states in total)
+	   label "EVENT !R3 !CAMERA !ELEM (IMAGE, 0) !FALSE" at state(s): 55 56 104 105 166 167 215 ... (77976 states in total)
+	   label "EVENT !R4 !CAMERA !ELEM (IMAGE, 0) !FALSE" at state(s): 55 56 104 105 166 167 215 ... (77976 states in total)
+	   label "EVENT !R1 !MOTION !ELEM (ON, TRUE) !TRUE" at state(s): 29 30 142 143 155 156 166 ... (2592 states in total)
+	   label "EVENT !R1 !MOTION !ELEM (ON, TRUE) !FALSE" at state(s): 29 30 142 143 155 156 166 ... (77976 states in total)
+	   label "EVENT !R2 !MOTION !ELEM (ON, TRUE) !FALSE" at state(s): 29 30 142 143 155 156 166 ... (77976 states in total)
+	   label "EVENT !R3 !MOTION !ELEM (ON, TRUE) !FALSE" at state(s): 29 30 142 143 155 156 166 ... (77976 states in total)
+	   label "EVENT !R4 !MOTION !ELEM (ON, TRUE) !FALSE" at state(s): 29 30 142 143 155 156 166 ... (77976 states in total)
+	   label "EVENT !R1 !THERMO !ELEM (TEMPERATURE, 30) !FALSE" at state(s): 39 40 82 83 142 143 218 ... (75168 states in total)
+	   label "EVENT !R2 !THERMO !ELEM (TEMPERATURE, 30) !FALSE" at state(s): 39 40 82 83 142 143 218 ... (75168 states in total)
+	   label "EVENT !R3 !THERMO !ELEM (TEMPERATURE, 30) !FALSE" at state(s): 39 40 82 83 142 143 218 ... (75168 states in total)
+	   label "EVENT !R4 !THERMO !ELEM (TEMPERATURE, 30) !FALSE" at state(s): 39 40 82 83 142 143 218 ... (75168 states in total)
+	   label "EVENT !R1 !THERMO !ELEM (TEMPERATURE, 12) !FALSE" at state(s): 48 49 94 95 155 156 252 ... (75168 states in total)
+	   label "EVENT !R2 !THERMO !ELEM (TEMPERATURE, 12) !FALSE" at state(s): 48 49 94 95 155 156 252 ... (75168 states in total)
+	   label "EVENT !R3 !THERMO !ELEM (TEMPERATURE, 12) !FALSE" at state(s): 48 49 94 95 155 156 252 ... (75168 states in total)
+	   label "EVENT !R4 !THERMO !ELEM (TEMPERATURE, 12) !FALSE" at state(s): 48 49 94 95 155 156 252 ... (75168 states in total)
+	   label "EVENT !R1 !CAMERA !ELEM (IMAGE, 123) !FALSE" at state(s): 61 62 111 112 174 175 227 ... (77976 states in total)
+	   label "EVENT !R2 !CAMERA !ELEM (IMAGE, 123) !FALSE" at state(s): 61 62 111 112 174 175 227 ... (77976 states in total)
+	   label "EVENT !R3 !CAMERA !ELEM (IMAGE, 123) !FALSE" at state(s): 61 62 111 112 174 175 227 ... (77976 states in total)
+	   label "EVENT !R4 !CAMERA !ELEM (IMAGE, 123) !FALSE" at state(s): 61 62 111 112 174 175 227 ... (77976 states in total)
+	   label "EVENT !R1 !DAYLIGHT !ELEM (ON, TRUE) !FALSE" at state(s): 70 71 122 123 189 190 242 ... (77976 states in total)
+	   label "EVENT !R2 !DAYLIGHT !ELEM (ON, TRUE) !FALSE" at state(s): 70 71 122 123 189 190 242 ... (77976 states in total)
+	   label "EVENT !R3 !DAYLIGHT !ELEM (ON, TRUE) !FALSE" at state(s): 70 71 122 123 189 190 242 ... (77976 states in total)
+	   label "EVENT !R4 !DAYLIGHT !ELEM (ON, TRUE) !FALSE" at state(s): 70 71 122 123 189 190 242 ... (77976 states in total)
+	   label "EVENT !R1 !LIGHT !ELEM (ON, TRUE) !FALSE" at state(s): 215 688 773 806 866 884 923 ... (83592 states in total)
+	   label "EVENT !R2 !LIGHT !ELEM (ON, TRUE) !FALSE" at state(s): 936 945 2267 2309 2628 2670 2752 ... (69984 states in total)
+	   label "EVENT !R3 !LIGHT !ELEM (ON, TRUE) !FALSE" at state(s): 936 945 2267 2309 2628 2670 2752 ... (69984 states in total)
+	   label "EVENT !R4 !LIGHT !ELEM (ON, TRUE) !FALSE" at state(s): 936 945 2267 2309 2628 2670 2752 ... (69984 states in total)
+	   label "EVENT !R1 !LIGHT !ELEM (ON, TRUE) !TRUE" at state(s): 936 945 2267 2309 2628 2670 2752 ... (5832 states in total)
+	   label "EVENT !R2 !LIGHT !ELEM (ON, TRUE) !TRUE" at state(s): 3104 6010 7118 7369 7795 7910 8003 ... (9720 states in total)
+	   label "EVENT !R2 !THERMO !ELEM (TEMPERATURE, 30) !TRUE" at state(s): 6010 10759 11756 12094 12377 12677 12685 ... (10368 states in total)
+	   label "EVENT !R3 !DAYLIGHT !ELEM (ON, TRUE) !TRUE" at state(s): 8003 8076 8077 12377 12606 12607 14869 ... (7128 states in total)
+	   label "ACTION !R3 !DOOR !ELEM (OPEN, TRUE)" at state(s): 16575 22126 26501 27347 28029 28866 28879 ... (3888 states in total)
+	   label "ACTION !R2 !LIGHT !ELEM (COLOR, 123)" at state(s): 22679 31092 34412 35220 35770 36659 36675 ... (7776 states in total)
+	   label "EVENT !R3 !DOOR !ELEM (OPEN, TRUE) !FALSE" at state(s): 28886 35767 42349 43477 44286 45383 45399 ... (7776 states in total)
+	   label "EVENT !R3 !DOOR !ELEM (OPEN, TRUE) !TRUE" at state(s): 28886 35767 42349 43477 44286 45383 45399 ... (7776 states in total)
+--- composition_ren.bcg (minimized) ----
+./composition_ren_min.bcg:
+created by caesar
+labels renamed by bcg_labels using "svl001_labels.ren"
+reduced by bcg_min using strong bisimulation
+	12096 states
+	280288 transitions
+	23 labels
+	initial state: 0
+	no deadlock state
+	branching factor: average = 23.17, minimal = 11, maximal = 32
+	155936 transition(s) with a hidden label ("i")
+	non-deterministic behavior for:
+	   label "i" at state(s): 0 1 2 3 4 5 6 ... (12096 states in total)
+	   label "EVENT !R !THERMO !ELEM (TEMPERATURE, 0) !FALSE" at state(s): 1 2 3 4 5 6 7 ... (768 states in total)
+	   label "EVENT !R !MOTION !ELEM (ON, FALSE) !FALSE" at state(s): 4 146 299 300 301 302 303 ... (4032 states in total)
+	   label "EVENT !R !DAYLIGHT !ELEM (ON, FALSE) !FALSE" at state(s): 1 2 3 4 5 6 7 ... (4032 states in total)
+	   label "EVENT !R !CAMERA !ELEM (IMAGE, 0) !FALSE" at state(s): 5 6 7 8 9 10 11 ... (4032 states in total)
+	   label "EVENT !R !MOTION !ELEM (ON, TRUE) !FALSE" at state(s): 1 2 3 5 6 7 8 ... (4032 states in total)
+	   label "EVENT !R !CAMERA !ELEM (IMAGE, 123) !FALSE" at state(s): 1 2 3 4 143 144 145 ... (4032 states in total)
+	   label "EVENT !R !LIGHT !ELEM (ON, TRUE) !FALSE" at state(s): 1 2 3 4 5 6 7 ... (6040 states in total)
+	   label "EVENT !R !LIGHT !ELEM (ON, TRUE) !TRUE" at state(s): 5 6 7 8 9 10 11 ... (1792 states in total)
+	   label "EVENT !R !DAYLIGHT !ELEM (ON, TRUE) !FALSE" at state(s): 143 144 145 146 147 238 241 ... (4032 states in total)
+	   label "EVENT !R !THERMO !ELEM (TEMPERATURE, 12) !FALSE" at state(s): 239 241 243 245 246 248 249 ... (3456 states in total)
+	   label "EVENT !R !THERMO !ELEM (TEMPERATURE, 30) !FALSE" at state(s): 585 586 587 588 589 590 591 ... (3456 states in total)
+	   label "EVENT !R !DOOR !ELEM (OPEN, TRUE) !FALSE" at state(s): 1808 1809 1810 1811 1812 1813 1814 ... (640 states in total)
+	   label "EVENT !R !DOOR !ELEM (OPEN, TRUE) !TRUE" at state(s): 1808 1809 1810 1811 1812 1813 1814 ... (640 states in total)
+	   label "ACTION !R !LIGHT !ELEM (COLOR, 123)" at state(s): 2398 2399 2400 2401 2402 2403 2404 ... (1024 states in total)
+	   label "ACTION !R !DOOR !ELEM (OPEN, TRUE)" at state(s): 3271 3272 3273 3274 3275 3276 3277 ... (640 states in total)
+	   label "EVENT !R !THERMO !ELEM (TEMPERATURE, 30) !TRUE" at state(s): 5342 5343 5344 5345 5346 5347 5348 ... (768 states in total)
+	   label "EVENT !R !DAYLIGHT !ELEM (ON, TRUE) !TRUE" at state(s): 5740 5741 5742 5743 5744 5745 5746 ... (480 states in total)
+--- Verification ----
+bcg_open: using ``/home/silverquick/cadp/bin.x64/evaluator5.a''
+bcg_open: running ``evaluator5 prop.mcl'' for ``./composition_ren_min.bcg''
+
+TRUE

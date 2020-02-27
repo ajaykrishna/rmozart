@@ -1,0 +1,115 @@
+module rules(lightdevice, motiondevice, thermodevice, daylightdevice, doordevice, cameradevice) with "get" is
+	type RULE is 
+		r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12
+		with "==", "!="
+	end type
+	
+	(* IF motion_detected THEN light-on *)
+	process rule1[event:any, action:any] is
+		(* Event corresponding to motion == true *)
+		event(!r1, !motion, !elem(on, true), !true);
+		action(!r1, !light, !elem(on, true));
+		event(!r1, !light, !elem(on, true), ?any bool)
+	end process
+	
+	(* IF light_on AND thermo_(temp > 25) THEN light_(color=123) *)
+	process rule2[event:any, action:any] is
+		var tval:nat in
+			par  
+				event(!r2, !light, !elem(on, true), !true)
+			||
+				event(!r2, !thermo, ?elem(temperature, tval of nat) of QELEMENT, !true) where tval > 25
+			end par;
+			action(!r2, !light, !elem(color, 123));
+			event(!r2, !light, !elem(color, 123), ?any bool)
+		end var
+	end process
+
+		(* IF daylight_on then door_open *)
+	process rule3[event:any, action:any] is
+		event(!r3, !daylight, !elem(on, true), !true);
+		action(!r3, !door, !elem(open, true));
+		event(!r3, !door, !elem(open, true), ?any bool)
+	end process
+	
+	(* IF camera_image=255 then door_close *)
+	process rule4[event:any, action:any] is
+		(* Event corresponding to motion == true *)
+		event(!r4, !camera, !elem(image, 255), !true);
+		action(!r4, !door, !elem(open, false));
+		action(!r4, !door, !elem(open, false), ?any bool)
+	end process
+
+	(* IF motion_detected THEN light-on *)
+	process rule5[event:any, action:any] is
+		(* Event corresponding to motion == true *)
+		event(!r5, !motion2, !elem(on, true), !true);
+		action(!r5, !light2, !elem(on, true));
+		event(!r5, !light2, !elem(on, true), ?any bool)
+	end process
+	
+	(* IF light_on AND thermo_(temp > 25) THEN light_(color=123) *)
+	process rule6[event:any, action:any] is
+		var tval:nat in
+			par  
+				event(!r6, !light2, !elem(on, true), !true)
+			||
+				event(!r6, !thermo2, ?elem(temperature, tval of nat) of QELEMENT, !true) where tval > 25
+			end par;
+			action(!r6, !light2, !elem(color, 123));
+			event(!r6, !light2, !elem(color, 123), ?any bool)
+		end var
+	end process
+
+		(* IF daylight_on then door_open *)
+	process rule7[event:any, action:any] is
+		event(!r7, !daylight2, !elem(on, true), !true);
+		action(!r7, !door2, !elem(open, true));
+		event(!r7, !door2, !elem(open, true), ?any bool)
+	end process
+	
+	(* IF camera_image=255 then door_close *)
+	process rule8[event:any, action:any] is
+		(* Event corresponding to motion == true *)
+		event(!r8, !camera2, !elem(image, 255), !true);
+		action(!r8, !door2, !elem(open, false));
+		action(!r8, !door2, !elem(open, false), ?any bool)
+	end process
+
+	(* IF motion_detected THEN light-on *)
+	process rule9[event:any, action:any] is
+		(* Event corresponding to motion == true *)
+		event(!r9, !motion3, !elem(on, true), !true);
+		action(!r9, !light3, !elem(on, true));
+		event(!r9, !light3, !elem(on, true), ?any bool)
+	end process
+	
+	(* IF light_on AND thermo_(temp > 25) THEN light_(color=123) *)
+	process rule10[event:any, action:any] is
+		var tval:nat in
+			par  
+				event(!r10, !light3, !elem(on, true), !true)
+			||
+				event(!r10, !thermo3, ?elem(temperature, tval of nat) of QELEMENT, !true) where tval > 25
+			end par;
+			action(!r10, !light3, !elem(color, 123));
+			event(!r10, !light3, !elem(color, 123), ?any bool)
+		end var
+	end process
+
+		(* IF daylight_on then door_open *)
+	process rule11[event:any, action:any] is
+		event(!r11, !daylight3, !elem(on, true), !true);
+		action(!r11, !door3, !elem(open, true));
+		event(!r11, !door3, !elem(open, true), ?any bool)
+	end process
+	
+	(* IF camera_image=255 then door_close *)
+	process rule12[event:any, action:any] is
+		(* Event corresponding to motion == true *)
+		event(!r12, !camera3, !elem(image, 255), !true);
+		action(!r12, !door3, !elem(open, false));
+		action(!r12, !door3, !elem(open, false), ?any bool)
+	end process
+	
+end module

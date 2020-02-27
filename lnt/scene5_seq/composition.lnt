@@ -1,0 +1,59 @@
+module composition(env) with "get" is
+	(* Composition expression *)
+	process compo[event:any, action:any, done:any] is 
+		loop
+			rule1[event, action]; 
+			rule2[event, action];
+			rule3[event, action];
+			rule4[event, action];
+			done		--done represent one execution of the expression
+		end loop
+	end process
+	
+	process globallistener[event:any] is
+		loop
+		select
+			event(?any RULE, !light, ?elem(on, any bool) of QELEMENT, !false)
+		[]
+			event(?any RULE, !thermo, ?elem(temperature, any nat) of QELEMENT, !false)
+		[]
+			event(?any RULE, !motion, ?elem(on, any bool) of QELEMENT, !false)
+		[]
+			event(?any RULE, !daylight, ?elem(on, any bool) of QELEMENT, !false)
+		[]
+			event(?any RULE, !camera, ?elem(image, any nat) of QELEMENT, !false)
+		end select
+		end loop
+	end process
+	
+	(* Main process *)
+	process MAIN [event:any, action:any, done:any, envaction:any] is
+		hide envaction:any in --actions from the environment
+			par event, action, done in
+				par
+					compo[event, action, done]
+				||
+					globallistener[event]
+				end par
+			||
+				par envaction in 		-- environment interacts with devices
+					par done in 		--devices don't interact with each other
+						motion[event, action, envaction, done]
+					||
+						light[event, action, envaction, done]
+					||
+						thermo[event, action, envaction, done]
+					||
+						daylight[event, action, envaction, done]
+					||
+						door[event, action, envaction, done]
+					||
+						camera[event, action, envaction, done]
+					end par
+				||
+					environment[done, envaction]	--environment
+				end par
+			end par
+		end hide
+	end process
+end module

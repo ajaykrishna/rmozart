@@ -1,0 +1,49 @@
+module config with "get" is
+
+type PROPERTYID is
+    Boolean, On, MotionProperty, Open, Leak, Pushed, Level, Brightness, 
+	Color, ColorTemperature, InstantaneousPower, Current, 
+	Voltage, Frequency, Temperature, Image, Video, Alarm
+    with "==", "!="
+end type
+
+(* Devices used *)
+type DEVICE is
+	motion, light, thermo, door, camera, secalarm, daylight
+    with "==", "!="
+end type
+
+(* Constructor for different properties and their types*)
+type QELEMENT is
+	elem(p:PROPERTYID, bvalue:bool),
+    elem(p:PROPERTYID, nvalue:nat)
+	with "==", "!=", "get"
+end type
+
+(* Action queue *)
+type QUEUE is 
+	list of QELEMENT
+    with "==","!=", "length", "empty", "member", "remove", "append", "delete", "head"
+end type
+
+(* Function that checks if given property is available in the queue and returns the 
+  matching property and its value *)
+function queue_has_property(pid:PROPERTYID, q:QUEUE, in out element:QELEMENT):bool is
+	case q in
+		var p:PROPERTYID, tl:QUEUE in
+			 nil -> return false
+			| cons(elem(p, any bool), tl)  
+			| cons(elem(p, any nat), tl) -> 
+				if p == pid then
+					element := head(q);
+					return true
+				else
+                    var hasProperty:bool in 
+                        hasProperty := queue_has_property(pid, tl, !?element);
+                        return hasProperty
+                    end var
+				end if	
+	end case
+end function
+
+end module

@@ -1,0 +1,26 @@
+% CAESAR_OPEN_OPTIONS="-silent -warning"
+% CAESAR_OPTIONS="-more cat"
+
+% echo "---------- Results ----------------" > results.txt
+"composition.bcg" = generation of "composition.lnt";
+
+% echo "--- composition.bcg (raw) ----" >> results.txt
+% bcg_info "composition.bcg" >> results.txt
+
+"composition_ren.bcg" = 
+		total rename
+			"\([A-Z]*\) !R\([0-9]*\) \(.*\)" -> "\1 !R \3"
+		in
+			"composition.bcg" ;
+
+% echo "--- composition_ren.bcg (minimized) ----" >> results.txt
+"composition_ren_min.bcg" = strong reduction of "composition_ren.bcg";
+% bcg_info "composition_ren_min.bcg" >> results.txt
+
+% echo "--- Verification ----" >> results.txt
+% bcg_open "composition_ren_min.bcg" evaluator5 "prop.mcl" >> results.txt
+
+-- cleanup
+--% /bin/rm -f "composition.bcg"
+--% /bin/rm -f "composition_ren.bcg"
+% /bin/rm -f "*.o"

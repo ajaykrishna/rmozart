@@ -1,0 +1,49 @@
+module doordevice(config) with "get" is
+(* virtual door device model *)
+	process door [doorevent:any, dooraction:any, doorenvaction:any, done:any] is
+	  var q:QUEUE, dooropen:bool, element:QELEMENT, hasProperty:bool in
+	  dooropen := false; q := nil;
+	  element := elem(open, false);
+		loop
+			select
+				(* emit event *)
+				doorevent(?any RULE, !door, !elem(open, dooropen), ?any bool) --any bool used to ignore irrelevant events based open rules
+			[]
+				(* push to action queue *)
+				var elementAction:QELEMENT in 
+					dooraction(?any RULE, !door, ?elementAction of QELEMENT);
+						q := append(elementAction,q)
+				end var
+			[]
+				(* consume event from action queue *)
+				eval hasProperty := queue_has_property(open, q, !?element);
+				if (hasProperty) then 
+					case element in 
+						var openvalue:bool in 
+						elem(open, openvalue) -> 
+							dooropen := openvalue
+						| any -> null
+					end case;
+					q := delete(element, q)
+				end if
+			[]
+				(* handle action value from environment *)
+				var elementAction:QELEMENT in 
+					doorenvaction(!door, ?elementAction of QELEMENT);
+					case elementAction in 
+							var openvalue:bool in 
+							elem(open, openvalue) -> 
+								dooropen := openvalue
+							| any -> null
+					end case
+				end var
+			[]
+				(* used for track to one complete execution of the composition expression *)
+				if empty(q) then
+					done
+				end if
+			end select
+		end loop
+	  end var
+	end process
+end module

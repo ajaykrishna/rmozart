@@ -1,0 +1,36 @@
+module rules(lightdevice, motiondevice, thermodevice, daylightdevice, doordevice) with "get" is
+	type RULE is 
+		r1, r2, r3
+		with "==", "!="
+	end type
+	
+	(* IF motion_detected THEN light-on *)
+	process rule1[event:any, action:any] is
+		(* Event corresponding to motion == true *)
+		event(!r1, !motion, !elem(on, true), !true);
+		action(!r1, !light, !elem(on, true));
+		event(!r1, !light, !elem(on, true), ?any bool)
+	end process
+	
+	(* IF light_on AND thermo_(temp > 25) THEN light_(color=123) *)
+	process rule2[event:any, action:any] is
+		var tval:nat in
+			par  
+				event(!r2, !light, !elem(on, true), !true)
+			||
+				event(!r2, !thermo, ?elem(temperature, tval of nat) of QELEMENT, !true) where tval > 25
+			end par;
+			action(!r2, !light, !elem(color, 123));
+			event(!r2, !light, !elem(color, 123), ?any bool)
+		end var
+	end process
+
+		(* IF daylight_on then door_open *)
+	process rule3[event:any, action:any] is
+		(* Event corresponding to motion == true *)
+		event(!r3, !daylight, !elem(on, true), !true);
+		action(!r3, !door, !elem(open, true));
+		event(!r3, !door, !elem(open, true), ?any bool)
+	end process
+	
+end module
