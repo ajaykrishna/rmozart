@@ -26,6 +26,7 @@ VscadDatabase.prototype.open = function() {
   return db.run(rulesTableSQL, []);
 };
 
+
 /**
  * Get all rules
  * @return {Promise<Map<number, RuleDescription>>} resolves to a map of rule id
@@ -44,7 +45,7 @@ VscadDatabase.prototype.getRules = function() {
         const rules = {};
         const updatePromises = [];
         for (const row of rows) {
-          let desc = JSON.parse(row.description);
+          const desc = JSON.parse(row.description);
           rules[row.id] = desc;
         }
         Promise.all(updatePromises).then(() => {
@@ -54,6 +55,13 @@ VscadDatabase.prototype.getRules = function() {
     );
   });
 };
+
+/**
+ * Get all rules temp
+ * @return {Promise<Map<number, RuleDescription>>} resolves to a map of rule id
+ * to rule
+ */
+
 
 VscadDatabase.prototype.getThings = function() {
   return new Promise((resolve, reject) => {
@@ -68,7 +76,7 @@ VscadDatabase.prototype.getThings = function() {
         const things = {};
         const updatePromises = [];
         for (const row of rows) {
-          let desc = JSON.parse(row.description);
+          const desc = JSON.parse(row.description);
           things[row.id] = desc;
         }
         Promise.all(updatePromises).then(() => {
@@ -93,6 +101,7 @@ VscadDatabase.prototype.createRule = function(desc) {
     return parseInt(res.lastID);
   });
 };
+
 
 /**
  * Update an existing rule

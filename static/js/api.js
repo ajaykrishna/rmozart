@@ -39,9 +39,11 @@ const API = {
       method: 'GET',
       headers: this.headers(),
     };
-
+    
     return fetch(url, opts).then((res) => {
+      
       if (!res.ok) {
+        console.log(url);
         throw new Error(res.status);
       }
 

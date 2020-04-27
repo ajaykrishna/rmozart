@@ -34,6 +34,8 @@ let RulesScreen;
 // eslint-disable-next-line prefer-const
 let VscadComposedRuleScreen;
 // eslint-disable-next-line prefer-const
+let ReconfigureRuleScreen;
+// eslint-disable-next-line prefer-const
 let RuleScreen;
 // eslint-disable-next-line prefer-const
 let LogsScreen;
@@ -113,7 +115,9 @@ const App = {
     }
 
     RulesScreen.init();
+
     VscadComposedRuleScreen.init();
+    ReconfigureRuleScreen.init();
     RuleScreen.init();
 
     LogsScreen.init();
@@ -121,6 +125,7 @@ const App = {
     this.views = [];
     this.views.things = document.getElementById('things-view');
     this.views.floorplan = document.getElementById('floorplan-view');
+    this.views['reconfigure'] = document.getElementById('reconfigure-view');
     this.views.settings = document.getElementById('settings-view');
     this.views.rules = document.getElementById('rules-view');
     this.views['rules-manager'] = document.getElementById('rules-manager-view');
@@ -293,6 +298,12 @@ const App = {
     this.selectView('rules-manager');
   },
 
+  showReconfigure: function(context){
+    this.hideExtensionBackButton();
+    ReconfigureRuleScreen.show(context.params.rule);
+    this.selectView('reconfigure');
+  },
+  
   showRule: function(context) {
     this.hideExtensionBackButton();
     RuleScreen.show(context.params.rule);
@@ -504,6 +515,7 @@ RulesScreen = require('./views/rules-screen');
 RuleScreen = require('./views/rule-screen');
 LogsScreen = require('./views/logs-screen');
 VscadComposedRuleScreen = require('./vscad-composed-rule-screen');
+ReconfigureRuleScreen = require('./reconfigure-composed');
 Speech = require('./speech');
 
 // load web components
@@ -569,7 +581,7 @@ if (navigator.serviceWorker) {
   navigator.serviceWorker.register('/service-worker.js', {
     scope: '/',
   });
-  navigator.serviceWorker.ready.then(Notifications.onReady);
+ // navigator.serviceWorker.ready.then(Notifications.onReady);
 }
 
 /**

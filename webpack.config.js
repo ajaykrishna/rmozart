@@ -178,6 +178,7 @@ const webpackWeb = {
       './static/css/settings.css',
       './static/css/rules-common.css',
       './static/css/vscad-rulesManager.css',
+      './static/css/reconfigure-rules.css',
       './static/css/rules.css',
       './static/css/rule.css',
       './static/css/logs.css',

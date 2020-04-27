@@ -31,6 +31,7 @@ const Router = {
     page('/logs/things/:thingId/properties/:propId', App.showLogs.bind(App));
     page('/extensions/:extensionId', App.showExtension.bind(App));
     page('/vscad-rulesManager/:rule', App.showComposedRule.bind(App));
+    page('/reconfigure/:rule', App.showReconfigure.bind(App));
     page();
   },
 };

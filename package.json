@@ -44,6 +44,7 @@
     "bpmn-js": "^3.3.1",
     "callsites": "^3.1.0",
     "compression": "^1.7.4",
+    "concurrently": "^5.1.0",
     "config": "^3.2.4",
     "country-list": "^2.2.0",
     "csv-parse": "^4.6.5",

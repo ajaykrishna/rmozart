@@ -6,6 +6,7 @@ const Constants = require('../constants');
  * `ruleArea` to change its role within `rule`
  * @constructor
  * @param {Element} ruleArea
+ *  * @param {Element} deleteArea
  * @param {Function} onPresentationChange
  * @param {Function} onRuleChange
  * @param {String} name
@@ -15,9 +16,10 @@ const Constants = require('../constants');
  */
 
 
-function VscadConnectorBlock(ruleArea,onRuleChange, name) {
+function VscadConnectorBlock(ruleArea,onRuleChange, deleteArea, name) {
   this.role = '';
   this.rulePart = null;
+  this.deleteArea = deleteArea;
   this.onRuleChange = onRuleChange;
   this.elt = document.createElement('div');
   this.elt.classList.add('rule-connector-container');
@@ -47,9 +49,7 @@ function VscadConnectorBlock(ruleArea,onRuleChange, name) {
   }
 
   this.VscadConnectorBlock = this.elt.querySelector('.rule-connector');;
-
   this.ruleArea = ruleArea;
-
   this.onDown = this.onDown.bind(this);
   this.onMove = this.onMove.bind(this);
   this.onUp = this.onUp.bind(this);
@@ -75,6 +75,7 @@ function VscadConnectorBlock(ruleArea,onRuleChange, name) {
   const dragHint = document.getElementById('drag-hint');
   this.flexDir = window.getComputedStyle(dragHint).flexDirection;
 }
+
 VscadConnectorBlock.prototype.setName = function(name){
   this.name = name;
   this.text = Constants.COMMANDS[name];
@@ -175,6 +176,7 @@ VscadConnectorBlock.prototype.addAsChild = function (child, sibling) {
   
 
 }
+
 /**
  * On mouse down during a drag
  */
@@ -191,8 +193,8 @@ VscadConnectorBlock.prototype.onDown = function () {
   if(this.parent && this.parent.returnChildToRuleArea){
     this.parent.returnChildToRuleArea(this);
   }
-  const deleteArea = document.getElementById('vscad-delete-area');
-  deleteArea.classList.add('delete-active');
+  
+  this.deleteArea.classList.add('delete-active');
   this.elt.classList.add('dragging');
   this.ruleArea.classList.add('drag-location-hint');
 };
@@ -238,13 +240,12 @@ VscadConnectorBlock.prototype.snapToGrid = function (relX, relY) {
  */
 VscadConnectorBlock.prototype.onUp = function (clientX, clientY) {
   this.elt.classList.remove('dragging');
-  const deleteArea = document.getElementById('vscad-delete-area');
-  const deleteAreaWidth = deleteArea.getBoundingClientRect().width;
+  const deleteAreaWidth = this.deleteArea.getBoundingClientRect().width;
   if (clientX < deleteAreaWidth) {
     this.remove();
   }
   this.ruleArea.dragging = null;
-  deleteArea.classList.remove('delete-active');
+  this.deleteArea.classList.remove('delete-active');
 };
 
 /**

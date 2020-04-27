@@ -30,8 +30,8 @@ const Menu = {
     this.items.settings = [document.getElementById('settings-menu-item')];
     this.items.floorplan = [document.getElementById('floorplan-menu-item')];
     this.items.rules = [document.getElementById('rules-menu-item')];
-    this.items['rules-manager'] =
-    [document.getElementById('rules-manager-menu-item')];
+    this.items['rules-manager'] = [document.getElementById('rules-manager-menu-item')];
+    this.items['reconfigure'] = [document.getElementById('reconfigure-view')];
     this.items.rule = [document.getElementById('rules-menu-item')];
     this.items.logs = [document.getElementById('logs-menu-item')];
     this.currentItem = 'things';

@@ -25,7 +25,7 @@ const API = require('../api');
 function ComposedRule(gateway, desc, onUpdate) {
   this.gateway = gateway;
   this.onUpdate = onUpdate;
-
+  
   if (desc) {
     this.id = desc.id;
     this.enabled = desc.enabled;
@@ -36,6 +36,7 @@ function ComposedRule(gateway, desc, onUpdate) {
     }
     this.rules = desc.rules;
     this.expression = desc.expression;
+    this.expression2 = desc.expression;
   } 
 }
 
@@ -145,6 +146,12 @@ ComposedRule.prototype.setExpression = function(expression) {
   this.expression = expression;
   return this.update();
 };
+ComposedRule.prototype.setExpression2 = function(expression) {
+  this.expression = expression;
+};
+ComposedRule.prototype.getExpression = function() {
+  return this.expression;
+}
 
 
 
