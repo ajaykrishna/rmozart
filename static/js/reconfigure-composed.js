@@ -17,8 +17,7 @@ const ReconfigureScreen = {
   init: function () {
     this.rulesList = document.getElementById('rules-side-menu-reconfigure');
     this.ruleArea = document.getElementById('rules-area-reconf');
-    this.ruleLeft = document.getElementById('rule-right');
-    this.ruleRight = document.getElementById('rule-left');
+    this.ruleLeft = document.getElementById('rule-area-modal');
     this.loader = document.getElementById('loader-holder-reconf');
     this.deleteArea = document.getElementById('vscad-delete-area-reconf');
 
@@ -112,6 +111,7 @@ const ReconfigureScreen = {
     fetch('http://localhost:9001/verify', fetchedJson).then((res) => {
       return res.json();
     }).then((response) => {
+      alert(JSON.stringify(response));
       this.hiddeLoader();
       this.showNotification(response);
     });
@@ -330,16 +330,18 @@ const ReconfigureScreen = {
         }
       }
       const parts = desc.expression.split(' ');
-      const newBlock = this.getBlockOf(parts.slice(1, parts.length - 1), usedRules);
+      const newBlock = this.getBlockOf(parts.slice(1, parts.length - 1), usedRules, this.deleteArea, this.ruleArea);
       this.ComposedRuleBlocks.push(newBlock);
       newBlock.snapToGrid(20, 20);
       // sets the name on the titel
       this.ruleName.textContent = desc.name;
     }
   },
-  getBlockOf: function (parts, usedRules) {
+  getBlockOf: function (parts, usedRules, deleteArea, ruelArea) {
+    var areaDelete = deleteArea;
+    var areaRule = ruelArea;
     let i = 0;
-    const block = new VscadConnectorBlock(this.ruleLeft, this.saveRule, this.deleteArea);
+    const block = new VscadConnectorBlock(areaRule, this.saveRule, areaDelete);
 
     while (i < parts.length) {
       const part = parts[i];
