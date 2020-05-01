@@ -81,9 +81,11 @@ const App = {
   /**
    * Start WebThings Gateway app.
    */
+
+ 
   init: function() {
     fluent.init();
-
+ 
     // after loading fluent, we need to add a couple extra DOM elements
     document.querySelector('#thing-title-icon').innerHTML = `
       <webthing-custom-icon id="thing-title-custom-icon" class="hidden">
@@ -143,7 +145,7 @@ const App = {
     this.overflowMenu = document.getElementById('overflow-menu');
     this.blockMessages = false;
     this.messageArea = document.getElementById('message-area');
-    this.messageTimeout = null;
+    this.messageTimeout = null; 
 
     this.connectivityOverlay = document.getElementById('connectivity-scrim');
     this.pingerInterval = null;
@@ -299,6 +301,7 @@ const App = {
   },
 
   showReconfigure: function(context){
+    console.log("evento");
     this.hideExtensionBackButton();
     ReconfigureRuleScreen.show(context.params.rule);
     this.selectView('reconfigure');

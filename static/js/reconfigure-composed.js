@@ -6,6 +6,7 @@
 const API = require('./api');
 const Gateway = require('./rules/Gateway');
 const page = require('page');
+const modal = require('./vscad-composed-rule-screen');
 const VscadComposedRule = require('./rules/VscadComposedRule');
 const VscadRuleCardItem = require('./rules/VscadRuleCardItem');
 const VscadConnectorBlock = require('./rules/VscadConnectorBlock');
@@ -14,6 +15,7 @@ const VscadRulePropertyBlock = require('./rules/VscadRulePropertyBlock');
 'use-strict';
 
 const ReconfigureScreen = {
+  
   init: function () {
     this.rulesList = document.getElementById('rules-side-menu-reconfigure');
     this.ruleArea = document.getElementById('rules-area-reconf');
@@ -111,9 +113,8 @@ const ReconfigureScreen = {
     fetch('http://localhost:9001/verify', fetchedJson).then((res) => {
       return res.json();
     }).then((response) => {
-      alert(JSON.stringify(response));
       this.hiddeLoader();
-      this.showNotification(response);
+      modal.showVerification(response);
     });
   },
   showNotification: function (data) {
@@ -258,12 +259,11 @@ const ReconfigureScreen = {
       });
     }
     rulePromise.then((ruleDesc) => {
-      console.log(this.ComposedRuleBlocks.length <= 0);
       if (this.ComposedRuleBlocks.length <= 0) {
         this.cRule = new VscadComposedRule(this.gateway, ruleDesc);
         this.cRule.update();
         this.prepareVisual(this.cRule.toDescription(), this.gateway, this.fetchedRules);
-      }
+     }
     });
   },
   saveRule: function () {

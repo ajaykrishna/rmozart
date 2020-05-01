@@ -78,12 +78,13 @@ top: 9.6rem;
 }
 
 .banner-reconfigure {
-  float: left;
-  margin-left: 80%;
-  margin-top: 2%;
   font-family: sans-serif;
   font-size: 20px;
   text-align: center;
+  margin-right: 3%;
+  position: fixed;
+  right: 0;
+  top: 2.5%;
 }
 .container-reconf #rule-area-modal {
   background: url('../optimized-images/background.png');
@@ -202,6 +203,7 @@ top: 9.6rem;
   color: white;
   overflow: hidden;
   padding-left: 5%;
+  display: block ruby;
 }
 
 #reconfigure-view .rule-delete-dialog > p {
