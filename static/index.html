@@ -607,7 +607,7 @@
         <!-- <p>Rule Description</p> -->
         <button id="test-button"> TEST API </button>
       </div>
-      <h1 class="banner-reconfigure">Reconfigure screen</h1>
+      <h1 class="banner-reconfigure">Reconfiguration screen</h1>
       <button id="delete-button">
         <img src="/optimized-images/delete-16.svg" alt="Delete" width="40" height="40" />
       </button>
@@ -691,7 +691,7 @@
       <li><a id="things-menu-item" data-l10n-id="things-menu-item" href="/things" class="selected"></a></li>
       <li><a id="rules-menu-item" data-l10n-id="rules-menu-item" href="/rules"></a></li>
       <li><a id="rules-manager-menu-item" href="/vscad-rulesManager/1">Advanced rules</a></li>
-      <li><a id="rules-reconfigure-menu-item" href="/reconfigure/1">Reconfigure rule</a></li>
+      <li><a id="rules-reconfigure-menu-item"  href="javascript:ventanaSecundaria('/reconfigure/1')">Reconfigure rule</a></li>
       <li><a id="logs-menu-item" data-l10n-id="logs-menu-item" href="/logs"></a></li>
       <li><a id="floorplan-menu-item" data-l10n-id="floorplan-menu-item" href="/floorplan"></a></li>
       <li><a id="settings-menu-item" data-l10n-id="settings-menu-item" href="/settings"></a></li>
@@ -702,6 +702,12 @@
       </li>
     </ul>
   </nav>
+
+  <script>
+    function ventanaSecundaria (URL){ 
+   window.open(URL,"Reconfigure rules","width=1024,height=768") 
+} 
+  </script>
 
   <!-- Floating buttons -->
   <button id="menu-button" class="icon-button"></button>
