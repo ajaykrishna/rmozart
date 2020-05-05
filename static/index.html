@@ -591,10 +591,26 @@
   </section>
 
   <script>
-    function openModal () {
-     window.open('/reconfigure/1','_blank',  'fullscreen=yes')
-   }
- </script>
+    function openModal() {
+      var y = window.open('/reconfigure/1', '_blank', 'fullscreen=yes');
+      var timer = setInterval(function () {
+        if (y.closed) {
+          clearInterval(timer);
+          location.reload();
+        }
+      }, 100);
+    }
+    function closeModal() {
+      window.focus();
+      var x = confirm('hello world');
+      if (x) {
+        reload();
+      }
+    }
+    function reload() {
+      location.reload();
+    }
+  </script>
   <!--Reconfigure Screen-->
   <section data-view="reconfigure" id="reconfigure-view" class="hidden">
 
