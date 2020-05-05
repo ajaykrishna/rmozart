@@ -25,7 +25,6 @@ const ReconfigureScreen = {
 
     this.compareButton = document.getElementById('compare-reconf-button');
     this.deployButton = document.getElementById('deploy-reconf-button');
-    this.saveButton = document.getElementById('save-reconf-button');
 
     //  this.saveRule = this.saveRule.bind(this);
 
@@ -58,9 +57,6 @@ const ReconfigureScreen = {
     };
     this.compareButton.addEventListener('click', () => {
       this.requestUpdate();
-    });
-    this.saveButton.addEventListener('click', () => {
-      this.saveDb();
     });
     this.deployButton.addEventListener('click', () => {
       modal.requestExecution();
@@ -260,11 +256,11 @@ const ReconfigureScreen = {
       });
     }
     rulePromise.then((ruleDesc) => {
-      // if (this.ComposedRuleBlocks.length <= 0) {
+       if (this.ComposedRuleBlocks.length <= 0) {
         this.cRule = new VscadComposedRule(this.gateway, ruleDesc);
         this.cRule.update();
         this.prepareVisual(this.cRule.toDescription(), this.gateway, this.fetchedRules);
-     // }
+      }
     });
   },
   saveRule: function () {
@@ -351,18 +347,16 @@ const ReconfigureScreen = {
         }
       }
       const parts = desc.expression.split(' ');
-      const newBlock = this.getBlockOf(parts.slice(1, parts.length - 1), usedRules, this.deleteArea, this.ruleArea);
+      const newBlock = this.getBlockOf(parts.slice(1, parts.length - 1), usedRules);
       this.ComposedRuleBlocks.push(newBlock);
       newBlock.snapToGrid(20, 20);
       // sets the name on the titel
       this.ruleName.textContent = desc.name;
     }
   },
-  getBlockOf: function (parts, usedRules, deleteArea, ruelArea) {
-    var areaDelete = deleteArea;
-    var areaRule = ruelArea;
+  getBlockOf: function (parts, usedRules) {
     let i = 0;
-    const block = new VscadConnectorBlock(areaRule, this.saveRule, areaDelete);
+    const block = new VscadConnectorBlock(this.ruleArea, this.saveRule, this.deleteArea);
 
     while (i < parts.length) {
       const part = parts[i];
