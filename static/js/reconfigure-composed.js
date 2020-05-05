@@ -60,9 +60,10 @@ const ReconfigureScreen = {
       this.requestUpdate();
     });
     this.saveButton.addEventListener('click', () => {
+      this.saveDb();
     });
     this.deployButton.addEventListener('click', () => {
-
+      modal.requestExecution();
     });
     this.ruleName.addEventListener('dblclick', (event) => {
       event.preventDefault();
@@ -259,11 +260,11 @@ const ReconfigureScreen = {
       });
     }
     rulePromise.then((ruleDesc) => {
-      if (this.ComposedRuleBlocks.length <= 0) {
+      // if (this.ComposedRuleBlocks.length <= 0) {
         this.cRule = new VscadComposedRule(this.gateway, ruleDesc);
         this.cRule.update();
         this.prepareVisual(this.cRule.toDescription(), this.gateway, this.fetchedRules);
-     }
+     // }
     });
   },
   saveRule: function () {
@@ -282,6 +283,26 @@ const ReconfigureScreen = {
     }
     document.getElementById('warning-message-reconf').style.display = (foundRules > 1) ? 'block' : 'none';
     this.cRule.setExpression2(longest);
+  },
+  saveDb: function() {
+    let longest = '';
+    let foundRules = 0;
+
+    for (let i = this.ComposedRuleBlocks.length - 1; i >= 0; i--) {
+      const block = this.ComposedRuleBlocks[i];
+      if (block && block.role === '') {
+
+        longest = block.getText();
+
+        foundRules++;
+      } else if (block.role === 'removed') {
+        this.ComposedRuleBlocks.splice(i, 1);
+      }
+    }
+    document.getElementById('warning-message-reconf').style.display = (foundRules > 1) ? 'block' : 'none';
+    console.log(longest);
+    this.cRule.setExpression(longest);
+    this.cRule.setRules(this.cRule.getRulesFromExpression());
   },
   /**
    * @return {Promise<Array<RuleDescription>>}

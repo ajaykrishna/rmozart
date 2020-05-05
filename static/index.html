@@ -585,6 +585,7 @@
       <a href="#" id="verification-button" class="buttons">Verify</a>
       <a href="#" id="mcl-button" class="buttons">MCL</a>
       <a href="#" id="deploy-button" class="buttons">Deploy</a>
+      <a href="#" id="reconf-button" class="buttons">Reconf</a>
       <button id="vscad-create-rule-button" class="icon-button buttons"></button>
     </nav>
   </section>
@@ -691,7 +692,8 @@
       <li><a id="things-menu-item" data-l10n-id="things-menu-item" href="/things" class="selected"></a></li>
       <li><a id="rules-menu-item" data-l10n-id="rules-menu-item" href="/rules"></a></li>
       <li><a id="rules-manager-menu-item" href="/vscad-rulesManager/1">Advanced rules</a></li>
-      <li><a id="rules-reconfigure-menu-item"  href="javascript:ventanaSecundaria('/reconfigure/1')">Reconfigure rule</a></li>
+      <li><a id="rules-reconfigure-menu-item" href="/reconfigure/1">Reconfigure rule</a>
+      </li>
       <li><a id="logs-menu-item" data-l10n-id="logs-menu-item" href="/logs"></a></li>
       <li><a id="floorplan-menu-item" data-l10n-id="floorplan-menu-item" href="/floorplan"></a></li>
       <li><a id="settings-menu-item" data-l10n-id="settings-menu-item" href="/settings"></a></li>
@@ -703,11 +705,7 @@
     </ul>
   </nav>
 
-  <script>
-    function ventanaSecundaria (URL){ 
-   window.open(URL,"Reconfigure rules","width=1024,height=768") 
-} 
-  </script>
+
 
   <!-- Floating buttons -->
   <button id="menu-button" class="icon-button"></button>

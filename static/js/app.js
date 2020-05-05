@@ -299,7 +299,7 @@ const App = {
     VscadComposedRuleScreen.show(context.params.rule);
     this.selectView('rules-manager');
   },
-
+  
   showReconfigure: function(context){
     console.log("evento");
     this.hideExtensionBackButton();
