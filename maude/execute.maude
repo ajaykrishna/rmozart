@@ -1,0 +1,53 @@
+
+---- Checks properties (e.g., seamless reconfiguration) on concrete applications
+---- authors: Francisco Duran and Gwen Salaun
+
+load verif.maude
+load prop.maude
+
+mod EXPERIMENTS is
+  pr VERIF .
+  pr EXAMPLES .
+  pr PROPERTIES .
+
+  op checkSR1 : -> Bool .
+  op checkSR2 : -> Bool .
+
+  op checkCR1 : -> Bool .
+
+  eq checkSR1
+    = checkSeamlessReconfiguration(
+        app((ms, light), compo1),                      --- first app
+        app((ms, light), compo2),                      --- new app with the same objects
+        (ids(msid, s('s1)), ids(lightid, s('s1))),     --- global state
+        ( (idl(msid, move ! val(true))) (idl(lightid, on ? val(1))) )  --- execution trace
+      ) .
+
+  eq checkSR2
+    = checkSeamlessReconfiguration(
+        app((ms, light), compo1),                      --- first app
+        app((ms, light2), compo4),                     --- new app with a different light
+        (ids(msid, s('s1)), ids(lightid, s('s1))),     --- global state
+        ( (idl(msid, move ! val(true))) (idl(lightid, on ? val(1))) )  --- execution trace
+      ) .
+
+  eq checkCR1
+    = checkConservativeReconfiguration(
+       app((ms, light), compo1),                      --- first app
+       app((ms, light), compo2),                      --- new app with the same objects
+       (ids(msid, s('s1)), ids(lightid, s('s1))),     --- global state
+       ( (idl(msid, move ! val(true))) (idl(lightid, on ? val(1))) )  --- execution trace
+      ) .
+
+
+endm
+
+---- set print attribute on .
+
+--- set trace on .
+
+rew checkSR1 .   --- this one works, and returns true
+
+rew checkSR2 .   --- this one works too, and returns true
+
+rew checkCR1 .

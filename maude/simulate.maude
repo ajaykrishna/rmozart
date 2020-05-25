@@ -1,0 +1,30 @@
+
+---- Executes an application (objects and compo) by simulation
+---- authors: Francisco Duran and Gwen Salaun
+
+load examples.maude
+
+mod SIMULATION is
+  pr IOTAPP-SEM .
+  pr EXAMPLES .
+
+  op myapp : -> Id .
+  op simu : -> Id .
+
+  op init : -> Configuration .
+  eq init =
+    < myapp : IoTApp |
+         devices : (ms, light),
+         compo : compo2 >
+    < simu : Simulation |
+         gstate : (ids(msid, s('s0)), ids(lightid, s('s0))),   --- TODO: this should be automated
+         compo : compo2,
+         trace : nil,
+         buffers : (buf(msid, nil), buf(lightid, nil)) > .     --- TODO: this should be automated too
+
+endm
+
+set print attribute on .
+--- set trace on .
+
+rew init .

@@ -1,0 +1,10 @@
+fmod 3-TUPLE{X :: TRIV, Y :: TRIV, Z :: TRIV} is
+  sort Tuple{X, Y, Z} .
+  op ((_,_,_)) : X$Elt Y$Elt Z$Elt -> Tuple{X, Y, Z} .
+  op p1_ : Tuple{X, Y, Z} -> X$Elt .
+  op p2_ : Tuple{X, Y, Z} -> Y$Elt .
+  op p3_ : Tuple{X, Y, Z} -> Z$Elt .
+  eq p1(A:X$Elt, B:Y$Elt, C:Z$Elt) = A:X$Elt .
+  eq p2(A:X$Elt, B:Y$Elt, C:Z$Elt) = B:Y$Elt .
+  eq p3(A:X$Elt, B:Y$Elt, C:Z$Elt) = C:Z$Elt .
+endfm

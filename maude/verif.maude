@@ -1,0 +1,564 @@
+
+---- Verification: seamless reconfiguration (and more)
+---- authors: Francisco Duran and Gwen Salaun
+
+load examples.maude
+load 3-tuple.maude
+load 4-tuple.maude
+
+mod VERIF is
+  pr IOTAPP-SEM .
+  --- pr SET{Set`{Tuple{Id,State}`}} .
+  pr SET{Id} .
+  pr APPLICATION .
+
+  vars Devs Devs1 Devs2 : Set{Device} .
+  vars Compo Compo1 Compo2 : Composition .
+  var Compos : Set{Composition} .
+  var Tr : List{Tuple{Id,Label}} .
+  var Bfs : Set{Buffer} .
+  vars GS GS1 GS2 : Set{Tuple{Id,State}} .
+  vars MDL MDL1 MDL2 : LTS .
+  vars O O1 O2 O3 M M1 M2 : Id .
+  vars S S1 S2 S3 : State .
+  var Transitions Trans : Set{Transition} .
+  vars Pr1 Pr2 : Set{Property} .
+  vars V V1 V2 V3 : Value .
+  var LL : List{Label} .
+  var LR : LRule .
+  var RR : RRule .
+  var SRE : Set{REvent} .
+  var RE : REvent .
+  vars App1 App2 : Application .
+  vars K K1 K2 : Int .
+  var Ids : Set{Id} .
+  var Lab : Label .
+
+  vars Exec Exec1 Exec2 : Set{Tuple{Id, Set{Transition}}} .
+
+  --- Seamless reconfiguration -> repeat the same trace in the new application
+  ---     + check if the same state was reached for the remaining objects
+  --- Inputs: former application, new application, global state reached by former application,
+  ---         trace executed by former application
+  --- Output: boolean indicating whether the former global state for remaining objects
+  ---         is reachable executing the trace
+
+  op checkSeamlessReconfiguration : Application Application Set{Tuple{Id,State}} List{Tuple{Id,Label}} -> Bool .
+  op checkSeamlessReconfigurationAux : Application Application Set{Tuple{Id,State}} List{Tuple{Id,Label}} Set{Id} -> Bool .
+
+  ---- we filter the trace to keep only labels belonging to remaining objects
+  eq checkSeamlessReconfiguration(App1, App2, GS, Tr)
+    = checkSeamlessReconfigurationAux(
+         App1, App2, GS,
+         filterTrace(Tr, computeCommonObjects(App1, App2)),
+         computeCommonObjects(App1, App2)
+       ) .
+
+  ---- this function takes the new application, a trace and runs it until it is possible
+  ---- caution: if an object is not available any more, any object can be run instead
+  ---- caution: all possibilities should be explored !
+  ---- therefore, as an output, returns all reachable global states (set of sets of Tuple{Id,State})
+
+  ---- ASSUMPTION: let's suppose in a first step that only one execution is possible
+  ----   (or none), and let's keep the general case for later on
+
+  eq checkSeamlessReconfigurationAux(App1, App2, GS, Tr, Ids)
+    = compareGS(
+         App1, App2, GS,
+         getGlobalState(runTrace(App2, Tr, Ids))
+       ) and getBoolRes(runTrace(App2, Tr, Ids)) .  --- this boolean indicates whether the whole trace was executed
+                                               --- for remaining objects
+
+  --- this operation computes the intersection of objects (remaining objects)
+  --- and for those objects, checks if they have reached the same state in the
+  --- second application
+  op compareGS : Application Application Set{Tuple{Id,State}} Set{Tuple{Id,State}} -> Bool .
+  op compareGS : Set{Id} Set{Tuple{Id,State}} Set{Tuple{Id,State}} -> Bool .
+
+  eq compareGS(App1, App2, GS1, GS2)
+    = compareGS(computeCommonObjects(App1, App2), GS1, GS2) .
+
+  eq compareGS(empty, GS1, GS2)
+    = true .
+  --- this should be the same state for each common object in both global states
+  eq compareGS((O, Ids), (ids(O, S), GS1), (ids(O, S), GS2))
+    = compareGS(Ids, GS1, GS2) .
+  eq compareGS(Ids, GS1, GS2)
+    = false [owise] .
+
+  --- this operation computes the set of common objects given two applications
+  op computeCommonObjects : Application Application -> Set{Id} .
+  op computeCommonObjects : Set{Device} Set{Device} -> Set{Id} .
+
+  eq computeCommonObjects(app(Devs1, Compo1), app(Devs2, Compo2))
+    = computeCommonObjects(Devs1, Devs2) .
+
+  eq computeCommonObjects((dev(O1, MDL1), Devs1), (dev(O1, MDL2), Devs2))
+    = (O1, computeCommonObjects(Devs1, Devs2)) .
+  eq computeCommonObjects(Devs1, Devs2)
+    = empty [owise] .
+
+  --- this function computes the first global state from all devices init states
+  op computeInitGlobalState : Set{Device} -> Set{Tuple{Id,State}} .
+
+  eq computeInitGlobalState(empty) = empty .
+  eq computeInitGlobalState((dev(O, model(S, Transitions)), Devs))
+    = (ids(O,S), computeInitGlobalState(Devs)) .
+
+  --- this function initializes all buffers to nil
+  op initializeAllBuffers : Set{Device} -> Set{Buffer} .
+
+  eq initializeAllBuffers(empty) = empty .
+  eq initializeAllBuffers((dev(O, MDL), Devs))
+    = (buf(O, nil), initializeAllBuffers(Devs)) .
+
+  --- this function initializes the datatype storing all executed transitions
+  --- from all devices init states
+  op computeInitExec : Set{Device} -> Set{Tuple{Id, Set{Transition}}} .
+
+  eq computeInitExec(empty) = empty .
+  eq computeInitExec((dev(O, model(S, Transitions)), Devs))
+    = ((O, empty), computeInitExec(Devs)) .
+
+
+  pr 2-TUPLE{Id, Set{Transition}}
+      * (op p1_ : Tuple{Id, Set{Transition}} -> Id to getId,
+         op p2_ : Tuple{Id, Set{Transition}} -> Set{Transition} to getTransitions) .
+  pr SET{Tuple{Id, Set{Transition}}}
+      * (op p1_ : Tuple{Id, Set{Transition}} -> Id to getId,
+         op p2_ : Tuple{Id, Set{Transition}} -> Set{Transition} to getTransitions) .
+
+
+  pr 4-TUPLE{Set{Tuple{Id,State}}, Bool, Set{Buffer}, Set{Tuple{Id, Set{Transition}}}}
+       * (---- sort Tuple{Id,State} to IdState,
+          op ((_,_)) : Id State -> Tuple{Id, State} to ids,
+          op p1_ : Tuple{Set{Tuple{Id,State}}, Bool, Set{Buffer}, Set{Tuple{Id, Set{Transition}}}} -> Set{Tuple{Id,State}} to getGlobalState,
+          op p2_ : Tuple{Set{Tuple{Id,State}}, Bool, Set{Buffer}, Set{Tuple{Id, Set{Transition}}}} -> Bool to getBoolRes,
+          op p3_ : Tuple{Set{Tuple{Id,State}}, Bool, Set{Buffer}, Set{Tuple{Id, Set{Transition}}}} -> Set{Buffer} to getBuffers,
+          op p4_ : Tuple{Set{Tuple{Id,State}}, Bool, Set{Buffer}, Set{Tuple{Id, Set{Transition}}}} -> Set{Tuple{Id, Set{Transition}}} to getExecutions ) .
+
+  op runTrace : Application List{Tuple{Id,Label}} Set{Id}
+                -> Tuple{Set{Tuple{Id,State}}, Bool, Set{Buffer}, Set{Tuple{Id, Set{Transition}}}} .
+  --- the 1st parameter is the set of devices
+  --- the 2nd parameter becomes a set of compositions (due to interleaving operator)
+  --- the 3rd parameter is the trace to be executed
+  --- the 4th parameter is the current global state, initialized with all init states
+  --- the 5th parameter is the set of buffers, all initialized to nil at the beginning
+  op runTraceAux : Set{Device} Set{Composition} List{Tuple{Id,Label}} Set{Tuple{Id,State}}
+                   Set{Buffer} Set{Id} Set{Tuple{Id, Set{Transition}}}
+                   -> Tuple{Set{Tuple{Id,State}}, Bool, Set{Buffer}, Set{Tuple{Id, Set{Transition}}}} .
+
+  eq runTrace(app(Devs, Compo), Tr, Ids)
+    = runTraceAux(Devs, Compo, Tr, computeInitGlobalState(Devs),
+                  initializeAllBuffers(Devs), Ids, computeInitExec(Devs)) .
+
+---- We assume a deterministic configuration
+----   --- this equation applies when one object consumes from a buffer
+----   --- (same object as in the original trace)
+----   eq runTraceAux(
+----       ( dev( O1, model( S, ( S1 Pr1 - M ? V -> S2 Pr2, Transitions ) ) ), Devs ),
+----       Compos,
+----       (idl(O1, M ? V) Tr),
+----       (ids(O1, S1), GS),
+----       (buf(O1, (M ! V) LL), Bfs)
+----      )
+----     = runTraceAux(
+----         ( dev( O1, model( S, ( S1 Pr1 - M ? V -> S2 Pr2, Transitions ) ) ), Devs ),
+----         Compos,
+----         Tr,
+----         (ids(O1, S2), GS),
+----         (buf(O1, LL), Bfs)
+----        ) .
+
+
+  --- this equation applies when one object consumes from a buffer
+  --- and this object remains from the former application
+  eq runTraceAux(
+      ( dev( O1, model( S, ( S1 Pr1 - M ? V -> S2 Pr2, Transitions ) ) ), Devs ),
+      Compos,
+      ( idl(O1, M ? V) Tr ),
+      ( ids(O1, S1), GS ),
+      ( buf(O1, (M ! V) LL), Bfs ),
+      (O1, Ids),
+      ((O1, Trans), Exec)
+     )
+    = runTraceAux(
+       ( dev( O1, model( S, ( S1 Pr1 - M ? V -> S2 Pr2, Transitions ) ) ), Devs ),
+       Compos,
+       Tr,
+       ( ids(O1, S2), GS ),
+       ( buf(O1, LL), Bfs ),
+       (O1, Ids),
+       ((O1, (S1 Pr1 - M ? V -> S2 Pr2, Trans)), Exec)
+      ) .
+
+      --- this equation applies when one object consumes from a buffer
+      --- and this object is a new object -> the (filtered) trace remains the same
+      ceq runTraceAux(
+          ( dev( O1, model( S, ( S1 Pr1 - M ? V -> S2 Pr2, Transitions ) ) ), Devs ),
+          Compos,
+          Tr,
+          ( ids(O1, S1), GS ),
+          ( buf(O1, (M ! V) LL), Bfs ),
+          Ids,
+          ((O1, Trans), Exec)
+         )
+        = runTraceAux(
+           ( dev( O1, model( S, ( S1 Pr1 - M ? V -> S2 Pr2, Transitions ) ) ), Devs ),
+           Compos,
+           Tr,
+           ( ids(O1, S2), GS ),
+           ( buf(O1, LL), Bfs ),
+           Ids,
+           ((O1, (S1 Pr1 - M ? V -> S2 Pr2, Trans)), Exec)
+          )
+          if not(isInIds(O1, Ids)) .  --- ensures that this object is new
+
+
+----  --- this equation applies when one rule can be triggered wrt. objects and former trace
+----  ceq runTraceAux(
+----       Devs,
+----       (rule(LR, RR), Compos),
+----       Tr,
+----       GS,
+----       Bfs
+----      )
+----    = runTraceAux(
+----       Devs,
+----       Compos,
+----       getTrace(updateSR(LR, Devs, GS, Tr)),
+----       getState(updateSR(LR, Devs, GS, Tr)),
+----       updateBuffers(RR, Bfs)                   --- defined in semantics.maude
+----      )
+----  if leftRuleIsExecutableTrace(LR, Devs, GS, Tr) .
+
+  --- this equation applies when a sequence appears in the composition exp.
+  --- since seq is assoc with id: none, this case covers both seqs and single rules
+  ceq runTraceAux(
+       Devs,
+       (seq(rule(LR, RR), Compo), Compos),
+       Tr,
+       GS,
+       Bfs,
+       Ids,
+       Exec
+      )
+    = runTraceAux(
+       Devs,
+       (Compo, Compos),
+       getTrace(updateSR(LR, Devs, GS, Tr, Ids, Exec)),
+       getState(updateSR(LR, Devs, GS, Tr, Ids, Exec)),
+       updateBuffers(RR, Bfs),
+       Ids,
+       getExec(updateSR(LR, Devs, GS, Tr, Ids, Exec))
+      )
+  if leftRuleIsExecutableTrace(LR, Devs, GS, Tr, Ids) .
+
+  --- this equation applies for a choice in the composition exp.
+  --- The choice is made according to the trace
+  eq runTraceAux(
+       Devs,
+       (ch(Compo1, Compo2), Compos),
+       Tr,
+       GS,
+       Bfs,
+       Ids,
+       Exec
+      )
+    = if matchTraceCompo(Compo1, Devs, GS, Tr, Ids)
+      then runTraceAux(Devs, (Compo1, Compos), Tr, GS, Bfs, Ids, Exec)
+      else runTraceAux(Devs, (Compo2, Compos), Tr, GS, Bfs, Ids, Exec)
+      fi .
+
+  --- this equation applies for a parallel/interleaving in the composition exp.
+  eq runTraceAux(
+        Devs,
+        (par(Compo1, Compo2), Compos),
+        Tr,
+        GS,
+        Bfs,
+        Ids,
+        Exec
+      )
+    = runTraceAux(
+        Devs,
+        (Compo1, Compo2, Compos),
+        Tr,
+        GS,
+        Bfs,
+        Ids,
+        Exec
+      ) .
+
+  --- this equation applies for an iteration (K) in the composition exp.
+  eq runTraceAux(
+       Devs,
+       (iter(Compo, s K), Compos),
+       Tr,
+       GS,
+       Bfs,
+       Ids,
+       Exec
+     )
+    = runTraceAux(
+       Devs,
+       (seq(Compo, iter(Compo, K)), Compos),
+       Tr,
+       GS,
+       Bfs,
+       Ids,
+       Exec
+      ) .
+
+  --- this equation applies for an iteration (K) in the composition exp.
+  eq runTraceAux(
+       Devs,
+       (iter(Compo, 0), Compos),
+       Tr,
+       GS,
+       Bfs,
+       Ids,
+       Exec
+     )
+    = runTraceAux(
+       Devs,
+       Compos,
+       Tr,
+       GS,
+       Bfs,
+       Ids,
+       Exec
+      ) .
+
+  --- if none of the equations can be applied, it means that we cannot go farther
+  --- (the trace has been fully executed or cannot be executed any more)
+  --- and we return the corresponding global state + a boolean indicating if the trace has been fully executed
+  eq runTraceAux(Devs, Compos, Tr, GS, Bfs, Ids, Exec)
+    = (GS, Tr == nil, Bfs, Exec) [owise] .
+
+  ---- from here are defined additional operations / equations used to define
+  ---- the operation 'runTrace' (seamless reconfiguration check)
+
+  op filterTrace : List{Tuple{Id,Label}} Set{Id} -> List{Tuple{Id,Label}} .
+
+  eq filterTrace(nil, Ids) = nil .
+  eq filterTrace((idl(O, Lab) Tr), (O, Ids) )
+    = ( idl(O, Lab) filterTrace(Tr, (O, Ids)) ) .
+  eq filterTrace((idl(O, Lab) Tr), Ids )
+      = filterTrace(Tr, Ids) [owise] .
+
+  pr 3-TUPLE{Set{Tuple{Id,State}}, List{Tuple{Id,Label}}, Set{Tuple{Id, Set{Transition}}}}
+      * (---- sort Tuple{Id,State} to IdState,
+         op ((_,_)) : Id State -> Tuple{Id, State} to ids,
+         ---- sort Tuple{Id,Label} to IdLabel,
+         op ((_,_)) : Id Label -> Tuple{Id, Label} to idl,
+         op p1_ : Tuple{Set{Tuple{Id,State}}, List{Tuple{Id,Label}}, Set{Tuple{Id, Set{Transition}}}} -> Set{Tuple{Id,State}} to getState,
+         op p2_ : Tuple{Set{Tuple{Id,State}}, List{Tuple{Id,Label}}, Set{Tuple{Id, Set{Transition}}}} -> List{Tuple{Id,Label}} to getTrace,
+         op p3_ : Tuple{Set{Tuple{Id,State}}, List{Tuple{Id,Label}}, Set{Tuple{Id, Set{Transition}}}} -> Set{Tuple{Id, Set{Transition}}} to getExec
+         ) .
+
+
+  --- this operation updates the global state, the trace and the execution logs
+  op updateSR : LRule Set{Device} Set{Tuple{Id,State}} List{Tuple{Id,Label}} Set{Id} Set{Tuple{Id, Set{Transition}}}
+                -> Tuple{Set{Tuple{Id,State}}, List{Tuple{Id,Label}}, Set{Tuple{Id, Set{Transition}}}} .
+
+  eq updateSR(evt(O1, M, V), Devs, GS, Tr, Ids, Exec)
+    = updateSR(and(evt(O1, M, V)), Devs, GS, Tr, Ids, Exec) .     ---- single event turned into and
+
+----  --- this equation applies for a remaining object
+----  eq updateSR(
+----       and((evt(O1, M, V), SRE)),                       ---- event and
+----       ( dev( O1, model( S, ( S1 Pr1 - M ! V -> S2 Pr2, Transitions ) ) ), Devs ),
+----       ( ids(O1, S1), GS ),
+----       ( idl(O1, M ! V) Tr) )
+----   = updateSR(
+----       and(SRE),                                        ---- first event is consumed
+----       ( dev( O1, model( S, ( S1 Pr1 - M ! V -> S2 Pr2, Transitions ) ) ), Devs ), ---- no change in devices
+----       ( ids(O1, S2), GS ),                                                        ---- global state changes
+----       Tr ) .
+
+  --- this equation applies if the original object remains
+  eq updateSR(
+       and((evt(O1, M, V), SRE)),                       ---- event and
+       ( dev( O1, model( S, ( S1 Pr1 - M ! V -> S2 Pr2, Transitions ) ) ), Devs ),
+       ( ids(O1, S1), GS ),
+       ( idl(O1, M ! V) Tr),
+       (O1, Ids),
+       ((O1, Trans), Exec)
+      )
+    = updateSR(
+       and(SRE),                                        ---- first event is consumed
+       ( dev( O1, model( S, ( S1 Pr1 - M ! V -> S2 Pr2, Transitions ) ) ), Devs ), ---- no change in devices
+       ( ids(O1, S2), GS ),                                                        ---- global state changes
+       Tr,
+       (O1, Ids),
+       ((O1, (S1 Pr1 - M ! V -> S2 Pr2, Trans)), Exec)
+      ) .
+
+  --- this equation applies for new object, filtered trace not used
+  ceq updateSR(
+       and((evt(O1, M, V), SRE)),                       ---- event and
+       ( dev( O1, model( S, ( S1 Pr1 - M ! V -> S2 Pr2, Transitions ) ) ), Devs ),
+       ( ids(O1, S1), GS ),
+       Tr,
+       Ids,
+       ((O1, Trans), Exec)
+      )
+    = updateSR(
+       and(SRE),                                        ---- first event is consumed
+       ( dev( O1, model( S, ( S1 Pr1 - M ! V -> S2 Pr2, Transitions ) ) ), Devs ), ---- no change in devices
+       ( ids(O1, S2), GS ),                                                        ---- global state changes
+       Tr,
+       Ids,
+       ((O1, (S1 Pr1 - M ! V -> S2 Pr2, Trans)), Exec)
+      )
+    if not(isInIds(O1, Ids)) .  --- ensures that this object is new
+
+
+  eq updateSR(
+       and(empty),
+       Devs,
+       GS,
+       Tr,
+       Ids,
+       Exec )
+   = ( GS, Tr, Exec ) .
+
+----  --- this equation applies for a remaining object
+----  eq updateSR(
+----       or((evt(O1, M, V), SRE)),
+----       ( dev( O1, model( S, ( S1 Pr1 - M ! V -> S2 Pr2, Transitions ) ) ), Devs ),
+----       ( ids(O1, S1), GS ),
+----       ( idl(O1, M ! V) Tr) )
+----   = ( ( ids(O1, S2), GS ), Tr ) .
+
+  --- this equation applies if the original object remains
+  eq updateSR(
+       or((evt(O1, M, V), SRE)),
+       ( dev( O1, model( S, ( S1 Pr1 - M ! V -> S2 Pr2, Transitions ) ) ), Devs ),
+       ( ids(O1, S1), GS ),
+       ( idl(O1, M ! V) Tr),
+       (O1, Ids),
+       ((O1, Trans), Exec)
+    )
+   = ( ( ids(O1, S2), GS ), Tr, ((O1, (S1 Pr1 - M ! V -> S2 Pr2, Trans)), Exec) ) .
+
+   --- this equation applies for a new object
+   ceq updateSR(
+        or((evt(O1, M, V), SRE)),
+        ( dev( O1, model( S, ( S1 Pr1 - M ! V -> S2 Pr2, Transitions ) ) ), Devs ),
+        ( ids(O1, S1), GS ),
+        Tr,
+        Ids,
+        ((O1, Trans), Exec)
+       )
+    = ( ( ids(O1, S2), GS ), Tr, ((O1, (S1 Pr1 - M ! V -> S2 Pr2, Trans)), Exec) )
+    if not(isInIds(O1, Ids)) .  --- ensures that this object is new
+
+  --- these functions check whether the left rule can be executed (or not) wrt. the given trace
+  op leftRuleIsExecutableTrace : LRule Set{Device} Set{Tuple{Id,State}} List{Tuple{Id,Label}} Set{Id} -> Bool .
+  op leftRuleIsExecutableTraceAND : Set{REvent} Set{Device} Set{Tuple{Id,State}} List{Tuple{Id,Label}} Set{Id} -> Bool .
+  op leftRuleIsExecutableTraceOR : Set{REvent} Set{Device} Set{Tuple{Id,State}} List{Tuple{Id,Label}} Set{Id} -> Bool .
+
+  eq leftRuleIsExecutableTrace(RE, Devs, GS, Tr, Ids)
+    = leftRuleIsExecutableTraceAND((RE, empty), Devs, GS, Tr, Ids) .
+  eq leftRuleIsExecutableTrace(and(SRE), Devs, GS, Tr, Ids)
+    = leftRuleIsExecutableTraceAND(SRE, Devs, GS, Tr, Ids) .
+  eq leftRuleIsExecutableTrace(or(SRE), Devs, GS, Tr, Ids)
+    = leftRuleIsExecutableTraceOR(SRE, Devs, GS, Tr, Ids) .
+
+  eq leftRuleIsExecutableTraceAND(empty, Devs, GS, Tr, Ids)
+    = true .
+----  --- this equation applies if the same object is still present in the new application
+----  eq leftRuleIsExecutableTraceAND(
+----        ( evt(O1, M, V), SRE ),
+----        ( dev( O1, model( S, ( S1 Pr1 - M ! V -> S2 Pr2, Transitions ) ) ), Devs ),
+----        ( ids(O1, S1), GS ),
+----        ( idl(O1, M ! V) Tr )  --- if it is in the trace, it means O1 was in both applications
+----      )
+----    = leftRuleIsExecutableTraceAND(SRE, Devs, GS, Tr) .
+
+  --- this equation applies if the same object is still present in the new application
+  eq leftRuleIsExecutableTraceAND(
+        ( evt(O1, M, V), SRE ),
+        ( dev( O1, model( S, ( S1 Pr1 - M ! V -> S2 Pr2, Transitions ) ) ), Devs ),
+        ( ids(O1, S1), GS ),
+        ( idl(O1, M ! V) Tr ),
+        (O1, Ids)
+      )
+    = leftRuleIsExecutableTraceAND(SRE, Devs, GS, Tr, (O1, Ids)) .
+
+    --- this equation applies for new object only
+    ceq leftRuleIsExecutableTraceAND(
+          ( evt(O1, M, V), SRE ),
+          ( dev( O1, model( S, ( S1 Pr1 - M ! V -> S2 Pr2, Transitions ) ) ), Devs ),
+          ( ids(O1, S1), GS ),
+          Tr,
+          Ids
+        )
+      = leftRuleIsExecutableTraceAND(SRE, Devs, GS, Tr, Ids)
+    if not(isInIds(O1, Ids)) .
+
+  eq leftRuleIsExecutableTraceAND(SRE, Devs, GS, Tr, Ids)
+    = false [owise] .
+
+----   --- this equation applies if the same object remained in the app and can execute again
+----   eq leftRuleIsExecutableTraceOR(
+----         ( evt(O1, M, V), SRE ),
+----         ( dev( O1, model( S, ( S1 Pr1 - M ! V -> S2 Pr2, Transitions ) ) ), Devs ),
+----         ( ids(O1, S1), GS ),
+----         ( idl(O1, M ! V) Tr )
+----       )
+----     = true .
+
+  --- this equation applies if the same object remained in the app and can execute again
+  eq leftRuleIsExecutableTraceOR(
+        ( evt(O1, M, V), SRE ),
+        ( dev( O1, model( S, ( S1 Pr1 - M ! V -> S2 Pr2, Transitions ) ) ), Devs ),
+        ( ids(O1, S1), GS ),
+        ( idl(O1, M ! V) Tr ),
+        (O1, Ids)
+      )
+    = true .
+
+    --- this equation applies for a new object
+    ceq leftRuleIsExecutableTraceOR(
+          ( evt(O1, M, V), SRE ),
+          ( dev( O1, model( S, ( S1 Pr1 - M ! V -> S2 Pr2, Transitions ) ) ), Devs ),
+          ( ids(O1, S1), GS ),
+          Tr,
+          Ids
+        )
+      = true
+   if not(isInIds(O1, Ids)) .
+
+  eq leftRuleIsExecutableTraceOR(
+        SRE,
+        Devs,
+        GS,
+        Tr,
+        Ids
+      )
+    = false [owise] .
+
+    ---- this operation checks which branch should be taken according to the given trace
+    op matchTraceCompo : Composition Set{Device} Set{Tuple{Id,State}} List{Tuple{Id,Label}} Set{Id} -> Bool .
+
+    eq matchTraceCompo(seq(rule(LR, RR), Compo), Devs, GS, Tr, Ids)
+      = leftRuleIsExecutableTrace(LR, Devs, GS, Tr, Ids) .
+    eq matchTraceCompo(ch(Compo1, Compo2), Devs, GS, Tr, Ids)
+      = matchTraceCompo(Compo1, Devs, GS, Tr, Ids) or matchTraceCompo(Compo2, Devs, GS, Tr, Ids) .
+    eq matchTraceCompo(par(Compo1, Compo2), Devs, GS, Tr, Ids)
+      = matchTraceCompo(Compo1, Devs, GS, Tr, Ids) or matchTraceCompo(Compo2, Devs, GS, Tr, Ids) .
+    eq matchTraceCompo(iter(Compo, K), Devs, GS, Tr, Ids)
+      = matchTraceCompo(Compo, Devs, GS, Tr, Ids) .
+    eq matchTraceCompo(none, Devs, GS, Tr, Ids)
+      = false .
+
+   ---- checks if an identifier is in a set of identifiers
+   op isInIds : Id Set{Id} -> Bool .
+
+   eq isInIds(O, (O, Ids)) = true .
+   eq isInIds(O, Ids) = false [owise] .
+
+endm

@@ -1,0 +1,216 @@
+
+---- Models for Rule-based IoT Applications
+---- authors: Francisco Duran and Gwen Salaun
+
+----- Identifiers
+fmod ID is
+  sort Id .
+endfm
+
+view Id from TRIV to ID is
+  sort Elt to Id .
+endv
+
+----- Value
+fmod VALUE is
+  pr ID .
+  pr STRING .
+  pr INT .
+  pr BOOL .
+
+  sort Value .
+  op val : String -> Value [ctor] .
+  op val : Int -> Value [ctor] .
+  op val : Bool -> Value [ctor] .
+  op val : Id -> Value [ctor] .   --- useful for variable identifiers
+endfm
+
+----- Property
+fmod PROPERTY is
+   pr VALUE .
+   pr ID .
+
+   sort Property .
+   op prop : Id Value -> Property .
+endfm
+
+view Property from TRIV to PROPERTY is
+  sort Elt to Property .
+endv
+
+----- State
+fmod STATE is
+  pr ID .
+
+  sort State .
+  op s : Id -> State [ctor] .
+endfm
+
+view State from TRIV to STATE is
+  sort Elt to State .
+endv
+
+----- Label
+fmod LABEL is
+  pr VALUE .
+  pr ID .
+
+  sort Label .
+  op _?_ : Id Value -> Label [ctor] .  --- just one input because label coincides with property
+  op _!_ : Id Value -> Label [ctor] .  --- just one output because label coincides with property
+  op tau : -> Label [ctor] .
+endfm
+
+view Label from TRIV to LABEL is
+  sort Elt to Label .
+endv
+
+----- Transition
+fmod TRANSITION is
+  pr STATE .
+  pr LABEL .
+  pr SET{Property} .
+
+  sort Transition .
+  op _ _-_->_ _ : State Set{Property} Label State Set{Property} -> Transition [ctor] .
+
+  vars St St' : State .
+  var  Lb : Label .
+  vars SP SP' : Set{Property} .
+
+  ops source target : Transition -> State .
+  eq source(St SP - Lb -> St' SP') = St .
+  eq target(St SP - Lb -> St' SP') = St' .
+endfm
+
+view Transition from TRIV to TRANSITION is
+  sort Elt to Transition .
+endv
+
+--- not used (-> maude3)
+---view Map{X :: TRIV, Y :: TRIV} from TRIV to MAP{X, Y} is
+---  sort Elt to Map{X, Y} .
+---endv
+
+----- LTS
+fmod LTS is
+   pr STATE .
+   pr SET{Transition} .
+
+   sort LTS .
+   op model : State Set{Transition} -> LTS .
+endfm
+
+----- A device is an identifier and an LTS
+fmod DEVICE is
+   pr LTS .
+
+   sort Device .
+   op dev : Id LTS -> Device .
+endfm
+
+view Device from TRIV to DEVICE is
+  sort Elt to Device .
+endv
+
+----- Rule event
+fmod REVENT is
+  pr VALUE .
+  pr ID .
+
+  sort REvent .
+  --- device id, label/event/property, value
+  op evt : Id Id Value -> REvent [ctor] .
+endfm
+
+view REvent from TRIV to REVENT is
+  sort Elt to REvent .
+endv
+
+----- Rule action
+fmod RACTION is
+  pr VALUE .
+  pr ID .
+
+  sort RAction .
+  --- device id, label/action/property, value
+  op act : Id Id Value -> RAction [ctor] .
+endfm
+
+view RAction from TRIV to RACTION is
+  sort Elt to RAction .
+endv
+
+----- Left Rule
+fmod LRULE is
+  pr REVENT .
+  pr SET{REvent} .
+
+  sort LRule .
+  subsort REvent < LRule .
+  op and : Set{REvent} -> LRule [ctor] .
+  op or : Set{REvent} -> LRule [ctor] .
+endfm
+
+----- Right Rule
+fmod RRULE is
+  pr RACTION .
+  pr SET{RAction} .
+
+  sort RRule .
+  subsort RAction < RRule .
+  op and : Set{RAction} -> RRule [ctor] .
+endfm
+
+----- Rule
+fmod RULE is
+   pr LRULE .
+   pr RRULE .
+
+   sort Rule .
+   op rule : LRule RRule -> Rule .
+endfm
+
+----- Composition
+fmod COMPOSITION is
+   pr RULE .
+   pr INT .
+
+   sort Composition .
+   subsort Rule < Composition .
+---   op r : Rule -> Composition .
+   op seq : Composition Composition -> Composition [assoc right id: none] .
+   op ch : Composition Composition -> Composition [comm] .
+   op par : Composition Composition -> Composition [comm] .
+   op iter : Composition Int -> Composition .
+   op none : -> Composition .
+endfm
+
+view Composition from TRIV to COMPOSITION is
+  sort Elt to Composition .
+endv
+
+----- IoT Application
+fmod APPLICATION is
+   pr SET{Device} .
+   pr COMPOSITION .
+
+   sort Application .
+   op app : Set{Device} Composition -> Application .
+endfm
+
+
+----- We also need additional definitions for semantics / simulation purposes
+
+----- Buffer
+fmod BUFFER is
+  pr LIST{Label} .
+  pr ID .
+
+  sort Buffer .
+  op buf : Id List{Label} -> Buffer [ctor] .
+endfm
+
+view Buffer from TRIV to BUFFER is
+  sort Elt to Buffer .
+endv

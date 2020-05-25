@@ -1,0 +1,89 @@
+
+---- Example of application model
+---- authors: Francisco Duran and Gwen Salaun
+
+load semantics.maude
+
+fmod EXAMPLES is
+  pr DEVICE .
+  pr QID .
+  subsort Qid < Id .
+  pr COMPOSITION .
+  pr APPLICATION .
+
+  ----- Motion sensor
+  op msid : -> Id .
+  op move : -> Id .
+  op ms : -> Device .
+  eq ms
+    = dev(msid,
+          model(
+            s('s0),                                          ---- initial state
+            ---- (s('s0), s('s1)),                                ---- states
+            ---- transitions
+            (s('s0) (prop(move, val(false))) - move ! val(true) -> s('s1) (prop(move, val(true))),
+             s('s1) (prop(move, val(true))) - move ! val(false) -> s('s0) (prop(move, val(false))) )) ) .
+
+  --- Note: not useful to keep a set of properties, we do not update them...
+
+  ----- Lights
+  op lightid : -> Id .
+  op on : -> Id .
+  op light : -> Device .
+  eq light
+    = dev(lightid,
+          model(
+            s('s0),                                     ---- initial state
+            ---- (s('s0), s('s1)),                           ---- states
+            (s('s0) (prop(on, val(0))) - on ? val(1) -> s('s1) (prop(on, val(1))),     ---- transitions
+             s('s1) (prop(on, val(1))) - on ? val(0) -> s('s0) (prop(on, val(0))) )) ) .
+
+  op lightid2 : -> Id .
+  op light2 : -> Device .
+  eq light2
+    = dev(lightid2,
+          model(
+            s('s0),                                       ---- initial state
+            ---- (s('s0), s('s1)),                             ---- states
+            (s('s0) (prop(on, val(0))) - on ? val(1) -> s('s1) (prop(on, val(1)))  )) ) .  ---- transitions
+
+   ----- composition1
+   op compo1 : -> Composition .
+   eq compo1
+     = rule( evt(msid, move, val(true)), act(lightid, on, val(1))) .  --- a single rule
+
+   ----- application1
+   op appli1 : -> Application .
+   eq appli1
+     = app((ms, light), compo1) .
+
+   ----- composition2
+   op compo2 : -> Composition .
+   eq compo2
+     = seq( rule( evt(msid, move, val(true)), act(lightid, on, val(1))),
+            rule( evt(msid, move, val(false)), act(lightid, on, val(0))) ) .  --- two rules
+
+   ----- application2
+   op appli2 : -> Application .
+   eq appli2
+     = app((ms, light), compo2) .
+
+   ----- composition3
+   op compo3 : -> Composition .
+   eq compo3
+     = rule( evt(msid, move, val(true)),
+             and( (act(lightid, on, val(1)), act(lightid2, on , val(1))) ) ) .  --- a single rule
+
+   ----- application3
+   op appli3 : -> Application .
+   eq appli3
+     = app((ms, light, light2), compo3) .
+
+   ----- composition4
+   op compo4 : -> Composition .
+   eq compo4
+     = seq( rule( evt(msid, move, val(true)), act(lightid2, on, val(1))),
+            rule( evt(msid, move, val(false)), act(lightid2, on, val(0))) ) .  --- two rules
+
+
+endfm
