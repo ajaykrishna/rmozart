@@ -304,7 +304,6 @@ const App = {
     console.log('evento');
     this.hideExtensionBackButton();
     this.hideMenuButton();
-    this.
     ReconfigureRuleScreen.show(context.params.rule);
     this.selectView('reconfigure');
   },
