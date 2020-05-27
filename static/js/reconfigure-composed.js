@@ -15,8 +15,8 @@ const VscadRulePropertyBlock = require('./rules/VscadRulePropertyBlock');
 'use-strict';
 
 const ReconfigureScreen = {
-  
-  init: function () {
+
+  init: function() {
     this.rulesList = document.getElementById('rules-side-menu-reconfigure');
     this.ruleArea = document.getElementById('rules-area-reconf');
     this.ruleLeft = document.getElementById('rule-area-modal');
@@ -78,17 +78,17 @@ const ReconfigureScreen = {
       this.onPresentationChange();
     });
   },
-  requestUpdate: async function () {
+  requestUpdate: async function() {
 
     var json1 = this.getOldStates();
     await json1.then((data) => {
       json1 = data;
-    })
+    });
     console.log(json1);
     var json2 = this.getCurrentlyStates();
     await json2.then((data) => {
       json2 = data;
-    })
+    });
     console.log(json2);
     // Send final JSON
     const datosJson = {};
@@ -114,7 +114,7 @@ const ReconfigureScreen = {
       modal.showVerification(response);
     });
   },
-  showNotification: function (data) {
+  showNotification: function(data) {
     const alertDialog = document.getElementById('validation-dialog-reconf');
     alertDialog.style.display = 'block';
     if (data.status) {
@@ -128,15 +128,15 @@ const ReconfigureScreen = {
     }
     alertDialog.querySelector('#noti-message-reconf').textContent = data.response;
   },
-  showLoader: function () {
+  showLoader: function() {
     this.loaders++;
     this.loader.style.display = 'block';
   },
-  hiddeLoader: function () {
+  hiddeLoader: function() {
     this.loaders--;
     this.loader.style.display = 'none';
   },
-  getOldStates: async function () {
+  getOldStates: async function() {
     return new Promise((resolve) => {
       var rules = [];
       var formatJson = {};
@@ -145,7 +145,7 @@ const ReconfigureScreen = {
       var expression = this.cRule.expression2;
       var data = this.cRule.toDescription();
       // Get id's of the currrently composition
-      fetch('/rules', { headers: API.headers() }).then((res) => {
+      fetch('/rules', {headers: API.headers()}).then((res) => {
         return res.json();
       }).then((fetchedRules) => {
         for (const ruleDesc of fetchedRules) {
@@ -193,7 +193,7 @@ const ReconfigureScreen = {
     });
 
   },
-  getCurrentlyStates: function () {
+  getCurrentlyStates: function() {
     return new Promise((resolve) => {
       var rules = [];
       var formatJson = {};
@@ -201,7 +201,7 @@ const ReconfigureScreen = {
       var ids = this.cRule.getRulesFromExpression();
       var expression = this.cRule.getExpression();
       rules = [];
-      fetch('/rules', { headers: API.headers() }).then((res) => {
+      fetch('/rules', {headers: API.headers()}).then((res) => {
         return res.json();
       }).then((fetchedRules) => {
         for (const ruleDesc of fetchedRules) {
@@ -243,7 +243,7 @@ const ReconfigureScreen = {
       });
     });
   },
-  show: function (composedId) {
+  show: function(composedId) {
     this.gateway.readThings().then(() => {
       return this.readRules();
     });
@@ -256,14 +256,14 @@ const ReconfigureScreen = {
       });
     }
     rulePromise.then((ruleDesc) => {
-       if (this.ComposedRuleBlocks.length <= 0) {
+      if (this.ComposedRuleBlocks.length <= 0) {
         this.cRule = new VscadComposedRule(this.gateway, ruleDesc);
         this.cRule.update();
         this.prepareVisual(this.cRule.toDescription(), this.gateway, this.fetchedRules);
       }
     });
   },
-  saveRule: function () {
+  saveRule: function() {
     let longest = '';
     let foundRules = 0;
     for (let i = this.ComposedRuleBlocks.length - 1; i >= 0; i--) {
@@ -303,7 +303,7 @@ const ReconfigureScreen = {
   /**
    * @return {Promise<Array<RuleDescription>>}
    */
-  readRules: function () {
+  readRules: function() {
     const createRuleButton = document.createElement('div');
     createRuleButton.innerHTML = ` <div class="rule-part-block trigger">
   <img  src="/optimized-images/add.svg">
@@ -318,7 +318,7 @@ const ReconfigureScreen = {
       page('/rules/quickNew');
     });
     this.showLoader();
-    fetch('/rules', { headers: API.headers() }).then((res) => {
+    fetch('/rules', {headers: API.headers()}).then((res) => {
       return res.json();
     }).then((fetchedRules) => {
       this.rulesList.querySelectorAll('.rule').forEach((elt) => {
@@ -337,7 +337,7 @@ const ReconfigureScreen = {
       this.hiddeLoader();
     });
   },
-  prepareVisual: function (desc, gateway, fetchedRules) {
+  prepareVisual: function(desc, gateway, fetchedRules) {
     if (desc.expression && gateway && fetchedRules) {
       const usedRules = {};
       // get all the used rules
@@ -354,7 +354,7 @@ const ReconfigureScreen = {
       this.ruleName.textContent = desc.name;
     }
   },
-  getBlockOf: function (parts, usedRules) {
+  getBlockOf: function(parts, usedRules) {
     let i = 0;
     const block = new VscadConnectorBlock(this.ruleArea, this.saveRule, this.deleteArea);
 
@@ -402,10 +402,10 @@ const ReconfigureScreen = {
     return block;
   },
   /**
- * Add a rule, filling it with the data from a RuleDescription
- * @param {RuleDescription} desc
- */
-  addVscadRuleCardItem: function (desc) {
+   * Add a rule, filling it with the data from a RuleDescription
+   * @param {RuleDescription} desc
+   */
+  addVscadRuleCardItem: function(desc) {
     const ruleElt = document.createElement('div');
     ruleElt.classList.add('rule');
     try {
@@ -421,7 +421,7 @@ const ReconfigureScreen = {
     this.nextId += 1;
     this.rulesList.appendChild(ruleElt);
   },
-  onconnectorBlockDown: function (event, type) {
+  onconnectorBlockDown: function(event, type) {
     const deviceRect = event.target.getBoundingClientRect();
     const x = deviceRect.left;
     const y = deviceRect.top;
@@ -430,7 +430,7 @@ const ReconfigureScreen = {
     newBlock.vscadDraggable.onDown(event);
     this.ComposedRuleBlocks.push(newBlock);
   },
-  onDeviceBlockDown: function (event, desc, gateway) {
+  onDeviceBlockDown: function(event, desc, gateway) {
     const deviceRect = event.target.getBoundingClientRect();
     const x = deviceRect.left;
     const y = deviceRect.top;

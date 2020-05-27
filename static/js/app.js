@@ -82,10 +82,10 @@ const App = {
    * Start WebThings Gateway app.
    */
 
- 
+
   init: function() {
     fluent.init();
- 
+
     // after loading fluent, we need to add a couple extra DOM elements
     document.querySelector('#thing-title-icon').innerHTML = `
       <webthing-custom-icon id="thing-title-custom-icon" class="hidden">
@@ -141,11 +141,11 @@ const App = {
     this.extensionBackButton = document.getElementById('extension-back-button');
     this.overflowButton = document.getElementById('overflow-button');
     this.overflowButton.addEventListener('click',
-                                         this.toggleOverflowMenu.bind(this));
+      this.toggleOverflowMenu.bind(this));
     this.overflowMenu = document.getElementById('overflow-menu');
     this.blockMessages = false;
     this.messageArea = document.getElementById('message-area');
-    this.messageTimeout = null; 
+    this.messageTimeout = null;
 
     this.connectivityOverlay = document.getElementById('connectivity-scrim');
     this.pingerInterval = null;
@@ -238,7 +238,7 @@ const App = {
         this.messageArea.classList.remove('disconnected');
 
         if (this.messageArea.innerText ===
-            fluent.getMessage('gateway-unreachable')) {
+          fluent.getMessage('gateway-unreachable')) {
           this.hidePersistentMessage();
         }
       }
@@ -268,17 +268,17 @@ const App = {
     this.hideExtensionBackButton();
     const events = context.pathname.split('/').pop() === 'events';
     ThingsScreen.show(context.params.thingId || null,
-                      context.params.actionName || null,
-                      events,
-                      context.querystring);
+      context.params.actionName || null,
+      events,
+      context.querystring);
     this.selectView('things');
   },
 
   showSettings: function(context) {
     this.hideExtensionBackButton();
     SettingsScreen.show(context.params.section || null,
-                        context.params.subsection || null,
-                        context.params.id || null);
+      context.params.subsection || null,
+      context.params.id || null);
     this.selectView('settings');
   },
 
@@ -299,14 +299,16 @@ const App = {
     VscadComposedRuleScreen.show(context.params.rule);
     this.selectView('rules-manager');
   },
-  
-  showReconfigure: function(context){
-    console.log("evento");
+
+  showReconfigure: function(context) {
+    console.log('evento');
     this.hideExtensionBackButton();
+    this.hideMenuButton();
+    this.
     ReconfigureRuleScreen.show(context.params.rule);
     this.selectView('reconfigure');
   },
-  
+
   showRule: function(context) {
     this.hideExtensionBackButton();
     RuleScreen.show(context.params.rule);
@@ -350,7 +352,7 @@ const App = {
     if (this.extensions.hasOwnProperty(extensionId)) {
       this.extensions[extensionId].show(context);
       this.selectView(
-        `extension-${Utils.escapeHtmlForIdClass(extensionId)}-view`
+        `extension-${Utils.escapeHtmlForIdClass(extensionId)}-view`,
       );
       this.displayedExtension = extensionId;
     } else {
@@ -376,7 +378,7 @@ const App = {
     this.currentView.classList.add('hidden');
     this.currentView.classList.remove('selected');
     if (this.displayedExtension !== null &&
-        this.extensions.hasOwnProperty(this.displayedExtension)) {
+      this.extensions.hasOwnProperty(this.displayedExtension)) {
       this.extensions[this.displayedExtension].hide();
     }
 
@@ -584,12 +586,12 @@ if (navigator.serviceWorker) {
   navigator.serviceWorker.register('/service-worker.js', {
     scope: '/',
   });
- // navigator.serviceWorker.ready.then(Notifications.onReady);
+  // navigator.serviceWorker.ready.then(Notifications.onReady);
 }
 
 /**
-  * Start app on page load.
-  */
+ * Start app on page load.
+ */
 window.addEventListener('load', function app_onLoad() {
   window.removeEventListener('load', app_onLoad);
   fluent.load().then(() => {
