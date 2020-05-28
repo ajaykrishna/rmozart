@@ -111,7 +111,7 @@ index.configure = async function() {
   const rule = await engine.getRule(1);
   masterEngine.execute(rule);
   } catch (e) {
-      new APIError('Engine failed to get  composed rule you sould create', e).toString();
+      new APIError('Engine failed to get  composed rule you should create', e).toString();
   }
   
 };
