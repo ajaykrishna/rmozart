@@ -107,7 +107,7 @@ const ReconfigureScreen = {
       body: JSON.stringify(datosJson),
     };
 
-    fetch('http://localhost:9001/verify', fetchedJson).then((res) => {
+    fetch('http://localhost:9001/compare', fetchedJson).then((res) => {
       return res.json();
     }).then((response) => {
       this.hiddeLoader();
