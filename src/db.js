@@ -23,6 +23,7 @@ const TABLES = [
   'things',
   'settings',
   'pushSubscriptions',
+  'composition_history',
 ];
 
 const DEBUG = false || (process.env.NODE_ENV === 'test');
@@ -114,6 +115,17 @@ const Database = {
       id INTEGER PRIMARY KEY,
       subscription TEXT UNIQUE
     );`);
+
+    // Create history composition table
+    this.db.run('CREATE TABLE IF NOT EXISTS composition_history  (' +
+      'id_history INTEGER PRIMARY KEY,' +
+      'composition_id TEXT,' +
+      'rule_id TEXT,' +
+      'event_id TEXT,' +
+      'value_event TEXT,' +
+      'action_id TEXT' +
+      'value_action TEXT' +
+     ');');
   },
 
   /**
@@ -356,6 +368,20 @@ const Database = {
    */
   deleteSetting: async function(key) {
     this.run('DELETE FROM settings WHERE key = ?', [key]);
+  },
+  /**
+   * Create history
+   * @param {String} composition
+   * @param {String} rule
+   * @param {String} event
+   * @param {String} value
+   * @param {String} action
+   */
+  createHistory: async function(composition, rule, event, value, action) {
+    const result = await this.run(
+      'INSERT INTO composition_history (composition_id, rule_id, event_id, value_event, action_id) VALUES (?, ?, ?, ?, ?)',
+      [composition, rule, event, value, action]
+    );
   },
 
   /**

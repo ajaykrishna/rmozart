@@ -127,7 +127,7 @@ const App = {
     this.views = [];
     this.views.things = document.getElementById('things-view');
     this.views.floorplan = document.getElementById('floorplan-view');
-    this.views['reconfigure'] = document.getElementById('reconfigure-view');
+    this.views.reconfigure = document.getElementById('reconfigure-view');
     this.views.settings = document.getElementById('settings-view');
     this.views.rules = document.getElementById('rules-view');
     this.views['rules-manager'] = document.getElementById('rules-manager-view');
@@ -141,7 +141,7 @@ const App = {
     this.extensionBackButton = document.getElementById('extension-back-button');
     this.overflowButton = document.getElementById('overflow-button');
     this.overflowButton.addEventListener('click',
-      this.toggleOverflowMenu.bind(this));
+                                         this.toggleOverflowMenu.bind(this));
     this.overflowMenu = document.getElementById('overflow-menu');
     this.blockMessages = false;
     this.messageArea = document.getElementById('message-area');
@@ -268,17 +268,17 @@ const App = {
     this.hideExtensionBackButton();
     const events = context.pathname.split('/').pop() === 'events';
     ThingsScreen.show(context.params.thingId || null,
-      context.params.actionName || null,
-      events,
-      context.querystring);
+                      context.params.actionName || null,
+                      events,
+                      context.querystring);
     this.selectView('things');
   },
 
   showSettings: function(context) {
     this.hideExtensionBackButton();
     SettingsScreen.show(context.params.section || null,
-      context.params.subsection || null,
-      context.params.id || null);
+                        context.params.subsection || null,
+                        context.params.id || null);
     this.selectView('settings');
   },
 
