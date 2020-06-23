@@ -1,6 +1,6 @@
 load semantics.maude
 
-fmod EXAMPLES is
+fmod WOT is
   pr DEVICE .
   pr QID .
   subsort Qid < Id .
@@ -8,12 +8,12 @@ fmod EXAMPLES is
   pr APPLICATION .
   
 ---- Motion Sensor
-op motion1 : -> Id .
+op motionid1 : -> Id .
   op on : -> Id .
   op x : -> Id . 
-  op ms : -> Device .
-  eq ms
-    = dev(motion1,
+  op motion1 : -> Device .
+  eq motion1
+    = dev(motionid1,
           model(
             s('s0),                                          
             ---- (s('s0), s('s1)),                                
@@ -23,36 +23,36 @@ op motion1 : -> Id .
 			 
 
 -------- Hue Light
-op hue1 : -> Id .
+op hueid1 : -> Id .
 op on : -> Id .
-op light : -> Device .
- eq light
-  = dev(hue1,
+op hue1 : -> Device .
+ eq hue1
+  = dev(hueid1,
         model(
           s('s0),                                     
           ---- (s('s0), s('s1)),                          
-          (s('s0) (prop(on, val(0))) - on ? val(true) -> s('s1) (prop(on, val(true))),     
-           s('s1) (prop(on, val(1))) - on ? val(false) -> s('s0) (prop(on, val(false))) )) ) .
+          (s('s0) (prop(on, val(0))) - on ? val(1) -> s('s1) (prop(on, val(1))),     
+           s('s1) (prop(on, val(1))) - on ? val(0) -> s('s0) (prop(on, val(1))) )) ) .
 
 ------------ Hue Light with Color		   
-op hue2 : -> Id .
+op hueid2 : -> Id .
 op on : -> Id .
 op color : -> Id .
 op xcolor : -> Id .
-op light : -> Device .
- eq light
-  = dev(hue2,
+op hue2 : -> Device .
+ eq hue2
+  = dev(hueid2,
         model(
           s('s0),                                    
           ---- (s('s0), s('s1)),                          
-          (s('s0) (prop(on, val(0))) - on ? val(true) -> s('s1) (prop(on, val(true))),     
-           s('s1) (prop(on, val(1))) - on ? val(false) -> s('s0) (prop(on, val(false))),
-		   s('s1) (prop(color, val(xcolor))) - color ? val(ycolor) -> s('s0) (prop(on, val(ycolor))))) ) .
+          (s('s0) (prop(on, val(0))) - on ? val(1) -> s('s1) (prop(on, val(1))),     
+           s('s1) (prop(on, val(1))) - on ? val(0) -> s('s0) (prop(on, val(0))),
+		   s('s1) (prop(color, val(xcolor))) - color ? val(xcolor) -> s('s1) (prop(on, val(xcolor))))) ) .
 
 
 op compo1 : -> Composition .
  eq compo1
-  = rule( evt(motion1, on, val(true)), act(hue1, on, val(true))) .  
+  = rule( evt(motionid1, on, val(true)), act(hueid1, on, val(true))) .  
 
 ----- application1
 op app1 : -> Application .
@@ -61,21 +61,12 @@ op app1 : -> Application .
   
 op compo2 : -> Composition .
  eq compo2
-  = rule( evt(motion1, on, val(true)), act(hue2, color, val(ycolor))) .  
+  = rule( evt(motionid1, on, val(true)), act(hueid2, color, val(xcolor))) .  
 
 ----- application2
 op app2 : -> Application .
  eq app2
   = app((motion1, hue2), compo2) .
-  
 
-op checkSR1 : -> Bool .
- eq checkSR1
-    = checkSeamlessReconfiguration(
-        app((motion1, hue1), compo1),                      
-        app((motion1, hue2), compo2),                     
-        (ids(motion1, s('s1)), ids(hue1, s('s1))),     --- global state
-        ( (idl(motion1, on ! val(true))) (idl(hue1, on ? val(true))) )  --- execution trace
-      ) .
 
 endfm
