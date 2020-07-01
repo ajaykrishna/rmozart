@@ -244,7 +244,7 @@ process compo[event:any, action:any, done:any] is
     end loop
 end process
 
-(* Process to simulate the environment *)
+(* Process to simulate the environment (partial) *)
 process environment[done:any, envaction:any] is
     loop
         select

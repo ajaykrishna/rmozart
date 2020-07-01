@@ -1,0 +1,397 @@
+
+---- Verification: conservative and impactful properties
+---- authors: Francisco Duran and Gwen Salaun
+
+load verif.maude
+--- load 4-tuple.maude
+
+--- view Tuple{X :: TRIV, Y :: TRIV} from TRIV to 2-TUPLE{X,Y} is
+---  sort Elt to Tuple{X,Y} .
+---endv
+
+mod PROPERTIES is
+  pr VERIF .
+
+  vars Devs Devs1 Devs2 : Set{Device} .
+  vars Compo Compo1 Compo2 CompoA CompoB : Composition .
+  vars Compos Compos1 Compos2 : Set{Composition} .
+  var Tr : List{Tuple{Id,Label}} .
+  vars Bfs Bfs1 Bfs2 : Set{Buffer} .
+  vars GS GS1 GS2 : Set{Tuple{Id,State}} .
+  vars MDL MDL1 MDL2 : LTS .
+  vars O O1 O2 O3 O4 M M1 M2 : Id .
+  vars S SS S1 S2 S3 S4 : State .
+  vars Transitions Transitions1 Transitions2 Trans : Set{Transition} .
+  vars Pr1 Pr2 Pr3 Pr4 : Set{Property} .
+  vars V V1 V2 V3 : Value .
+  vars LL LL1 LL2 : List{Label} .
+  vars LR LR1 LR2 : LRule .
+  vars RR RR1 RR2 : RRule .
+  vars SRE SRE1 SRE2 : Set{REvent} .
+  var RE : REvent .
+  vars App1 App2 : Application .
+  vars K K1 K2 : Int .
+  var Ids : Set{Id} .
+
+  vars Exec Exec1 Exec2 : Set{Tuple{Id, Set{Transition}}} .
+  vars Lab Lab1 Lab2 : Label .
+
+  --- Conservative property: all behaviours executable in the first application
+  ---   from a global state can be executed in the new application.
+  --- This check is guided by the first application (the new app can do more).
+
+  --- Assumption: seamless reconfiguration should be verified, otherwise we cannot
+  --- compute the global state (starting point) in the new application.
+
+  op checkConservativeReconfiguration : Application Application Set{Tuple{Id,State}} List{Tuple{Id,Label}} -> Bool .
+
+  --- this operation computes the global state for the new application from the given trace Tr
+  eq checkConservativeReconfiguration(app(Devs1, Compo1), app(Devs2, Compo2), GS1, Tr)
+    = compareFutureTraces(
+       Devs1, Compo1, GS1,
+       getBuffers(runTrace(app(Devs1, Compo1), Tr, keepAllIds(Devs1))),  --- here we keep the same trace and all ids
+       Devs2, Compo2,                                                    --- because we run the first app
+       getGlobalState(runTrace(
+                         app(Devs2, Compo2),
+                         filterTrace(Tr, computeCommonObjects(app(Devs1, Compo1), app(Devs2, Compo2))),
+                         computeCommonObjects(app(Devs1, Compo1), app(Devs2, Compo2))
+                       ) ),
+       getBuffers(runTrace(
+                     app(Devs2, Compo2),
+                     filterTrace(Tr, computeCommonObjects(app(Devs1, Compo1), app(Devs2, Compo2))),
+                     computeCommonObjects(app(Devs1, Compo1), app(Devs2, Compo2))))
+      ) .
+
+
+   --- this operation generates a set of identifiers for a set of devices
+   op keepAllIds : Set{Device} -> Set{Id} .
+
+   eq keepAllIds( (dev(O1, MDL1), Devs1) )
+     = (O1, keepAllIds(Devs1)) .
+   eq keepAllIds( empty )
+     = empty .
+
+  --- inputs: there are four parameters for running each application (objects, compo, global state, buffers)
+  --- output: a boolean indicating whether conservative reconfiguration is preserved
+  op compareFutureTraces : Set{Device} Set{Composition} Set{Tuple{Id,State}} Set{Buffer} Set{Device} Set{Composition} Set{Tuple{Id,State}} Set{Buffer} -> Bool .
+
+  --- first of all, independent evolutions of one of the two applications
+  --- these equations apply for choice, interleaving, iteration, and owise
+
+  --- choice
+  --- in this case we keep all branches since we want to explore all possible behaviours
+  eq compareFutureTraces(Devs1, (ch(CompoA, CompoB), Compos), GS1, Bfs1, Devs2, Compos2, GS2, Bfs2)
+    = compareFutureTraces(Devs1, (CompoA, CompoB, Compos), GS1, Bfs1, Devs2, Compos2, GS2, Bfs2) .
+  eq compareFutureTraces(Devs1, Compos1, GS1, Bfs1, Devs2, (ch(CompoA, CompoB), Compos), GS2, Bfs2)
+    = compareFutureTraces(Devs1, Compos1, GS1, Bfs1, Devs2, (CompoA, CompoB, Compos), GS2, Bfs2) .
+
+  --- interleaving
+  eq compareFutureTraces(Devs1, (par(CompoA, CompoB), Compos), GS1, Bfs1, Devs2, Compos2, GS2, Bfs2)
+    = compareFutureTraces(Devs1, (CompoA, CompoB, Compos), GS1, Bfs1, Devs2, Compos2, GS2, Bfs2) .
+  eq compareFutureTraces(Devs1, Compos1, GS1, Bfs1, Devs2, (par(CompoA, CompoB), Compos), GS2, Bfs2)
+    = compareFutureTraces(Devs1, Compos1, GS1, Bfs1, Devs2, (CompoA, CompoB, Compos), GS2, Bfs2) .
+
+  --- iteration
+  eq compareFutureTraces(Devs1, (iter(Compo, s K), Compos), GS1, Bfs1, Devs2, Compos2, GS2, Bfs2)
+    = compareFutureTraces(Devs1, (seq(Compo, iter(Compo, K)), Compos), GS1, Bfs1, Devs2, Compos2, GS2, Bfs2) .
+  eq compareFutureTraces(Devs1, (iter(Compo, 0), Compos), GS1, Bfs1, Devs2, Compos2, GS2, Bfs2)
+    = compareFutureTraces(Devs1, Compos, GS1, Bfs1, Devs2, Compos2, GS2, Bfs2) .
+
+  eq compareFutureTraces(Devs1, Compos1, GS1, Bfs1, Devs2, (iter(Compo, s K), Compos), GS2, Bfs2)
+    = compareFutureTraces(Devs1, Compos1, GS1, Bfs1, Devs2, (seq(Compo, iter(Compo, K)), Compos), GS2, Bfs2) .
+  eq compareFutureTraces(Devs1, Compos1, GS1, Bfs1, Devs2, (iter(Compo, 0), Compos), GS2, Bfs2)
+    = compareFutureTraces(Devs1, Compos1, GS1, Bfs1, Devs2, Compos, GS2, Bfs2) .
+
+  --- this operation stops because composition expressions cannot loop for ever
+  --- there are two final cases
+  --- first case, both compositions have ended (empty sets of compositions in both cases) and we return true
+  eq compareFutureTraces(Devs1, empty, GS1, Bfs1, Devs2, empty, GS2, Bfs2)
+    = true .
+  --- second case, there is a mismatch at some point and none of the previous rules can apply
+  eq compareFutureTraces(Devs1, Compos1, GS1, Bfs1, Devs2, Compos2, GS2, Bfs2)
+    = false [owise] .
+
+  --- now we focus on simultaneous evolutions of both applications
+  --- these equations apply for buffer consumption and rule execution
+
+  --- we use this type for the result of the matching rules operation
+  pr 4-TUPLE{Set{Tuple{Id,State}}, Bool, Set{Buffer}, Set{Composition}}
+       * (---- sort Tuple{Id,State} to IdState,
+          op ((_,_)) : Id State -> Tuple{Id, State} to ids,
+          op p1_ : Tuple{Set{Tuple{Id,State}}, Bool, Set{Buffer}, Set{Composition}} -> Set{Tuple{Id,State}} to getGlobalState,
+          op p2_ : Tuple{Set{Tuple{Id,State}}, Bool, Set{Buffer}, Set{Composition}} -> Bool to getBoolRes,
+          op p3_ : Tuple{Set{Tuple{Id,State}}, Bool, Set{Buffer}, Set{Composition}} -> Set{Buffer} to getBuffers,
+          op p4_ : Tuple{Set{Tuple{Id,State}}, Bool, Set{Buffer}, Set{Composition}} -> Set{Composition} to getCompositions) .
+
+  --- buffer consumption
+  --- this rule applies as many time as there are receive messages
+  --- TODO: is it true if one device can receive several messages in the same state ?? I guess no.. :()
+
+  eq compareFutureTraces(
+        ( dev( O1, model( S, ( S1 Pr1 - M ? V -> S2 Pr2, Transitions1 ) ) ), Devs1 ),
+        Compos1,
+        (ids(O1, S1), GS1),
+        (buf(O1, (M ! V) LL1), Bfs1),
+        Devs2,
+        Compos2,
+        GS2,
+        Bfs2
+     )
+    = if getBoolRes(existMatchingReception(M, V, Devs2, GS2, Bfs2))
+      then compareFutureTraces(
+            ( dev( O1, model( S, ( S1 Pr1 - M ? V -> S2 Pr2, Transitions1 ) ) ), Devs1 ),
+            Compos1,
+            (ids(O1, S2), GS1),
+            (buf(O1, LL1), Bfs1),
+            Devs2,
+            Compos2,
+            getGlobalState(existMatchingReception(M, V, Devs2, GS2, Bfs2)),
+            getBuffers(existMatchingReception(M, V, Devs2, GS2, Bfs2))
+          )
+      else false
+      fi .
+
+  --- this operation checks if a specific receive message is possible in the new application
+  op existMatchingReception : Id Value Set{Device} Set{Tuple{Id,State}} Set{Buffer} -> Tuple{Set{Tuple{Id,State}}, Bool, Set{Buffer}, Set{Composition}} .
+
+  eq existMatchingReception( M, V,
+      ( dev( O2, model( SS, ( S3 Pr3 - M ? V -> S4 Pr4, Transitions2 ) ) ), Devs2 ),
+      (ids(O2, S3), GS2),
+      (buf(O2, (M ! V) LL2), Bfs2) )
+    = ((ids(O2, S4), GS2), true, (buf(O2, LL2), Bfs2), empty) .
+  eq existMatchingReception(M, V, Devs, GS, Bfs)
+    = (GS, false, Bfs, empty) [owise] .  ---- only 'false' is important here
+
+
+  --- rule execution (seq)
+  --- this rules checks if for a give rule in the first application,
+  ---- there is one doing the same in the new application
+  eq compareFutureTraces(
+        Devs1, (seq(rule(LR1, RR1), Compo1), Compos1), GS1, Bfs1,
+        Devs2, Compos2, GS2, Bfs2
+      )
+    = if (leftRuleIsExecutable(LR1, Devs1, GS1) and getBoolRes(existMatchingRule(LR1, Compos2, Devs2, GS2, Bfs2)))
+      then compareFutureTraces(
+              Devs1, (Compo1, Compos1), updateGlobalState(LR1, Devs1, GS1), updateBuffers(RR1, Bfs1),
+              Devs2,
+              getCompositions(existMatchingRule(LR1, Compos2, Devs2, GS2, Bfs2)),
+              getGlobalState(existMatchingRule(LR1, Compos2, Devs2, GS2, Bfs2)),
+              getBuffers(existMatchingRule(LR1, Compos2, Devs2, GS2, Bfs2))
+            )
+      else false
+      fi .
+
+  --- this operation checks whether there is a rule that is executable in the new application
+  --- and doing the same in the left hand part of the rule
+  op existMatchingRule : LRule Set{Composition} Set{Device} Set{Tuple{Id,State}} Set{Buffer}
+                         -> Tuple{Set{Tuple{Id,State}}, Bool, Set{Buffer}, Set{Composition}} .
+
+  eq existMatchingRule(LR1, (seq(rule(LR2, RR2), Compo2), Compos2), Devs2, GS2, Bfs2)
+    = if (matchRules(LR1, LR2) and leftRuleIsExecutable(LR2, Devs2, GS2))
+      then (updateGlobalState(LR2, Devs2, GS2), true, updateBuffers(RR2, Bfs2), (Compo2, Compos2))
+      else (GS2, false, Bfs2, (seq(rule(LR2, RR2), Compo2), Compos2)) --- the only important parameter is 'false' here
+      fi .
+
+  --- this operation checks that all events match in both left rules
+  op matchRules : LRule LRule -> Bool .
+  eq matchRules(evt(O1, M, V), evt(O2, M, V))
+    = true .
+  eq matchRules(and(empty), and(empty))
+    = true .
+  eq matchRules(and((evt(O1, M, V), SRE1)), and((evt(O2, M, V), SRE2)))
+    = matchRules(SRE1, SRE2) .
+  eq matchRules(or(empty), or(empty))
+    = true .
+  eq matchRules(or((evt(O1, M, V), SRE1)), or((evt(O2, M, V), SRE2)))
+    = matchRules(SRE1, SRE2) .
+  eq matchRules(LR1, LR2)
+    = false .
+
+
+
+  --- Impactful reconfiguration: all new behaviours are reachable from a global
+  ---   state. This applies to the second application only.
+  --- This is checked by executing the application from that state and storing
+  ---   all observable events for each device (input and output messages).
+  --- Then for new devices, we check that all messages have been traversed.
+
+  --- Assumption: seamless reconfiguration should be verified, otherwise we cannot
+  --- compute the global state (starting point) in the new application.
+
+  --- this operation takes the original application as well to compute the set of new objects
+  op checkImpactfulReconfiguration : Application Application List{Tuple{Id,Label}} -> Bool .
+
+  --- this operation computes the global state for the new application from the given trace Tr
+  eq checkImpactfulReconfiguration(App1, app(Devs2, Compo2), Tr)
+    = compareExecutedTraces(
+         computeCommonObjects(App1, app(Devs2, Compo2)),
+         Devs2,
+         generateAllExecutions(
+             Devs2,
+             Compo2,
+             getGlobalState(runTrace(
+                               app(Devs2, Compo2),
+                               filterTrace(Tr, computeCommonObjects(App1, app(Devs2, Compo2))),
+                               computeCommonObjects(App1, app(Devs2, Compo2))
+                             ) ),
+             getBuffers(runTrace(
+                           app(Devs2, Compo2),
+                           filterTrace(Tr, computeCommonObjects(App1, app(Devs2, Compo2))),
+                           computeCommonObjects(App1, app(Devs2, Compo2))
+                         ) ),
+             getExecutions(runTrace(
+                              app(Devs2, Compo2),
+                              filterTrace(Tr, computeCommonObjects(App1, app(Devs2, Compo2))),
+                              computeCommonObjects(App1, app(Devs2, Compo2))
+                            ) )
+          )
+       ) .
+
+
+  --- this operation compares whether for a set of devices, all labels have
+  --- been executed
+  --- the first parameter corresponds to remaining devices identifiers
+  --- the second parameter is the set of devices
+  --- the third parameter stores the traversed transitions
+  op compareExecutedTraces : Set{Id} Set{Device} Set{Tuple{Id, Set{Transition}}} -> Bool .
+  op compareExecutedTracesAUX : Set{Transition} Set{Transition} -> Bool .
+
+
+  --- this is a remaining object, we do not look at it
+  eq compareExecutedTraces(
+       (O1, Ids),
+       Devs1,
+       ((O1, Transitions), Exec)
+      )
+    = compareExecutedTraces(
+         (O1, Ids),
+         Devs1,
+         Exec
+        ) .
+
+  --- this is a new object, we will check covered transitions wrt its model
+  ceq compareExecutedTraces(
+        Ids,
+        (dev(O1, model( S, Transitions1 )), Devs1),
+        ((O1, Transitions2), Exec)
+       )
+     = compareExecutedTracesAUX(Transitions1, Transitions2) and compareExecutedTraces(Ids, Devs1, Exec)
+  if not(isInIds(O1, Ids)) .  --- ensures that this object is new
+
+  eq compareExecutedTraces(Ids, Devs, empty) = true .
+
+  ---- this operation takes a first set of transition (the model)
+  ---- and a second set of traversed transitions
+  ---- This operation checks whether all transitions have been covered
+  eq compareExecutedTracesAUX(
+        ( S1 Pr1 - Lab -> S2 Pr2, Transitions1 ),
+        ( S1 Pr1 - Lab -> S2 Pr2, Transitions2 )
+      )
+    = compareExecutedTracesAUX(Transitions1, Transitions2) .
+  ---- all transitions covered, both sets are empty
+  eq compareExecutedTracesAUX(empty, empty)
+    = true .
+  ---- transitions in the model not covered in the execution
+  eq compareExecutedTracesAUX(
+        ( S1 Pr1 - Lab -> S2 Pr2, Transitions1 ),
+        empty
+      )
+    = false .
+
+  --- this operation executes all behaviours of an application from a given global state
+  op generateAllExecutions : Set{Device} Set{Composition} Set{Tuple{Id,State}} Set{Buffer} Set{Tuple{Id, Set{Transition}}}
+                             -> Set{Tuple{Id, Set{Transition}}} .
+
+  --- choice
+  eq generateAllExecutions(Devs, (ch(CompoA, CompoB), Compos), GS, Bfs, Exec)
+    = generateAllExecutions(Devs, (CompoA, CompoB, Compos), GS, Bfs, Exec) .
+  --- interleaving
+  eq generateAllExecutions(Devs, (par(CompoA, CompoB), Compos), GS, Bfs, Exec)
+    = generateAllExecutions(Devs, (CompoA, CompoB, Compos), GS, Bfs, Exec) .
+  --- iteration
+  eq generateAllExecutions(Devs, (iter(Compo, s K), Compos), GS, Bfs, Exec)
+    = generateAllExecutions(Devs, (seq(Compo, iter(Compo, K)), Compos), GS, Bfs, Exec) .
+  eq generateAllExecutions(Devs, (iter(Compo, 0), Compos), GS, Bfs, Exec)
+    = generateAllExecutions(Devs, Compos, GS, Bfs, Exec) .
+
+  --- buffer consumption
+  eq generateAllExecutions(
+       ( dev( O1, model( S, ( S1 Pr1 - M ? V -> S2 Pr2, Transitions ) ) ), Devs ),
+       Compos,
+       (ids(O1, S1), GS),
+       (buf(O1, (M ! V) LL), Bfs),
+       ((O1, Trans), Exec)
+     )
+    = generateAllExecutions(
+         ( dev( O1, model( S, ( S1 Pr1 - M ? V -> S2 Pr2, Transitions ) ) ), Devs ),
+         Compos,
+         (ids(O1, S2), GS),
+         (buf(O1, LL), Bfs),
+         ((O1, (S1 Pr1 - M ? V -> S2 Pr2, Trans)), Exec)
+       ) .
+
+    --- sequence
+    ceq generateAllExecutions(
+          Devs,
+          (seq(rule(LR, RR), Compo), Compos),
+          GS,
+          Bfs,
+          Exec
+        )
+      = generateAllExecutions(
+            Devs,
+            (Compo, Compos),
+            getState(updateIR(LR, Devs, GS, Exec)),
+            updateBuffers(RR, Bfs),
+            getExec(updateIR(LR, Devs, GS, Exec))
+          )
+      if leftRuleIsExecutable(LR, Devs, GS) .
+
+  --- when none of the equation applies (empty compo or deadlock), I return all executed transitions
+  eq generateAllExecutions(Devs, Compos, GS, Bfs, Exec)
+    = Exec .
+
+  pr 2-TUPLE{Set{Tuple{Id,State}}, Set{Tuple{Id, Set{Transition}}}}
+        * (---- sort Tuple{Id,State} to IdState,
+           op ((_,_)) : Id State -> Tuple{Id, State} to ids,
+           op p1_ : Tuple{Set{Tuple{Id,State}}, Set{Tuple{Id, Set{Transition}}}} -> Set{Tuple{Id,State}} to getState,
+           op p2_ : Tuple{Set{Tuple{Id,State}}, Set{Tuple{Id, Set{Transition}}}} -> Set{Tuple{Id, Set{Transition}}} to getExec
+           ) .
+
+  --- this operation updates the global state and the executed transitions
+  op updateIR : LRule Set{Device} Set{Tuple{Id,State}} Set{Tuple{Id, Set{Transition}}}
+                  -> Tuple{Set{Tuple{Id,State}}, Set{Tuple{Id, Set{Transition}}}} .
+
+  eq updateIR(evt(O1, M, V), Devs, GS, Exec)
+    = updateIR(and(evt(O1, M, V)), Devs, GS, Exec) .     ---- single event turned into and
+
+  eq updateIR(
+        and((evt(O1, M, V), SRE)),                                                    ---- event and
+        ( dev( O1, model( S, ( S1 Pr1 - M ! V -> S2 Pr2, Transitions ) ) ), Devs ),
+        ( ids(O1, S1), GS ),
+        ((O1, Trans), Exec)
+      )
+    = updateIR(
+         and(SRE),                                                                   ---- first event is consumed
+         ( dev( O1, model( S, ( S1 Pr1 - M ! V -> S2 Pr2, Transitions ) ) ), Devs ), ---- no change in devices
+         ( ids(O1, S2), GS ),                                                        ---- global state changes
+         ((O1, (S1 Pr1 - M ! V -> S2 Pr2, Trans)), Exec)
+        ) .
+
+  eq updateIR(
+        and(empty),
+        Devs,
+        GS,
+        Exec
+      )
+     = ( GS, Exec ) .
+
+  eq updateIR(
+        or((evt(O1, M, V), SRE)),                                                     ---- event or
+        ( dev( O1, model( S, ( S1 Pr1 - M ! V -> S2 Pr2, Transitions ) ) ), Devs ),
+        ( ids(O1, S1), GS ),
+        ((O1, Trans), Exec)
+       )
+      = ( ( ids(O1, S2), GS ), ((O1, (S1 Pr1 - M ! V -> S2 Pr2, Trans)), Exec) ) .
+
+endm

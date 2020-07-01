@@ -1,0 +1,72 @@
+load semantics.maude
+
+fmod WOT is
+  pr DEVICE .
+  pr QID .
+  subsort Qid < Id .
+  pr COMPOSITION .
+  pr APPLICATION .
+  
+---- Motion Sensor
+op motionid1 : -> Id .
+  op on : -> Id .
+  op x : -> Id . 
+  op motion1 : -> Device .
+  eq motion1
+    = dev(motionid1,
+          model(
+            s('s0),                                          
+            ---- (s('s0), s('s1)),                                
+            ---- transitions
+            (s('s0) (prop(on, val(false))) - on ! val(true) -> s('s1) (prop(on, val(true))),
+             s('s1) (prop(on, val(true))) - on ! val(false) -> s('s0) (prop(on, val(false))) )) ) .
+			 
+
+-------- Hue Light
+op hueid1 : -> Id .
+op on : -> Id .
+op hue1 : -> Device .
+ eq hue1
+  = dev(hueid1,
+        model(
+          s('s0),                                     
+          ---- (s('s0), s('s1)),                          
+          (s('s0) (prop(on, val(0))) - on ? val(1) -> s('s1) (prop(on, val(1))),     
+           s('s1) (prop(on, val(1))) - on ? val(0) -> s('s0) (prop(on, val(1))) )) ) .
+
+------------ Hue Light with Color		   
+op hueid2 : -> Id .
+op on : -> Id .
+op color : -> Id .
+op xcolor : -> Id .
+op hue2 : -> Device .
+ eq hue2
+  = dev(hueid2,
+        model(
+          s('s0),                                    
+          ---- (s('s0), s('s1)),                          
+          (s('s0) (prop(on, val(0))) - on ? val(1) -> s('s1) (prop(on, val(1))),     
+           s('s1) (prop(on, val(1))) - on ? val(0) -> s('s0) (prop(on, val(0))),
+		   s('s1) (prop(color, val(xcolor))) - color ? val(xcolor) -> s('s1) (prop(on, val(xcolor))))) ) .
+
+
+op compo1 : -> Composition .
+ eq compo1
+  = rule( evt(motionid1, on, val(true)), act(hueid1, on, val(true))) .  
+
+----- application1
+op app1 : -> Application .
+ eq app1
+  = app((motion1, hue1), compo1) .
+  
+op compo2 : -> Composition .
+ eq compo2
+  = rule( evt(motionid1, on, val(true)), act(hueid2, color, val(xcolor))) .  
+
+----- application2
+op app2 : -> Application .
+ eq app2
+  = app((motion1, hue2), compo2) .
+
+
+endfm

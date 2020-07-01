@@ -1,0 +1,12 @@
+fmod 4-TUPLE{W :: TRIV, X :: TRIV, Y :: TRIV, Z :: TRIV} is
+  sort Tuple{W, X, Y, Z} .
+  op ((_,_,_,_)) : W$Elt X$Elt Y$Elt Z$Elt -> Tuple{W, X, Y, Z} [ctor] .
+  op p1_ : Tuple{W, X, Y, Z} -> W$Elt .
+  op p2_ : Tuple{W, X, Y, Z} -> X$Elt .
+  op p3_ : Tuple{W, X, Y, Z} -> Y$Elt .
+  op p4_ : Tuple{W, X, Y, Z} -> Z$Elt .
+  eq p1(A:W$Elt, B:X$Elt, C:Y$Elt, D:Z$Elt) = A:W$Elt .
+  eq p2(A:W$Elt, B:X$Elt, C:Y$Elt, D:Z$Elt) = B:X$Elt .
+  eq p3(A:W$Elt, B:X$Elt, C:Y$Elt, D:Z$Elt) = C:Y$Elt .
+  eq p4(A:W$Elt, B:X$Elt, C:Y$Elt, D:Z$Elt) = D:Z$Elt .
+endfm

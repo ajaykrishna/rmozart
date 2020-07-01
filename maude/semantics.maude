@@ -1,0 +1,436 @@
+
+---- Semantics of an IoT application
+---- authors: Francisco Duran and Gwen Salaun
+
+load basic-defs.maude
+load 2-tuple.maude
+
+---- Description of the semantics of an IoT application
+
+mod IOTAPP-SEM is
+
+  pr SET{Device} .
+  pr SET{Composition} .
+
+  ---- pr SET{IdState} .
+  pr SET{Tuple{Id,State}}
+       * (---- sort Tuple{Id,State} to IdState,
+          op ((_,_)) : Id State -> Tuple{Id, State} to ids) .
+
+  pr LIST{Label} .
+
+  pr SET{Buffer} .
+
+  pr CONFIGURATION .
+
+  ----pr LIST{IdLabel} .
+  pr SET{Tuple{Id,Label}}
+       * (---- sort Tuple{Id,Label} to IdLabel,
+          op ((_,_)) : Id Label -> Tuple{Id, Label} to idl) .
+
+  subsort Oid < Id .
+
+  vars AId SId O1 O2 O3 M M1 M2 : Id .
+  var Devs : Set{Device} .
+  vars Compo Compo1 Compo2 : Composition .
+  vars Atts Atts1 Atts2 : AttributeSet .
+  var GS : Set{Tuple{Id,State}} .
+  var Tr : List{Tuple{Id,Label}} .
+  var Bfs : Set{Buffer} .
+  vars S S1 S2 S3 : State .
+---  vars Str Str1 Str2 : String .
+  vars V V1 V2 V3 : Value .
+  vars Pr1 Pr2 : Set{Property} .
+---  var States : Set{State} .
+  var Transitions : Set{Transition} .
+  var LL : List{Label} .
+  var Compos : Set{Composition} .
+  vars K K1 K2 : Int .
+  var LR : LRule .
+  var RR : RRule .
+  var SRE : Set{REvent} .
+  var RE : REvent .
+  var IS : Tuple{Id,State} .
+  var MDL : LTS .
+  var SRA : Set{RAction} .
+  var RA : RAction .
+
+
+  ---- Application (syntactic description of an application)
+  ---- class IoTApp | devices : Set{Device}, compo : Composition .
+  sort IoTApp .
+  subsort IoTApp < Cid .
+
+  op IoTApp : -> IoTApp [ctor] .
+  op devices :_ : Set{Device} -> Attribute [ctor] .
+  op compo :_ : Composition -> Attribute [ctor] .
+
+  ---- Simulation (dynamic description of the execution of the application)
+  ---- class Simulation | gstate : Set{Tuple{Id,State}}, compo : Set{Composition}, trace : List{Label} .
+  sort Simulation .
+  subsort Simulation < Cid .
+
+  op Simulation : -> Simulation [ctor] .
+  op gstate :_ : Set{Tuple{Id,State}} -> Attribute [ctor] .
+  op compo :_ : Set{Composition} -> Attribute [ctor] .  --- this is a set because of the par operator
+  op trace :_ : List{Tuple{Id,Label}} -> Attribute [ctor] .     --- we keep all send and receive messages/labels
+  op buffers :_ : Set{Buffer} -> Attribute [ctor] .
+
+  ------------------------------------------------------------------------------
+  ---- One device asynchronously consumes from its buffer when possible
+  rl [consumeFromBuffer] :
+      < AId : IoTApp |
+           devices :
+             ( dev( O1,
+                    model( S,
+                           ( S1 Pr1 - M ? V -> S2 Pr2, Transitions )
+                         )
+                  ),
+               Devs ),
+           Atts >
+      < SId : Simulation |
+           gstate : (ids(O1, S1), GS),
+           trace : Tr,
+           buffers : (buf(O1, ((M ! V) LL)), Bfs),
+           Atts1 >
+    =>
+     < AId : IoTApp |
+          devices :
+            ( dev( O1,
+                   model( S,
+                          ( S1 Pr1 - M ? V -> S2 Pr2, Transitions )
+                        )
+                 ),
+              Devs ),
+          Atts >
+     < SId : Simulation |
+          gstate : (ids(O1, S2), GS),
+          trace : (Tr (idl(O1, M ? V))),
+          buffers : (buf(O1, LL), Bfs),
+          Atts1 >
+    [print "consumeFromBuffer " O1] .
+
+
+  ----- There is one rule in Maude for each operator in the composition expression
+  ----- (rule, seq, par, choice, iter), with updates of the simulation object
+
+  ------------------------------------------------------------------------------
+  ---- Execution of one rule
+  ---- Since seq is assoc with none as right id this rule is unnecessary
+  ---- crl [oneRule] :
+  ----     < AId : IoTApp |
+  ----          devices : Devs,
+  ----          Atts >
+  ----     < SId : Simulation |
+  ----          gstate : GS,
+  ----          compo : (rule(LR, RR), Compos),
+  ----          trace : Tr,
+  ----          buffers : Bfs,
+  ----          Atts1 >
+  ----   =>
+  ----    < AId : IoTApp |
+  ----         devices : Devs,
+  ----         Atts >
+  ----    < SId : Simulation |
+  ----         gstate : updateGlobalState(LR, Devs, GS), ---- getState(update(LR, Devs, GS))
+  ----         compo : Compos,
+  ----         trace : (Tr updateTrace(LR, Devs, GS)),   ---- getTrace(update(LR, Devs, GS))
+  ----         buffers : updateBuffers(RR, Bfs),
+  ----         Atts1 >
+  ----   if leftRuleIsExecutable(LR, Devs, GS)
+  ----   [print "oneRule "] .
+
+  pr 2-TUPLE{Set{Tuple{Id,State}}, List{Tuple{Id,Label}}}
+      * (---- sort Tuple{Id,State} to IdState,
+         op ((_,_)) : Id State -> Tuple{Id, State} to ids,
+         ---- sort Tuple{Id,Label} to IdLabel,
+         op ((_,_)) : Id Label -> Tuple{Id, Label} to idl,
+         op p1_ : Tuple{Set{Tuple{Id,State}}, List{Tuple{Id,Label}}} -> Set{Tuple{Id,State}} to getState,
+         op p2_ : Tuple{Set{Tuple{Id,State}}, List{Tuple{Id,Label}}} -> List{Tuple{Id,Label}} to getTrace) .
+  op update : LRule Set{Device} Set{Tuple{Id,State}} -> Tuple{Set{Tuple{Id,State}}, List{Tuple{Id,Label}}} .
+  op update : LRule Set{Device} Set{Tuple{Id,State}} List{Tuple{Id,Label}}
+       -> Tuple{Set{Tuple{Id,State}}, List{Tuple{Id,Label}}} .
+
+  eq update(evt(O1, M, V), Devs, GS)
+    = update(and(evt(O1, M, V)), Devs, GS, nil ) .                                ---- single event turned into and
+  eq update(LR, Devs, GS) = update(LR, Devs, GS, nil) [owise] .
+
+  eq update(
+       and((evt(O1, M, V), SRE)),                                                    ---- event and
+       ( dev( O1, model( S, ( S1 Pr1 - M ! V -> S2 Pr2, Transitions ) ) ), Devs ),
+       ( ids(O1, S1), GS ),
+       Tr)
+   = update(
+       and(SRE),                                                                        ---- first event is consumed
+       ( dev( O1, model( S, ( S1 Pr1 - M ! V -> S2 Pr2, Transitions ) ) ), Devs ), ---- no change in devices
+       ( ids(O1, S2), GS ),                                                        ---- global state changes
+       ( Tr idl(O1, M ! V) ) ) .
+  eq update(
+       and(empty),
+       Devs,
+       GS,
+       Tr)
+   = ( GS, Tr ) .
+
+  eq update(
+       or((evt(O1, M, V), SRE)),                                                     ---- event or
+       ( dev( O1, model( S, ( S1 Pr1 - M ! V -> S2 Pr2, Transitions ) ) ), Devs ),
+       ( ids(O1, S1), GS ),
+       Tr)
+   = ( ( ids(O1, S2), GS ), ( Tr idl(O1, M ! V) ) ) .
+
+----   We assume it has previously checked that one of the events is applicable
+----   eq update(
+----        or(SRE),
+----        Devs,
+----        GS,
+----        Tr)
+----    = error [owise] .
+
+    --- useful for updating the global state after execution of the left rule
+    op updateGlobalState : LRule Set{Device} Set{Tuple{Id,State}} -> Set{Tuple{Id,State}} .
+    op updateGlobalStateAND : Set{REvent} Set{Device} Set{Tuple{Id,State}} -> Set{Tuple{Id,State}} .
+    op updateGlobalStateOR : Set{REvent} Set{Device} Set{Tuple{Id,State}} -> Set{Tuple{Id,State}} .
+
+    eq updateGlobalState(RE, Devs, GS)
+      = updateGlobalStateAND((RE, empty), Devs, GS) .
+    eq updateGlobalState(and(SRE), Devs, GS)
+      = updateGlobalStateAND(SRE, Devs, GS) .
+    eq updateGlobalState(or(SRE), Devs, GS)
+      = updateGlobalStateOR(SRE, Devs, GS) .
+
+    eq updateGlobalStateAND(empty, Devs, GS)
+      = GS .
+    eq updateGlobalStateAND(
+        (evt(O1, M, V), SRE),
+        ( dev( O1,
+               model( S,
+                      ( S1 Pr1 - M ! V -> S2 Pr2, Transitions )
+                    )
+             ),
+          Devs ),
+        (ids(O1, S1), GS)
+       )
+      = (ids(O1, S2), updateGlobalStateAND(SRE, Devs, GS)) .
+
+    eq updateGlobalStateOR(
+        (evt(O1, M, V), SRE),
+        ( dev( O1,
+               model( S,
+                      ( S1 Pr1 - M ! V -> S2 Pr2, Transitions )
+                    )
+             ),
+          Devs ),
+        (ids(O1, S1), GS)
+       )
+      = (ids(O1, S2), GS) .  --- Gwen asks: is this enough (without recursion)?
+                             --- I guess so..
+
+    --- useful for updating the execution trace after firing of the left rule
+    op updateTrace : LRule Set{Device} Set{Tuple{Id,State}} -> List{Tuple{Id,Label}} .
+    op updateTraceAND : Set{REvent} -> List{Tuple{Id,Label}} .
+    op updateTraceOR : Set{REvent} Set{Device} Set{Tuple{Id,State}} -> List{Tuple{Id,Label}} .
+
+    eq updateTrace(RE, Devs, GS)
+      = updateTraceAND((RE, empty)) .
+    eq updateTrace(and(SRE), Devs, GS)
+      = updateTraceAND(SRE) .
+    eq updateTrace(or(SRE), Devs, GS)
+      = updateTraceOR(SRE, Devs, GS) .
+
+    --- for 'and' we do not need the devices and the global state, the rule has been checked executable
+    eq updateTraceAND(empty)
+      = nil .
+    eq updateTraceAND((evt(O1, M, V), SRE))
+      =  (idl(O1, M ! V) updateTraceAND(SRE)) .
+
+    eq updateTraceOR(
+        (evt(O1, M, V), SRE),
+        ( dev( O1,
+               model( S,
+                      ( S1 Pr1 - M ! V -> S2 Pr2, Transitions )
+                    )
+             ),
+          Devs ),
+        (ids(O1, S1), GS)
+       )
+      =  (idl(O1, M ! V)) .
+
+    --- this functions adds all messages in the right rule to buffers
+    op updateBuffers : RRule Set{Buffer} -> Set{Buffer} .
+    op updateBuffersAND : Set{RAction} Set{Buffer} -> Set{Buffer} .
+
+    eq updateBuffers(RA, Bfs)
+      = updateBuffersAND((RA, empty), Bfs) .
+    eq updateBuffers(and(SRA), Bfs)
+      = updateBuffersAND(SRA, Bfs) .
+
+    eq updateBuffersAND(empty, Bfs)
+      = Bfs .
+    eq updateBuffersAND(
+          (act(O1, M, V), SRA),
+          (buf(O1, LL), Bfs)
+        )
+      = (buf(O1, (LL (M ! V))), updateBuffersAND(SRA, Bfs)) . --- I assume we have at most one action per object here
+
+    --- these functions check whether the left rule can be executed (or not)
+    op leftRuleIsExecutable : LRule Set{Device} Set{Tuple{Id,State}} -> Bool .
+    op leftRuleIsExecutableAND : Set{REvent} Set{Device} Set{Tuple{Id,State}} -> Bool .
+    op leftRuleIsExecutableOR : Set{REvent} Set{Device} Set{Tuple{Id,State}} -> Bool .
+
+    eq leftRuleIsExecutable(RE, Devs, GS)
+      = leftRuleIsExecutableAND((RE, empty), Devs, GS) .
+    eq leftRuleIsExecutable(and(SRE), Devs, GS)
+      = leftRuleIsExecutableAND(SRE, Devs, GS) .
+    eq leftRuleIsExecutable(or(SRE), Devs, GS)
+      = leftRuleIsExecutableOR(SRE, Devs, GS) .
+
+    eq leftRuleIsExecutableAND(empty, Devs, GS)
+      = true .
+    eq leftRuleIsExecutableAND(
+          (evt(O1, M, V), SRE),
+          ( dev( O1,
+                 model( S,
+                        ( S1 Pr1 - M ! V -> S2 Pr2, Transitions )
+                      )
+               ),
+            Devs ),
+          (ids(O1, S1), GS)
+        )
+      = leftRuleIsExecutableAND(SRE, Devs, GS) . ---- One event per object
+    eq leftRuleIsExecutableAND(SRE, Devs, GS)
+      = false [owise] .
+
+    eq leftRuleIsExecutableOR(
+          (evt(O1, M, V), SRE),
+          ( dev( O1,
+                model( S,
+                       ( S1 Pr1 - M ! V -> S2 Pr2, Transitions )
+                     )
+               ),
+            Devs ),
+          (ids(O1, S1), GS)
+        )
+       = true .
+    eq leftRuleIsExecutableOR(
+          (RE, SRE),
+          ( dev( O1, MDL ), Devs ),
+          (IS, GS)
+       )
+      = false [owise] .
+
+
+    ------------------------------------------------------------------------------
+    ---- Execution of a sequence in the composition expression
+    ---- Note: almost the same as rule alone
+    crl [sequence] :
+        < AId : IoTApp |
+              devices : Devs,
+             Atts >
+        < SId : Simulation |
+             gstate : GS,
+             compo : (seq(rule(LR, RR), Compo), Compos),
+             trace : Tr,
+             buffers : Bfs,
+             Atts1 >
+      =>
+       < AId : IoTApp |
+            devices : Devs,
+            Atts >
+       < SId : Simulation |
+            gstate : updateGlobalState(LR, Devs, GS),
+            compo : (Compo, Compos),
+            trace : (Tr updateTrace(LR, Devs, GS)),
+            buffers : updateBuffers(RR, Bfs),
+            Atts1 >
+      if leftRuleIsExecutable(LR, Devs, GS)
+      [print "sequence "] .
+
+    ------------------------------------------------------------------------------
+    ---- Execution of a choice in the composition expression
+    crl [choice] :
+        < AId : IoTApp |
+             devices : Devs,
+             Atts >
+        < SId : Simulation |
+             compo : (ch(Compo1, Compo2), Compos),
+             gstate : GS,
+             Atts1 >
+      =>
+       < AId : IoTApp |
+            devices : Devs,
+            Atts >
+       < SId : Simulation |
+            compo : (Compo1, Compos),
+            gstate : GS,
+            Atts1 >
+      if choiceIsExecutable(Compo1, Devs, GS)
+      [print "choice "] .
+
+    --- this operation checks if a branch of the choice is executable
+    op choiceIsExecutable : Composition Set{Device} Set{Tuple{Id,State}} -> Bool .
+
+    eq choiceIsExecutable(seq(rule(LR, RR), Compo), Devs, GS)
+      = leftRuleIsExecutable(LR, Devs, GS) .
+    eq choiceIsExecutable(ch(Compo1, Compo2), Devs, GS)
+      = choiceIsExecutable(Compo1, Devs, GS) or choiceIsExecutable(Compo2, Devs, GS) .
+    eq choiceIsExecutable(par(Compo1, Compo2), Devs, GS)
+      = choiceIsExecutable(Compo1, Devs, GS) or choiceIsExecutable(Compo2, Devs, GS) .
+    eq choiceIsExecutable(iter(Compo, K), Devs, GS)
+      = choiceIsExecutable(Compo, Devs, GS) .
+    eq choiceIsExecutable(none, Devs, GS)
+      = false .
+
+    ------------------------------------------------------------------------------
+    ---- Execution of an interleaving in the composition expression
+    rl [interleaving] :
+        < AId : IoTApp |
+             devices : Devs,
+             Atts >
+        < SId : Simulation |
+             compo : (par(Compo1, Compo2), Compos),
+             Atts1 >
+      =>
+       < AId : IoTApp |
+            devices : Devs,
+            Atts >
+       < SId : Simulation |
+            compo : (Compo1, Compo2, Compos),
+            Atts1 >
+      [print "interleaving "] .
+
+    ------------------------------------------------------------------------------
+    ---- Execution of an iteration in the composition expression
+    rl [iteration-k] :
+        < AId : IoTApp |
+             devices : Devs,
+             Atts >
+        < SId : Simulation |
+             compo : (iter(Compo, s K), Compos),
+             Atts1 >
+      =>
+       < AId : IoTApp |
+            devices : Devs,
+            Atts >
+       < SId : Simulation |
+            compo : (seq(Compo, iter(Compo, K)), Compos),
+            Atts1 >
+      [print "iteration-k " K] .
+
+      rl [iteration-0] :
+          < AId : IoTApp |
+               devices : Devs,
+               Atts >
+          < SId : Simulation |
+               compo : (iter(Compo, 0), Compos),
+               Atts1 >
+        =>
+         < AId : IoTApp |
+              devices : Devs,
+              Atts >
+         < SId : Simulation |
+              compo : Compos,
+              Atts1 >
+        [print "iteration-0 "] .
+
+endm
