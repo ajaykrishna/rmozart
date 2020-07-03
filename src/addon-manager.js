@@ -629,14 +629,14 @@ class AddonManager extends EventEmitter {
       // If the old-style data is stored in the database, we need to transition
       // to the new format.
       if (savedSettings.hasOwnProperty('moziot') &&
-          savedSettings.moziot.hasOwnProperty('enabled')) {
+        savedSettings.moziot.hasOwnProperty('enabled')) {
         manifest.enabled = savedSettings.moziot.enabled;
       } else if (savedSettings.hasOwnProperty('enabled')) {
         manifest.enabled = savedSettings.enabled;
       }
 
       if (savedSettings.hasOwnProperty('moziot') &&
-          savedSettings.moziot.hasOwnProperty('config')) {
+        savedSettings.moziot.hasOwnProperty('config')) {
         await Settings.set(configKey, savedSettings.moziot.config);
       }
     } catch (_e) {
@@ -712,7 +712,7 @@ class AddonManager extends EventEmitter {
         manifest.id,
         'inproc',
         appInstance.get(),
-        {verbose: false}
+        {verbose: false},
       );
       try {
         const addonManagerProxy = await pluginClient.register();
@@ -742,7 +742,7 @@ class AddonManager extends EventEmitter {
         addonLoader(addonManagerProxy, newSettings, errorCallback);
       } catch (e) {
         throw new Error(
-          `Failed to register add-on ${manifest.id} with gateway: ${e}`
+          `Failed to register add-on ${manifest.id} with gateway: ${e}`,
         );
       }
     } else {
@@ -1015,7 +1015,7 @@ class AddonManager extends EventEmitter {
     }
 
     if (adapters.length === 0 && notifiers.length === 0 && !apiHandler &&
-        plugin) {
+      plugin) {
       // If there are no adapters, notifiers, or API handlers, manually unload
       // the plugin, otherwise it will just restart. Note that if the addon is
       // disabled, then there might not be a plugin either.
@@ -1148,7 +1148,7 @@ class AddonManager extends EventEmitter {
   async installAddon(packageId, packagePath, enable) {
     if (!this.addonsLoaded) {
       throw new Error(
-        'Cannot install add-on before other add-ons have been loaded.'
+        'Cannot install add-on before other add-ons have been loaded.',
       );
     }
 
@@ -1185,7 +1185,7 @@ class AddonManager extends EventEmitter {
           } else {
             resolve();
           }
-        }
+        },
       );
     });
 
@@ -1337,7 +1337,7 @@ class AddonManager extends EventEmitter {
         for (const addon of addons) {
           // Check for duplicates, keep newest.
           if (map.has(addon.id) &&
-              semver.gte(map.get(addon.id).version, addon.version)) {
+            semver.gte(map.get(addon.id).version, addon.version)) {
             continue;
           }
 
@@ -1397,12 +1397,12 @@ class AddonManager extends EventEmitter {
 
         // Check if an update is available.
         if (available.hasOwnProperty(addonId) &&
-            semver.lt(manifest.version, available[addonId].version)) {
+          semver.lt(manifest.version, available[addonId].version)) {
           try {
             await this.installAddonFromUrl(addonId,
-                                           available[addonId].url,
-                                           available[addonId].checksum,
-                                           false);
+              available[addonId].url,
+              available[addonId].checksum,
+              false);
           } catch (e) {
             console.error(`Failed to update ${addonId}: ${e}`);
           }

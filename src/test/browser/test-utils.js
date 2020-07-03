@@ -59,6 +59,7 @@ module.exports.getProperty = async (id, property) => {
 };
 
 module.exports.setProperty = async (id, property, value) => {
+  
   const res = await chai.request(server).keepOpen()
     .put(`${Constants.THINGS_PATH}/${id}/properties/${property}`)
     .set('Accept', 'application/json')

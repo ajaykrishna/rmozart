@@ -9,7 +9,8 @@
 const effects = require('./effects');
 const triggers = require('./triggers');
 const Events = require('./Events');
-
+const VscadEngine = require('../vscad-rules-engine/VscadEngine');
+const engine = new VscadEngine();
 const DEBUG = false || (process.env.NODE_ENV === 'test');
 
 class Rule {
@@ -45,16 +46,25 @@ class Rule {
     if (!this.enabled) {
       return;
     }
-    if(this.parent && state.on)
-      this.parent.notify(this,state);
-      for (const effect of this.effect.effects) {
-        effect.on = false;
-      }
-    if(!this.parent)
-      console.log("no function");
+    if (this.parent && state.on) {
+      this.parent.notify(this, state);
+    }
+    for (const effect of this.effect.effects) {
+      effect.on = false;
+    }
+    if (!this.parent) {
+      console.log('no function');
+    }
     if (DEBUG) {
       console.debug('Rule.onTriggerStateChanged', this.name, state);
     }
+    const trace = {};
+    trace.rule = this.name;
+    trace.trigger = this.trigger.triggers[0].property.thing;
+    trace.effect = this.effect.effects[0].property.thing;
+    trace.state = state;
+    //const variable = '  nameId  ' + this.name + '  this is the trigger  ' + this.trigger.triggers[0].property.thing + '  this is the effect  ' + this.effect.effects[0].property.thing + '  this is the state  ' + JSON.stringify(state);
+    const data = engine.createHistory(JSON.stringify(trace));
     this.effect.setState(state);
   }
 
@@ -81,7 +91,7 @@ class Rule {
    */
   stop() {
     this.trigger.removeListener(Events.STATE_CHANGED,
-                                this.onTriggerStateChanged);
+      this.onTriggerStateChanged);
     this.trigger.stop();
     if (DEBUG) {
       console.debug('Rule.stop', this.name);

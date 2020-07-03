@@ -78,7 +78,7 @@ const Database = {
     this.db.run('CREATE TABLE IF NOT EXISTS things (' +
       'id TEXT PRIMARY KEY,' +
       'description TEXT' +
-    ');');
+      ');');
 
     // Create Users table
     this.db.run('CREATE TABLE IF NOT EXISTS users (' +
@@ -86,7 +86,7 @@ const Database = {
       'email TEXT UNIQUE,' +
       'password TEXT,' +
       'name TEXT' +
-    ');');
+      ');');
 
     /**
      * This really should have a foreign key constraint but it does not work
@@ -103,29 +103,18 @@ const Database = {
       'issuedAt DATE,' +
       'publicKey TEXT,' +
       'payload TEXT' +
-    ');');
+      ');');
 
     // Create Settings table
     this.db.run('CREATE TABLE IF NOT EXISTS settings (' +
       'key TEXT PRIMARY KEY,' +
       'value TEXT' +
-    ');');
+      ');');
 
     this.db.run(`CREATE TABLE IF NOT EXISTS pushSubscriptions (
       id INTEGER PRIMARY KEY,
       subscription TEXT UNIQUE
     );`);
-
-    // Create history composition table
-    this.db.run('CREATE TABLE IF NOT EXISTS composition_history  (' +
-      'id_history INTEGER PRIMARY KEY,' +
-      'composition_id TEXT,' +
-      'rule_id TEXT,' +
-      'event_id TEXT,' +
-      'value_event TEXT,' +
-      'action_id TEXT' +
-      'value_action TEXT' +
-     ');');
   },
 
   /**
@@ -173,7 +162,7 @@ const Database = {
             console.log(`Saved setting ${setting[0]} = ${
               setting[1]}`);
           }
-        }
+        },
       );
     }
   },
@@ -291,7 +280,7 @@ const Database = {
     assert(typeof id === 'number');
     return await this.get(
       'SELECT * FROM users WHERE id = ?',
-      id
+      id,
     );
   },
 
@@ -353,7 +342,7 @@ const Database = {
     const currentValue = await this.getSetting(key);
     if (typeof currentValue === 'undefined') {
       return this.run('INSERT INTO settings (key, value) VALUES (?, ?)',
-                      [key, value]);
+        [key, value]);
     } else {
       return this.run('UPDATE settings SET value=? WHERE key=?', [value, key]);
     }
@@ -370,21 +359,6 @@ const Database = {
     this.run('DELETE FROM settings WHERE key = ?', [key]);
   },
   /**
-   * Create history
-   * @param {String} composition
-   * @param {String} rule
-   * @param {String} event
-   * @param {String} value
-   * @param {String} action
-   */
-  createHistory: async function(composition, rule, event, value, action) {
-    const result = await this.run(
-      'INSERT INTO composition_history (composition_id, rule_id, event_id, value_event, action_id) VALUES (?, ?, ?, ?, ?)',
-      [composition, rule, event, value, action]
-    );
-  },
-
-  /**
    * Create a user
    * @param {User} user
    * @return {Promise<User>}
@@ -392,7 +366,7 @@ const Database = {
   createUser: async function(user) {
     const result = await this.run(
       'INSERT INTO users (email, password, name) VALUES (?, ?, ?)',
-      [user.email, user.password, user.name]
+      [user.email, user.password, user.name],
     );
     assert(typeof result.lastID === 'number');
     return result.lastID;
@@ -407,7 +381,7 @@ const Database = {
     assert(typeof user.id === 'number');
     return this.run(
       'UPDATE users SET email=?, password=?, name=? WHERE id=?',
-      [user.email, user.password, user.name, user.id]
+      [user.email, user.password, user.name, user.id],
     );
   },
 
@@ -420,7 +394,7 @@ const Database = {
     assert(typeof userId === 'number');
     const deleteUser = this.run(
       'DELETE FROM users WHERE id = ?',
-      [userId]
+      [userId],
     );
     const deleteTokens = this.deleteJSONWebTokensForUser(userId);
     /**
@@ -437,7 +411,7 @@ const Database = {
     assert(typeof userId === 'number');
     return this.run(
       'DELETE FROM jsonwebtokens WHERE user = ?',
-      [userId]
+      [userId],
     );
   },
 
@@ -451,7 +425,7 @@ const Database = {
     const result = await this.run(
       'INSERT INTO jsonwebtokens (keyId, user, issuedAt, publicKey, payload) ' +
       'VALUES (?, ?, ?, ?, ?)',
-      [keyId, user, issuedAt, publicKey, JSON.stringify(payload)]
+      [keyId, user, issuedAt, publicKey, JSON.stringify(payload)],
     );
     assert(typeof result.lastID === 'number');
     return result.lastID;
@@ -466,7 +440,7 @@ const Database = {
     assert(typeof keyId === 'string');
     return this.get(
       'SELECT * FROM jsonwebtokens WHERE keyId = ?',
-      keyId
+      keyId,
     );
   },
 
@@ -499,7 +473,7 @@ const Database = {
     assert(typeof keyId === 'string');
     const result = await this.run(
       'DELETE FROM jsonwebtokens WHERE keyId = ?',
-      keyId
+      keyId,
     );
     return result.changes !== 0;
   },
@@ -515,7 +489,7 @@ const Database = {
     const insert = () => {
       return this.run(
         'INSERT INTO pushSubscriptions (subscription) VALUES (?)',
-        [description]
+        [description],
       ).then((res) => {
         return parseInt(res.lastID);
       });
@@ -523,7 +497,7 @@ const Database = {
 
     return this.get(
       'SELECT id FROM pushSubscriptions WHERE subscription = ?',
-      description
+      description,
     ).then((res) => {
       if (typeof res === 'undefined') {
         return insert();
@@ -556,7 +530,7 @@ const Database = {
             subs.push(sub);
           }
           resolve(subs);
-        }
+        },
       );
     });
   },

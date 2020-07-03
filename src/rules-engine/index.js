@@ -51,7 +51,6 @@ index.get('/', async (req, res) => {
   }));
 });
 
-
 index.get('/:id', async (req, res) => {
   try {
     const id = parseInt(req.params.id);

@@ -1,3 +1,4 @@
+
 /**
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -5,9 +6,9 @@
  */
 
 
-  const Database = require('./VscadDatabase');
-  const Rule = require('./VscadComposedRule');
- 
+const Database = require('./VscadDatabase');
+const Rule = require('./VscadComposedRule');
+
 
 /**
  * An engine for running and managing list of rules
@@ -17,14 +18,13 @@ class VscadEngine {
    * Get a list of all current rules
    * @return {Promise<Array<Rule>>} rules
    */
-  getThings(){
-  
-      return  Database.getThings();
-    
+  getThings() {
+    return Database.getThings();
   }
+
   getRules() {
     let rulesPromise = Promise.resolve(this.rules);
-// TODO  get the atual rules so we can activate the next
+    // TODO  get the atual rules so we can activate the next
     if (!this.rules) {
       rulesPromise = Database.getRules().then(async (ruleDescs) => {
         this.rules = {};
@@ -96,6 +96,15 @@ class VscadEngine {
     return Database.deleteRule(ruleId).then(() => {
       delete this.rules[ruleId];
     });
+  }
+
+  /**
+   * Create history
+   * @param {String} composition
+   */
+  async createHistory(composition) {
+    await Database.createHistory(composition);
+    return 'is working';
   }
 }
 

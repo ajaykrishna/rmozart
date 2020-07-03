@@ -128,7 +128,6 @@ ComposedRule.prototype.getBpmnDescription = function(fetchedRules) {
   return  description;
 };
 
-
 /**
  * Set the  rules used in the composed rule, updating the server model if valid
  * @return {Promise}
@@ -152,7 +151,5 @@ ComposedRule.prototype.setExpression2 = function(expression) {
 ComposedRule.prototype.getExpression = function() {
   return this.expression;
 }
-
-
 
 module.exports = ComposedRule;

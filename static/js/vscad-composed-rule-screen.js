@@ -16,7 +16,7 @@ const VscadConnectorBlock = require('./rules/VscadConnectorBlock');
 
 // eslint-disable-next-line no-unused-vars
 const VscadRulesScreen = {
-  init: function () {
+  init: function() {
     this.rulesList = document.getElementById('rules-side-menu');
     this.ruleArea = document.getElementById('rules-area');
     this.loader = document.getElementById('loader-holder');
@@ -46,8 +46,8 @@ const VscadRulesScreen = {
     this.loaders = 0;
     // tittle bariables and the editin functionalities
     this.view = document.getElementById('rules-manager-view');
-    this.ruleNameCustomize = document.querySelector('.rule-name-customize');
-    this.ruleName = document.querySelector('.rule-name');
+    this.ruleNameCustomize = this.view.querySelector('.rule-name-customize');
+    this.ruleName = this.view.querySelector('.rule-name');
 
     // connector buttons
     this.connectors.after = document.getElementById('part-after');
@@ -79,7 +79,7 @@ const VscadRulesScreen = {
       event.stopPropagation();
     });
     this.testButton.addEventListener('click', () => {
-      fetch('/composed-rules/deploy/ask', { headers: API.headers() }).then((res) => {
+      fetch('/composed-rules/deploy/ask', {headers: API.headers()}).then((res) => {
         console.log(res);
       });
     });
@@ -120,18 +120,18 @@ const VscadRulesScreen = {
       this.onPresentationChange();
     });
   },
-  showLoader () {
+  showLoader() {
     this.loaders++;
     this.loader.style.display = 'block';
   },
-  hiddeLoader () {
+  hiddeLoader() {
     this.loaders--;
     if (this.loaders <= 0) {
       this.loader.style.display = 'none';
       this.loaders = 0;
     }
   },
-  showVerification: function (response) {
+  showVerification: function(response) {
     this.diagramView.classList.add('selected');
     this.diagramView.style.display = 'flex';
     this.hiddeDiagram();
@@ -148,15 +148,15 @@ const VscadRulesScreen = {
     }
     alertDialog.querySelector('#noti-message').textContent = response.message;
   },
-  hiddeVerification: function () {
+  hiddeVerification: function() {
     const alertDialog = document.getElementById('validation-dialog');
     alertDialog.style.display = 'none';
   },
-  hiddeDiagram () {
+  hiddeDiagram() {
     const diagram = document.getElementById('canvas');
     diagram.style.display = 'none';
   },
-  showDiagram: function (bpmnXML) {
+  showDiagram: function(bpmnXML) {
     const diagram = document.getElementById('canvas');
     diagram.style.display = 'flex';
     this.diagramView.classList.add('selected');
@@ -182,29 +182,29 @@ const VscadRulesScreen = {
     });
     this.diagramLoaded = true;
   },
-  hideMclDialog () {
+  hideMclDialog() {
     this.mclDialog.style.display = 'none';
   },
-  showMclDialog: function () {
+  showMclDialog: function() {
     this.diagramView.classList.add('selected');
     this.diagramView.style.display = 'flex';
     this.hiddeDiagram();
     this.hiddeVerification();
     this.mclDialog.style.display = 'block';
   },
-  requestDiagram: function () {
+  requestDiagram: function() {
     const fetchOptions =
-    {
-      method: 'POST',
-      cache: 'no-cache',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/xml',
-      },
-      redirect: 'follow',
-      referrer: 'no-referrer',
-      body: JSON.stringify(this.cRule.getBpmnDescription(this.fetchedRules)),
-    };
+      {
+        method: 'POST',
+        cache: 'no-cache',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/xml',
+        },
+        redirect: 'follow',
+        referrer: 'no-referrer',
+        body: JSON.stringify(this.cRule.getBpmnDescription(this.fetchedRules)),
+      };
     // 10.138.2.9:8080
     this.showLoader();
     fetch('http://localhost:9001/workflow', fetchOptions).then((res) => {
@@ -216,15 +216,14 @@ const VscadRulesScreen = {
     });
     // ;
   },
-  requestExecution: function () {
+  requestExecution: function() {
     this.showLoader();
-    fetch('/composed-rules/deploy/1', { headers: API.headers() }).then((response) => {
-      console.log('datos', response);
+    fetch('/composed-rules/deploy/1', {headers: API.headers()}).then((response) => {
       this.hiddeLoader();
     });
   },
-  requestVerify: function (cRule) {
-    fetch(`/rules`, { headers: API.headers() }).then((res) => {
+  requestVerify: function(cRule) {
+    fetch(`/rules`, {headers: API.headers()}).then((res) => {
       return res.json();
     }).then((res) => {
       this.showLoader();
@@ -273,7 +272,7 @@ const VscadRulesScreen = {
       // console.log('final info ', info);
       return info;
     }).then((info) => {
-      return fetch('/composed-rules/things', { headers: API.headers() }).then((res) => {
+      return fetch('/composed-rules/things', {headers: API.headers()}).then((res) => {
         return res.json();
       }).then((things) => {
         info.fullThings = things;
@@ -299,8 +298,8 @@ const VscadRulesScreen = {
       });
     });
   },
-  requestMcl: function (cRule) {
-    fetch(`/rules`, { headers: API.headers() }).then((res) => {
+  requestMcl: function(cRule) {
+    fetch(`/rules`, {headers: API.headers()}).then((res) => {
       return res.json();
     }).then((res) => {
       this.hideMclDialog();
@@ -351,7 +350,7 @@ const VscadRulesScreen = {
       // console.log('final info ', info);
       return info;
     }).then((info) => {
-      return fetch('/composed-rules/things', { headers: API.headers() }).then((res) => {
+      return fetch('/composed-rules/things', {headers: API.headers()}).then((res) => {
         return res.json();
       }).then((things) => {
         info.fullThings = things;
@@ -377,10 +376,10 @@ const VscadRulesScreen = {
       });
     });
   },
-  deployRule () {
+  deployRule() {
     this.requestExecution();
   },
-  show: function (composedRuleId) {
+  show: function(composedRuleId) {
     document.getElementById('speech-wrapper').classList.remove('assistant');
     this.gateway.readThings().then(() => {
       return this.readRules();
@@ -402,9 +401,9 @@ const VscadRulesScreen = {
     });
   },
   /**
- * @return {Promise<Array<RuleDescription>>}
- */
-  readRules: function readRules () {
+   * @return {Promise<Array<RuleDescription>>}
+   */
+  readRules: function readRules() {
     const createRuleButton = document.createElement('div');
     createRuleButton.innerHTML = ` <div class="rule-part-block trigger">
   <img  src="/optimized-images/add.svg">
@@ -418,7 +417,7 @@ const VscadRulesScreen = {
       page('/rules/quickNew');
     });
     this.showLoader();
-    return fetch('/rules', { headers: API.headers() }).then((res) => {
+    return fetch('/rules', {headers: API.headers()}).then((res) => {
       return res.json();
     }).then((fetchedRules) => {
       this.rulesList.querySelectorAll('.rule').forEach((elt) => {
@@ -437,7 +436,7 @@ const VscadRulesScreen = {
       this.hiddeLoader();
     });
   },
-  prepareVisual: function (desc, gateway, fetchedRules) {
+  prepareVisual: function(desc, gateway, fetchedRules) {
     if (desc.expression && gateway && fetchedRules) {
       const usedRules = {};
       // get all the used rules
@@ -454,7 +453,7 @@ const VscadRulesScreen = {
       this.ruleName.textContent = desc.name;
     }
   },
-  saveRule: function () {
+  saveRule: function() {
     let longest = '';
     let foundRules = 0;
 
@@ -478,7 +477,7 @@ const VscadRulesScreen = {
    * Add a rule, filling it with the data from a RuleDescription
    * @param {RuleDescription} desc
    */
-  addVscadRuleCardItem: function (desc) {
+  addVscadRuleCardItem: function(desc) {
     const ruleElt = document.createElement('div');
     ruleElt.classList.add('rule');
     try {
@@ -494,7 +493,7 @@ const VscadRulesScreen = {
     this.nextId += 1;
     this.rulesList.appendChild(ruleElt);
   },
-  onconnectorBlockDown: function (event, type) {
+  onconnectorBlockDown: function(event, type) {
     const deviceRect = event.target.getBoundingClientRect();
     const x = deviceRect.left;
     const y = deviceRect.top;
@@ -503,7 +502,7 @@ const VscadRulesScreen = {
     newBlock.vscadDraggable.onDown(event);
     this.ComposedRuleBlocks.push(newBlock);
   },
-  getBlockOf: function (parts, usedRules) {
+  getBlockOf: function(parts, usedRules) {
     let i = 0;
     const block = new VscadConnectorBlock(this.ruleArea, this.saveRule, this.deleteArea);
 
@@ -552,7 +551,7 @@ const VscadRulesScreen = {
 
     return block;
   },
-  onDeviceBlockDown: function (event, desc, gateway) {
+  onDeviceBlockDown: function(event, desc, gateway) {
     const deviceRect = event.target.getBoundingClientRect();
     const x = deviceRect.left;
     const y = deviceRect.top;

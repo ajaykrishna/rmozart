@@ -26,8 +26,6 @@ const ReconfigureScreen = {
     this.compareButton = document.getElementById('compare-reconf-button');
     this.deployButton = document.getElementById('deploy-reconf-button');
 
-    //  this.saveRule = this.saveRule.bind(this);
-
     this.saveRule = this.saveRule.bind(this);
 
     this.gateway = new Gateway();
@@ -58,8 +56,16 @@ const ReconfigureScreen = {
     this.compareButton.addEventListener('click', () => {
       this.requestUpdate();
     });
-    this.deployButton.addEventListener('click', () => {
-      modal.requestExecution();
+    this.deployButton.addEventListener('click', async () => {
+      this.showLoader();
+      let json1 = this.getOldStates();
+      await json1.then((data) => {
+        json1 = data;
+      });
+      await this.saveDb();
+      await modal.requestExecution();
+      await this.setProperties(json1);
+      this.hiddeLoader();
     });
     this.ruleName.addEventListener('dblclick', (event) => {
       event.preventDefault();
@@ -79,13 +85,12 @@ const ReconfigureScreen = {
     });
   },
   requestUpdate: async function() {
-
-    var json1 = this.getOldStates();
+    let json1 = this.getOldStates();
     await json1.then((data) => {
       json1 = data;
     });
     console.log(json1);
-    var json2 = this.getCurrentlyStates();
+    let json2 = this.getCurrentlyStates();
     await json2.then((data) => {
       json2 = data;
     });
@@ -107,13 +112,52 @@ const ReconfigureScreen = {
       body: JSON.stringify(datosJson),
     };
 
-    fetch('http://localhost:9001/compare', fetchedJson).then((res) => {
+    fetch('http://localhost:9001/verify', fetchedJson).then((res) => {
       return res.json();
     }).then((response) => {
       this.hiddeLoader();
       modal.showVerification(response);
     });
   },
+  setProperties: async function(json1) {
+    var index = [];
+    let json2 = this.getCurrentlyStates();
+    await json2.then((data) => {
+      json2 = data;
+    });
+
+    console.log('this is the original JSON', json1);
+
+    for (let i = 0; i < json1.Rules.length; i++) {
+      let indice = json2.Rules.indexOf(json1.Rules[i]);
+      index.push(indice);
+    }
+
+    var newArr = json1.Rule.filter(Boolean);
+
+    /*for (const data of newArr) {
+      for (const data2 of data.effects.objets) {
+        const result = Object.keys(data2.state).map(function(key) {
+          return [key, data2.state[key]];
+        });
+        console.log('this is the data effects', data2);
+        console.log('this is the json state', result);
+
+        for (let i = 0; i < result.length; i++) {
+          await utils.setProperty(data2.objetId, result[i][0], result[i][1]);
+        }
+      }
+      for (const data3 of data.triggers.objets) {
+        const result = Object.keys(data3.state).map(function(key) {
+          return [key, data3.state[key]];
+        });
+        console.log('this is the json triggers', data3);
+        console.log('this is the json state', result);
+        for (let i = 0; i < result.length; i++) {
+          await utils.setProperty(data3.objetId, result[i][0], result[i][1]);
+        }
+      }*/
+    },
   showNotification: function(data) {
     const alertDialog = document.getElementById('validation-dialog-reconf');
     alertDialog.style.display = 'block';
@@ -138,12 +182,12 @@ const ReconfigureScreen = {
   },
   getOldStates: async function() {
     return new Promise((resolve) => {
-      var rules = [];
-      var formatJson = {};
-      var cant = 0;
-      //console.log(this.cRule.expression2 , 'this is the other expression');
-      var expression = this.cRule.expression2;
-      var data = this.cRule.toDescription();
+      const rules = [];
+      const formatJson = {};
+      let cant = 0;
+      // console.log(this.cRule.expression2 , 'this is the other expression');
+      const expression = this.cRule.expression2;
+      const data = this.cRule.toDescription();
       // Get id's of the currrently composition
       fetch('/rules', {headers: API.headers()}).then((res) => {
         return res.json();
@@ -157,7 +201,7 @@ const ReconfigureScreen = {
       }).finally(async () => {
         formatJson.Rules = [];
         formatJson.Exp = expression;
-        formatJson.Rule = {};
+        formatJson.Rule = [];
 
         for (let index = 0; index < cant; index++) {
           formatJson.Rules.push(rules[index].name);
@@ -188,18 +232,17 @@ const ReconfigureScreen = {
           }
         }
         resolve(formatJson);
-        //console.log('This is the old Json ', JSON.stringify(formatJson));
+        // console.log('This is the old Json ', JSON.stringify(formatJson));
       });
     });
-
   },
   getCurrentlyStates: function() {
     return new Promise((resolve) => {
-      var rules = [];
-      var formatJson = {};
-      var cant = 0;
-      var ids = this.cRule.getRulesFromExpression();
-      var expression = this.cRule.getExpression();
+      let rules = [];
+      const formatJson = {};
+      let cant = 0;
+      const ids = this.cRule.getRulesFromExpression();
+      const expression = this.cRule.getExpression();
       rules = [];
       fetch('/rules', {headers: API.headers()}).then((res) => {
         return res.json();
@@ -281,23 +324,7 @@ const ReconfigureScreen = {
     this.cRule.setExpression2(longest);
   },
   saveDb: function() {
-    let longest = '';
-    let foundRules = 0;
-
-    for (let i = this.ComposedRuleBlocks.length - 1; i >= 0; i--) {
-      const block = this.ComposedRuleBlocks[i];
-      if (block && block.role === '') {
-
-        longest = block.getText();
-
-        foundRules++;
-      } else if (block.role === 'removed') {
-        this.ComposedRuleBlocks.splice(i, 1);
-      }
-    }
-    document.getElementById('warning-message-reconf').style.display = (foundRules > 1) ? 'block' : 'none';
-    console.log(longest);
-    this.cRule.setExpression(longest);
+    this.cRule.setExpression(this.cRule.expression);
     this.cRule.setRules(this.cRule.getRulesFromExpression());
   },
   /**

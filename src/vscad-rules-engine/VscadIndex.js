@@ -21,7 +21,7 @@ const engine = new VscadEngine();
  * @param {Function} next
  */
 function parseRuleFromBody(req, res, next) {
- 
+
   let rule = null;
   try {
     rule = Rule.fromDescription(req.body);
@@ -81,22 +81,27 @@ index.delete('/:id', async function(req, res) {
       new APIError('Engine failed to delete rule', e).toString());
   }
 });
+
 index.get('/deploy/:id', async function(req, res) {
   try {
-    
     const masterEngine = require('./VscadMasterEngine').default;
     const id = parseInt(req.params.id);
-    if(isNaN(id)){
+    if (isNaN(id)) {
       const masterEngine = require('./VscadMasterEngine').default;
-    masterEngine.printPointers();
-    res.send({});
-    }else{
+      masterEngine.printPointers();
+      res.send({});
+    } else {
       const rule = await engine.getRule(id);
       masterEngine.execute(rule);
-      //res.send(rule.toDescription());
-      res.send({"msg":"si cambia"})
+      /*const jdata = {};
+      jdata.rules = rule.rules;
+      jdata.expression = rule.expression;
+      const data = engine.createHistory(JSON.stringify(jdata));
+      */
+      res.send(rule.toDescription());
+
+      res.send({'msg': 'si cambia'});
     }
-   
   } catch (e) {
     res.status(404).send(
       new APIError('Engine failed', e).toString());
@@ -108,12 +113,16 @@ index.configure = async function() {
   await engine.getRules();
   try {
     const masterEngine = require('./VscadMasterEngine').default;
-  const rule = await engine.getRule(1);
-  masterEngine.execute(rule);
+    const rule = await engine.getRule(1);
+    masterEngine.execute(rule);
   } catch (e) {
-      new APIError('Engine failed to get  composed rule you should create', e).toString();
+    new APIError('Engine failed to get  composed rule you should create', e).toString();
   }
-  
 };
+
+index.post('/history', parseRuleFromBody, function(req, res) {
+  const data = engine.createHistory(req.body);
+  res.send({yas: data});
+});
 
 module.exports = index;

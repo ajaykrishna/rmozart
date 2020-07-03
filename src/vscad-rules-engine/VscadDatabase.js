@@ -13,6 +13,7 @@ function VscadDatabase() {
     db.open();
   }
   this.open();
+  this.open2();
 }
 
 /**
@@ -26,6 +27,13 @@ VscadDatabase.prototype.open = function() {
   return db.run(rulesTableSQL, []);
 };
 
+VscadDatabase.prototype.open2 = function() {
+  const historyTable = 'CREATE TABLE IF NOT EXISTS composition_history (' +
+    'id_history INTEGER PRIMARY KEY,' +
+    'history TEXT' +
+    ');';
+  return db.run(historyTable, []);
+};
 
 /**
  * Get all rules
@@ -51,7 +59,7 @@ VscadDatabase.prototype.getRules = function() {
         Promise.all(updatePromises).then(() => {
           resolve(rules);
         });
-      }
+      },
     );
   });
 };
@@ -82,7 +90,7 @@ VscadDatabase.prototype.getThings = function() {
         Promise.all(updatePromises).then(() => {
           resolve(things);
         });
-      }
+      },
     );
   });
 };
@@ -96,7 +104,7 @@ VscadDatabase.prototype.getThings = function() {
 VscadDatabase.prototype.createRule = function(desc) {
   return db.run(
     'INSERT INTO composedRules (description) VALUES (?)',
-    [JSON.stringify(desc)]
+    [JSON.stringify(desc)],
   ).then((res) => {
     return parseInt(res.lastID);
   });
@@ -112,7 +120,7 @@ VscadDatabase.prototype.createRule = function(desc) {
 VscadDatabase.prototype.updateRule = function(id, desc) {
   return db.run(
     'UPDATE composedRules SET description = ? WHERE id = ?',
-    [JSON.stringify(desc), id]
+    [JSON.stringify(desc), id],
   );
 };
 
@@ -125,4 +133,14 @@ VscadDatabase.prototype.deleteRule = function(id) {
   return db.run('DELETE FROM composedRules WHERE id = ?', [id]);
 };
 
+/**
+ * Create history
+ * @param {String} history
+ */
+VscadDatabase.prototype.createHistory = function(history) {
+  return db.run(
+    'INSERT INTO composition_history (history) VALUES (?)',
+    [history],
+  );
+};
 module.exports = new VscadDatabase();
