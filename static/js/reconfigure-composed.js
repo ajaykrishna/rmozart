@@ -6,6 +6,7 @@
 const API = require('./api');
 const Gateway = require('./rules/Gateway');
 const page = require('page');
+const json_Model = require('./models/json-model');
 const modal = require('./vscad-composed-rule-screen');
 const VscadComposedRule = require('./rules/VscadComposedRule');
 const VscadRuleCardItem = require('./rules/VscadRuleCardItem');
@@ -22,13 +23,13 @@ const ReconfigureScreen = {
     this.ruleLeft = document.getElementById('rule-area-modal');
     this.loader = document.getElementById('loader-holder-reconf');
     this.deleteArea = document.getElementById('vscad-delete-area-reconf');
-
     this.compareButton = document.getElementById('compare-reconf-button');
     this.deployButton = document.getElementById('deploy-reconf-button');
 
     this.saveRule = this.saveRule.bind(this);
 
     this.gateway = new Gateway();
+    this.dataJson = new json_Model();
     this.ComposedRuleBlocks = [];
     this.connectors = {};
     this.loaders = 0;
@@ -85,6 +86,19 @@ const ReconfigureScreen = {
     });
   },
   requestUpdate: async function() {
+
+    // Getting the history
+    let history = new Promise((resolve) => {
+      fetch('http://localhost:8080/composed-rules/history', {headers: API.headers()}).then((response) => {
+        resolve(response.json());
+        return response.json();
+      });
+    });
+    await history.then((data) => {
+      history = data;
+    });
+
+
     let json1 = this.getOldStates();
     await json1.then((data) => {
       json1 = data;
@@ -94,11 +108,13 @@ const ReconfigureScreen = {
     await json2.then((data) => {
       json2 = data;
     });
-    console.log(json2);
+
+
     // Send final JSON
     const datosJson = {};
     datosJson.oldJson = json1;
     datosJson.newJson = json2;
+    datosJson.history = history;
     this.showLoader();
     const fetchedJson = {
       method: 'POST',
@@ -112,11 +128,11 @@ const ReconfigureScreen = {
       body: JSON.stringify(datosJson),
     };
 
-    fetch('http://localhost:9001/verify', fetchedJson).then((res) => {
+    fetch('http://10.138.2.122:9001/compare', fetchedJson).then((res) => {
       return res.json();
     }).then((response) => {
       this.hiddeLoader();
-      modal.showVerification(response);
+      modal.showVerification(response, true);
     });
   },
   setProperties: async function(json1) {
@@ -157,7 +173,7 @@ const ReconfigureScreen = {
           await utils.setProperty(data3.objetId, result[i][0], result[i][1]);
         }
       }*/
-    },
+  },
   showNotification: function(data) {
     const alertDialog = document.getElementById('validation-dialog-reconf');
     alertDialog.style.display = 'block';
@@ -188,6 +204,8 @@ const ReconfigureScreen = {
       // console.log(this.cRule.expression2 , 'this is the other expression');
       const expression = this.cRule.expression2;
       const data = this.cRule.toDescription();
+
+
       // Get id's of the currrently composition
       fetch('/rules', {headers: API.headers()}).then((res) => {
         return res.json();

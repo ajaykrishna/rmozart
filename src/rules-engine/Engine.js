@@ -78,6 +78,7 @@ class Engine {
    * @return {Promise}
    */
   async updateRule(ruleId, rule) {
+
     if (!this.rules[ruleId]) {
       return Promise.reject(new Error(`Rule ${ruleId} does not exist`));
     }

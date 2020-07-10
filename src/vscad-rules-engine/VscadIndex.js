@@ -39,11 +39,16 @@ index.get('/', async function(req, res) {
     return rule.toDescription();
   }));
 });
+
 index.get('/things', async function(req, res) {
   const things = await engine.getThings();
   res.send(things);
 });
 
+index.get('/history', async function(req, res) {
+  const history = await engine.getHisotry();
+  res.send(history);
+});
 
 index.get('/:id', async function(req, res) {
   try {
@@ -55,7 +60,6 @@ index.get('/:id', async function(req, res) {
       new APIError('Engine failed to get  composed rule', e).toString());
   }
 });
-
 
 index.post('/', parseRuleFromBody, async function(req, res) {
   const ruleId = await engine.addRule(req.rule);
@@ -93,13 +97,7 @@ index.get('/deploy/:id', async function(req, res) {
     } else {
       const rule = await engine.getRule(id);
       masterEngine.execute(rule);
-      /*const jdata = {};
-      jdata.rules = rule.rules;
-      jdata.expression = rule.expression;
-      const data = engine.createHistory(JSON.stringify(jdata));
-      */
       res.send(rule.toDescription());
-
       res.send({'msg': 'si cambia'});
     }
   } catch (e) {
@@ -120,9 +118,5 @@ index.configure = async function() {
   }
 };
 
-index.post('/history', parseRuleFromBody, function(req, res) {
-  const data = engine.createHistory(req.body);
-  res.send({yas: data});
-});
 
 module.exports = index;

@@ -6,7 +6,7 @@
 
 const API = require('../api');
 
-/* { 
+/* {
   "id": 1,
   "enabled":true,
   "name": "Rule Name",
@@ -25,7 +25,7 @@ const API = require('../api');
 function ComposedRule(gateway, desc, onUpdate) {
   this.gateway = gateway;
   this.onUpdate = onUpdate;
-  
+
   if (desc) {
     this.id = desc.id;
     this.enabled = desc.enabled;
@@ -37,10 +37,8 @@ function ComposedRule(gateway, desc, onUpdate) {
     this.rules = desc.rules;
     this.expression = desc.expression;
     this.expression2 = desc.expression;
-  } 
+  }
 }
-
-
 /**
  * Validate and save the rule
  * @return {Promise}
@@ -61,7 +59,7 @@ ComposedRule.prototype.update = function() {
   };
   fetchOptions.headers['Content-Type'] = 'application/json';
   //console.log("updating with body",desc);
-  
+
   let request = null;
   if (typeof this.id !== 'undefined') {
     request = fetch(`/composed-rules/${encodeURIComponent(this.id)}`, fetchOptions);
@@ -113,7 +111,6 @@ ComposedRule.prototype.toDescription = function() {
     expression: this.expression
   } ;
 };
-
 ComposedRule.prototype.getBpmnDescription = function(fetchedRules) {
   var description = this.toDescription();
   var rulesMap = {}
@@ -124,10 +121,9 @@ ComposedRule.prototype.getBpmnDescription = function(fetchedRules) {
   })
   description.mapedRules = rulesMap ;
   console.log(description);
-  
+
   return  description;
 };
-
 /**
  * Set the  rules used in the composed rule, updating the server model if valid
  * @return {Promise}
@@ -136,7 +132,6 @@ ComposedRule.prototype.setRules = function(rules) {
   this.rules = rules;
   return this.update();
 };
-
 /**
  * Set the expression of the  composed Rule, updating the server model if valid
  * @return {Promise}

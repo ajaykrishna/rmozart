@@ -382,6 +382,7 @@ class AddonManager extends EventEmitter {
    */
   getProperty(thingId, propertyName) {
     const device = this.getDevice(thingId);
+
     if (device) {
       return device.getProperty(propertyName);
     }

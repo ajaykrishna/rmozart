@@ -34,10 +34,10 @@ class MasterEngine {
 
   async notify(rule, state) {
     var pointerIndex = this.getPointerOfRule(rule.id);
-    if (pointerIndex != -1) {
+    if (pointerIndex !== -1) {
       try {
         await this.turnOffRule(rule.id);
-        this.pointerActivate(this.pointerToNextNode(this.testPointers[pointerIndex]), pointerIndex);
+        await this.pointerActivate(this.pointerToNextNode(this.testPointers[pointerIndex]), pointerIndex);
       } catch (e) {
 
       }
@@ -180,7 +180,7 @@ class MasterEngine {
         }
         add = false;
         break;
-      case 'EXCMERGE':
+      case 'EXCMERG':
         var origin = pointer.origins.pop();
         this.turnOffAllPointersWithOrigin(origin);
         const j = this.testPointers.push(pointer) - 1;

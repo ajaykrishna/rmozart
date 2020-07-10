@@ -23,7 +23,7 @@ const VscadRulesScreen = {
     this.deleteArea = document.getElementById('vscad-delete-area');
 
     this.updateButon = document.getElementById('update-button');
-
+    this.reconfButton = document.getElementById('reconf-button');
     this.testButton = document.getElementById('test-button');
     this.diagramView = document.getElementById('diagram-view');
 
@@ -86,6 +86,9 @@ const VscadRulesScreen = {
     this.deployButton.addEventListener('click', (event) => {
       this.deployRule();
     });
+    this.reconfButton.addEventListener('click', () => {
+      this.showLoader();
+    });
     this.verificationButton.addEventListener('click', () => {
       this.requestVerify();
     });
@@ -131,23 +134,58 @@ const VscadRulesScreen = {
       this.loaders = 0;
     }
   },
-  showVerification: function(response) {
-    this.diagramView.classList.add('selected');
-    this.diagramView.style.display = 'flex';
-    this.hiddeDiagram();
-    this.hideMclDialog();
 
-    const alertDialog = document.getElementById('validation-dialog');
-    alertDialog.style.display = 'block';
-    if (response.status) {
-      alertDialog.querySelector('#tittle').textContent = 'Verified';
-      alertDialog.querySelector('img').src = '../images/tick-mark.png';
+  showVerification: function(response, data) {
+    if (data === true) {
+      console.log('this is the response', response);
+      this.diagramView.classList.add('selected');
+      this.diagramView.style.display = 'flex';
+      this.hiddeDiagram();
+      this.hideMclDialog();
+      const alertDialog = document.getElementById('validation-dialog');
+      alertDialog.style.display = 'block';
+      alertDialog.querySelector('#tittle').textContent = 'Result';
+      if (response.status) {
+        alertDialog.querySelector('#tittle').textContent = 'Verified';
+        const imagen = document.getElementById('this-image');
+        const padre = imagen.parentNode;
+        padre.removeChild(imagen);
+      } else {
+        const imagen = document.getElementById('this-image');
+        const padre = imagen.parentNode;
+        padre.removeChild(imagen);
+
+        alertDialog.querySelector('#seamless').textContent = `seamless`;
+        alertDialog.querySelector('#seamlessResult').textContent = response.seamless;
+
+        alertDialog.querySelector('#conservative').textContent = 'conservative';
+        alertDialog.querySelector('#conservativeResult').textContent = response.conservative;
+
+        alertDialog.querySelector('#impactful').textContent = 'impactful';
+        alertDialog.querySelector('#impactfulResult').textContent = response.impactful;
+
+      }
+      alertDialog.querySelector('#noti-message').textContent = response.message;
     } else {
-      alertDialog.querySelector('#tittle').textContent = 'Problem found';
-      alertDialog.querySelector('img').src = '../images/rejected-mark.png';
+      this.diagramView.classList.add('selected');
+      this.diagramView.style.display = 'flex';
+      this.hiddeDiagram();
+      this.hideMclDialog();
+
+      const alertDialog = document.getElementById('validation-dialog');
+      alertDialog.style.display = 'block';
+      if (response.status) {
+        alertDialog.querySelector('#tittle').textContent = 'Verified';
+        alertDialog.querySelector('img').src = '../images/tick-mark.png';
+      } else {
+        alertDialog.querySelector('#tittle').textContent = 'Problem found';
+        alertDialog.querySelector('img').src = '../images/rejected-mark.png';
+      }
+      alertDialog.querySelector('#noti-message').textContent = response.message;
     }
-    alertDialog.querySelector('#noti-message').textContent = response.message;
+
   },
+
   hiddeVerification: function() {
     const alertDialog = document.getElementById('validation-dialog');
     alertDialog.style.display = 'none';
@@ -456,13 +494,10 @@ const VscadRulesScreen = {
   saveRule: function() {
     let longest = '';
     let foundRules = 0;
-
     for (let i = this.ComposedRuleBlocks.length - 1; i >= 0; i--) {
       const block = this.ComposedRuleBlocks[i];
       if (block && block.role === '') {
-
         longest = block.getText();
-
         foundRules++;
       } else if (block.role === 'removed') {
         this.ComposedRuleBlocks.splice(i, 1);

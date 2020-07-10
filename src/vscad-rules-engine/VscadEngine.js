@@ -1,4 +1,3 @@
-
 /**
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -20,6 +19,14 @@ class VscadEngine {
    */
   getThings() {
     return Database.getThings();
+  }
+
+  /**
+   * Get history from data base
+   * @return {Promise<*[]>}
+   */
+  getHisotry() {
+    return Database.getHistory();
   }
 
   getRules() {
@@ -106,6 +113,7 @@ class VscadEngine {
     await Database.createHistory(composition);
     return 'is working';
   }
+
 }
 
 module.exports = VscadEngine;

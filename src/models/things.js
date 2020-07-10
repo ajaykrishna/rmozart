@@ -165,7 +165,7 @@ const Things = {
       connectedThings.forEach(function(connectedThing) {
         if (!storedThings.has(connectedThing.id)) {
           connectedThing.href =
-           `${Constants.THINGS_PATH}/${connectedThing.id}`;
+            `${Constants.THINGS_PATH}/${connectedThing.id}`;
           if (connectedThing.properties) {
             for (const propertyName in connectedThing.properties) {
               const property = connectedThing.properties[propertyName];
@@ -225,7 +225,8 @@ const Things = {
   handleThingRemoved: function(thing) {
     this.getThing(thing.id).then((thing) => {
       thing.setConnected(false);
-    }).catch(() => {});
+    }).catch(() => {
+    });
   },
 
   /**
@@ -237,7 +238,8 @@ const Things = {
   handleConnected: function(thingId, connected) {
     this.getThing(thingId).then((thing) => {
       thing.setConnected(connected);
-    }).catch(() => {});
+    }).catch(() => {
+    });
   },
 
   /**
@@ -342,7 +344,7 @@ const Things = {
       return await AddonManager.getProperty(thingId, propertyName);
     } catch (error) {
       console.error('Error getting value for thingId:', thingId,
-                    'property:', propertyName);
+        'property:', propertyName);
       console.error(error);
       throw {
         code: 500,
@@ -392,13 +394,13 @@ const Things = {
 
     try {
       const updatedValue = await AddonManager.setProperty(thingId,
-                                                          propertyName, value);
+        propertyName, value);
       // Note: it's possible that updatedValue doesn't match value.
       return updatedValue;
     } catch (e) {
       console.error('Error setting value for thingId:', thingId,
-                    'property:', propertyName,
-                    'value:', value);
+        'property:', propertyName,
+        'value:', value);
       throw {
         code: 500,
         message: e,

@@ -311,4 +311,25 @@ top: 9.6rem;
 #reconfigure-view .title-bar .rule-delete-dialog > p {
   font-size: 2rem;
 }
+.resultCompare {
+  text-align: center;
+  font-style: normal;
+}
+
+.tableResult {
+  font-family: arial, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+td, th {
+  border: 1px solid #dddddd;
+  text-align: left;
+  padding: 8px;
+}
+
+tr:nth-child(even) {
+  background-color: #dddddd;
+}
+
 

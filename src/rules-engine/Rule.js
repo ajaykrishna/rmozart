@@ -58,13 +58,28 @@ class Rule {
     if (DEBUG) {
       console.debug('Rule.onTriggerStateChanged', this.name, state);
     }
-    const trace = {};
+
+    const trace = [];
     trace.rule = this.name;
-    trace.trigger = this.trigger.triggers[0].property.thing;
-    trace.effect = this.effect.effects[0].property.thing;
-    trace.state = state;
-    //const variable = '  nameId  ' + this.name + '  this is the trigger  ' + this.trigger.triggers[0].property.thing + '  this is the effect  ' + this.effect.effects[0].property.thing + '  this is the state  ' + JSON.stringify(state);
+    trace.trigger = [];
+    trace.effect = [];
+    const insert = {};
+    for (const data of this.trigger.triggers) {
+      insert.rule = this.name;
+      insert.object = data.property.thing;
+      insert.state = state;
+      trace.push(insert);
+    }
+    for (const data2 of this.effect.effects) {
+      insert.rule = this.name;
+      if (data2.property.thing) {
+        insert.object = data2.property.thing;
+      }
+      insert.state = state;
+      trace.push(insert);
+    }
     const data = engine.createHistory(JSON.stringify(trace));
+
     this.effect.setState(state);
   }
 

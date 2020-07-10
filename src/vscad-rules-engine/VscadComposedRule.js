@@ -4,7 +4,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.*
  */
 const Events = require('../rules-engine/Events');
- 
+
 
 const DEBUG = false || (process.env.NODE_ENV === 'test');
 /*
@@ -26,12 +26,7 @@ class ComposedRule {
     this.enabled = enabled;
     this.rules = rules;
     this.expression = expression;
-  
-
-
   }
-
- 
   /**
    * @return {RuleDescription}
    */
@@ -49,7 +44,6 @@ class ComposedRule {
     }
     return desc;
   }
-
   /**
    * Stop executing the rule
    */
@@ -61,9 +55,7 @@ class ComposedRule {
       console.debug('Rule.stop', this.name);
     }
   }
- 
 }
-
 /**
  * Create a rule from a serialized description
  * @param {RuleDescription} desc

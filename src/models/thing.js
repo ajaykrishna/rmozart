@@ -377,7 +377,6 @@ class Thing {
     this.emitter.removeListener(Constants.REMOVED, callback);
   }
 
-
   /**
    * Get a JSON Thing Description for this Thing.
    *

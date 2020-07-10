@@ -30,7 +30,8 @@ VscadDatabase.prototype.open = function() {
 VscadDatabase.prototype.open2 = function() {
   const historyTable = 'CREATE TABLE IF NOT EXISTS composition_history (' +
     'id_history INTEGER PRIMARY KEY,' +
-    'history TEXT' +
+    'history TEXT,' +
+    'dateExecution TIMESTAMP NOT NULL' +
     ');';
   return db.run(historyTable, []);
 };
@@ -65,11 +66,42 @@ VscadDatabase.prototype.getRules = function() {
 };
 
 /**
+ * Get all history rules
+ * @return {Promise<Mapw<number, >>}
+ */
+VscadDatabase.prototype.getHistory = function() {
+
+  return new Promise((resolve, reject) => {
+    db.db.all(
+      'SELECT id_history, history, dateExecution FROM composition_history',
+      [],
+      (err, rows) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+        const history = {};
+        const historydata = [];
+        const updatePromises = [];
+        for (const row of rows) {
+          history.id = row.id_history;
+          history.history = row.history;
+          history.date = row.dateExecution;
+          historydata.push(history);
+        }
+        Promise.all(updatePromises).then(() => {
+          resolve(historydata);
+        });
+      },
+    );
+  });
+};
+
+/**
  * Get all rules temp
  * @return {Promise<Map<number, RuleDescription>>} resolves to a map of rule id
  * to rule
  */
-
 
 VscadDatabase.prototype.getThings = function() {
   return new Promise((resolve, reject) => {
@@ -139,8 +171,8 @@ VscadDatabase.prototype.deleteRule = function(id) {
  */
 VscadDatabase.prototype.createHistory = function(history) {
   return db.run(
-    'INSERT INTO composition_history (history) VALUES (?)',
-    [history],
+    'INSERT INTO composition_history (history, dateExecution) VALUES (?, ?)',
+    [history, Date()],
   );
 };
 module.exports = new VscadDatabase();
