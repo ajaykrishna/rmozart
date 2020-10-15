@@ -2,7 +2,7 @@
 ---- Verification: conservative and impactful properties
 ---- authors: Francisco Duran and Gwen Salaun
 
-load verif.maude
+sload verif.maude
 --- load 4-tuple.maude
 
 --- view Tuple{X :: TRIV, Y :: TRIV} from TRIV to 2-TUPLE{X,Y} is
@@ -11,6 +11,19 @@ load verif.maude
 
 mod PROPERTIES is
   pr VERIF .
+  --- we use this type for the result of the matching rules operation
+  pr 4-TUPLE{Set{Tuple{Id,State}}, Bool, Set{Buffer}, Set{Composition}}
+       * (op ((_,_)) : Id State -> Tuple{Id, State} to ids,
+          op p1_ : Tuple{Set{Tuple{Id,State}}, Bool, Set{Buffer}, Set{Composition}} -> Set{Tuple{Id,State}} to getGlobalState,
+          op p2_ : Tuple{Set{Tuple{Id,State}}, Bool, Set{Buffer}, Set{Composition}} -> Bool to getBoolRes,
+          op p3_ : Tuple{Set{Tuple{Id,State}}, Bool, Set{Buffer}, Set{Composition}} -> Set{Buffer} to getBuffers,
+          op p4_ : Tuple{Set{Tuple{Id,State}}, Bool, Set{Buffer}, Set{Composition}} -> Set{Composition} to getCompositions) .
+  pr 2-TUPLE{Set{Tuple{Id,State}}, Set{Tuple{Id, Set{Transition}}}}
+       * (op ((_,_)) : Id State -> Tuple{Id, State} to ids,
+          op p1_ : Tuple{Id, Set{Transition}} -> Id to getId,
+          op p2_ : Tuple{Id, Set{Transition}} -> Set{Transition} to getTransitions,
+          op p1_ : Tuple{Set{Tuple{Id,State}}, Set{Tuple{Id, Set{Transition}}}} -> Set{Tuple{Id,State}} to getState,
+          op p2_ : Tuple{Set{Tuple{Id,State}}, Set{Tuple{Id, Set{Transition}}}} -> Set{Tuple{Id, Set{Transition}}} to getExec) .
 
   vars Devs Devs1 Devs2 : Set{Device} .
   vars Compo Compo1 Compo2 CompoA CompoB : Composition .
@@ -113,15 +126,6 @@ mod PROPERTIES is
 
   --- now we focus on simultaneous evolutions of both applications
   --- these equations apply for buffer consumption and rule execution
-
-  --- we use this type for the result of the matching rules operation
-  pr 4-TUPLE{Set{Tuple{Id,State}}, Bool, Set{Buffer}, Set{Composition}}
-       * (---- sort Tuple{Id,State} to IdState,
-          op ((_,_)) : Id State -> Tuple{Id, State} to ids,
-          op p1_ : Tuple{Set{Tuple{Id,State}}, Bool, Set{Buffer}, Set{Composition}} -> Set{Tuple{Id,State}} to getGlobalState,
-          op p2_ : Tuple{Set{Tuple{Id,State}}, Bool, Set{Buffer}, Set{Composition}} -> Bool to getBoolRes,
-          op p3_ : Tuple{Set{Tuple{Id,State}}, Bool, Set{Buffer}, Set{Composition}} -> Set{Buffer} to getBuffers,
-          op p4_ : Tuple{Set{Tuple{Id,State}}, Bool, Set{Buffer}, Set{Composition}} -> Set{Composition} to getCompositions) .
 
   --- buffer consumption
   --- this rule applies as many time as there are receive messages
@@ -350,13 +354,6 @@ mod PROPERTIES is
   --- when none of the equation applies (empty compo or deadlock), I return all executed transitions
   eq generateAllExecutions(Devs, Compos, GS, Bfs, Exec)
     = Exec .
-
-  pr 2-TUPLE{Set{Tuple{Id,State}}, Set{Tuple{Id, Set{Transition}}}}
-        * (---- sort Tuple{Id,State} to IdState,
-           op ((_,_)) : Id State -> Tuple{Id, State} to ids,
-           op p1_ : Tuple{Set{Tuple{Id,State}}, Set{Tuple{Id, Set{Transition}}}} -> Set{Tuple{Id,State}} to getState,
-           op p2_ : Tuple{Set{Tuple{Id,State}}, Set{Tuple{Id, Set{Transition}}}} -> Set{Tuple{Id, Set{Transition}}} to getExec
-           ) .
 
   --- this operation updates the global state and the executed transitions
   op updateIR : LRule Set{Device} Set{Tuple{Id,State}} Set{Tuple{Id, Set{Transition}}}

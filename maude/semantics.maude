@@ -2,8 +2,8 @@
 ---- Semantics of an IoT application
 ---- authors: Francisco Duran and Gwen Salaun
 
-load basic-defs.maude
-load 2-tuple.maude
+sload basic-defs.maude
+sload 2-tuple.maude
 
 ---- Description of the semantics of an IoT application
 
@@ -14,8 +14,7 @@ mod IOTAPP-SEM is
 
   ---- pr SET{IdState} .
   pr SET{Tuple{Id,State}}
-       * (---- sort Tuple{Id,State} to IdState,
-          op ((_,_)) : Id State -> Tuple{Id, State} to ids) .
+       * (op ((_,_)) : Id State -> Tuple{Id, State} to ids) .
 
   pr LIST{Label} .
 
@@ -25,8 +24,7 @@ mod IOTAPP-SEM is
 
   ----pr LIST{IdLabel} .
   pr SET{Tuple{Id,Label}}
-       * (---- sort Tuple{Id,Label} to IdLabel,
-          op ((_,_)) : Id Label -> Tuple{Id, Label} to idl) .
+       * (op ((_,_)) : Id Label -> Tuple{Id, Label} to idl) .
 
   subsort Oid < Id .
 

@@ -2,8 +2,8 @@
 ---- Checks properties (e.g., seamless reconfiguration) on concrete applications
 ---- authors: Francisco Duran and Gwen Salaun
 
-load verif.maude
-load prop.maude
+sload verif.maude
+sload prop.maude
 
 mod EXPERIMENTS is
   pr VERIF .
