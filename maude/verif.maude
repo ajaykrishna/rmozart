@@ -2,15 +2,30 @@
 ---- Verification: seamless reconfiguration (and more)
 ---- authors: Francisco Duran and Gwen Salaun
 
-load examples.maude
-load 3-tuple.maude
-load 4-tuple.maude
+sload examples.maude
+sload 3-tuple.maude
+sload 4-tuple.maude
 
 mod VERIF is
   pr IOTAPP-SEM .
-  --- pr SET{Set`{Tuple{Id,State}`}} .
   pr SET{Id} .
   pr APPLICATION .
+  pr 4-TUPLE{Set{Tuple{Id,State}}, Bool, Set{Buffer}, Set{Tuple{Id, Set{Transition}}}}
+       * (op ((_,_)) : Id State -> Tuple{Id, State} to ids,
+          op p1_ : Tuple{Id, Set{Transition}} -> Id to getId,
+          op p2_ : Tuple{Id, Set{Transition}} -> Set{Transition} to getTransitions,
+          op p1_ : Tuple{Set{Tuple{Id,State}}, Bool, Set{Buffer}, Set{Tuple{Id, Set{Transition}}}} -> Set{Tuple{Id,State}} to getGlobalState,
+          op p2_ : Tuple{Set{Tuple{Id,State}}, Bool, Set{Buffer}, Set{Tuple{Id, Set{Transition}}}} -> Bool to getBoolRes,
+          op p3_ : Tuple{Set{Tuple{Id,State}}, Bool, Set{Buffer}, Set{Tuple{Id, Set{Transition}}}} -> Set{Buffer} to getBuffers,
+          op p4_ : Tuple{Set{Tuple{Id,State}}, Bool, Set{Buffer}, Set{Tuple{Id, Set{Transition}}}} -> Set{Tuple{Id, Set{Transition}}} to getExecutions ) .
+  pr 3-TUPLE{Set{Tuple{Id,State}}, List{Tuple{Id,Label}}, Set{Tuple{Id, Set{Transition}}}}
+       * (op ((_,_)) : Id State -> Tuple{Id, State} to ids,
+          op p1_ : Tuple{Id, Set{Transition}} -> Id to getId,
+          op p2_ : Tuple{Id, Set{Transition}} -> Set{Transition} to getTransitions,
+          op ((_,_)) : Id Label -> Tuple{Id, Label} to idl,
+          op p1_ : Tuple{Set{Tuple{Id,State}}, List{Tuple{Id,Label}}, Set{Tuple{Id, Set{Transition}}}} -> Set{Tuple{Id,State}} to getState,
+          op p2_ : Tuple{Set{Tuple{Id,State}}, List{Tuple{Id,Label}}, Set{Tuple{Id, Set{Transition}}}} -> List{Tuple{Id,Label}} to getTrace,
+          op p3_ : Tuple{Set{Tuple{Id,State}}, List{Tuple{Id,Label}}, Set{Tuple{Id, Set{Transition}}}} -> Set{Tuple{Id, Set{Transition}}} to getExec) .
 
   vars Devs Devs1 Devs2 : Set{Device} .
   vars Compo Compo1 Compo2 : Composition .
@@ -120,22 +135,6 @@ mod VERIF is
   eq computeInitExec((dev(O, model(S, Transitions)), Devs))
     = ((O, empty), computeInitExec(Devs)) .
 
-
-  pr 2-TUPLE{Id, Set{Transition}}
-      * (op p1_ : Tuple{Id, Set{Transition}} -> Id to getId,
-         op p2_ : Tuple{Id, Set{Transition}} -> Set{Transition} to getTransitions) .
-  pr SET{Tuple{Id, Set{Transition}}}
-      * (op p1_ : Tuple{Id, Set{Transition}} -> Id to getId,
-         op p2_ : Tuple{Id, Set{Transition}} -> Set{Transition} to getTransitions) .
-
-
-  pr 4-TUPLE{Set{Tuple{Id,State}}, Bool, Set{Buffer}, Set{Tuple{Id, Set{Transition}}}}
-       * (---- sort Tuple{Id,State} to IdState,
-          op ((_,_)) : Id State -> Tuple{Id, State} to ids,
-          op p1_ : Tuple{Set{Tuple{Id,State}}, Bool, Set{Buffer}, Set{Tuple{Id, Set{Transition}}}} -> Set{Tuple{Id,State}} to getGlobalState,
-          op p2_ : Tuple{Set{Tuple{Id,State}}, Bool, Set{Buffer}, Set{Tuple{Id, Set{Transition}}}} -> Bool to getBoolRes,
-          op p3_ : Tuple{Set{Tuple{Id,State}}, Bool, Set{Buffer}, Set{Tuple{Id, Set{Transition}}}} -> Set{Buffer} to getBuffers,
-          op p4_ : Tuple{Set{Tuple{Id,State}}, Bool, Set{Buffer}, Set{Tuple{Id, Set{Transition}}}} -> Set{Tuple{Id, Set{Transition}}} to getExecutions ) .
 
   op runTrace : Application List{Tuple{Id,Label}} Set{Id}
                 -> Tuple{Set{Tuple{Id,State}}, Bool, Set{Buffer}, Set{Tuple{Id, Set{Transition}}}} .
@@ -347,17 +346,6 @@ mod VERIF is
   eq filterTrace((idl(O, Lab) Tr), Ids )
       = filterTrace(Tr, Ids) [owise] .
 
-  pr 3-TUPLE{Set{Tuple{Id,State}}, List{Tuple{Id,Label}}, Set{Tuple{Id, Set{Transition}}}}
-      * (---- sort Tuple{Id,State} to IdState,
-         op ((_,_)) : Id State -> Tuple{Id, State} to ids,
-         ---- sort Tuple{Id,Label} to IdLabel,
-         op ((_,_)) : Id Label -> Tuple{Id, Label} to idl,
-         op p1_ : Tuple{Set{Tuple{Id,State}}, List{Tuple{Id,Label}}, Set{Tuple{Id, Set{Transition}}}} -> Set{Tuple{Id,State}} to getState,
-         op p2_ : Tuple{Set{Tuple{Id,State}}, List{Tuple{Id,Label}}, Set{Tuple{Id, Set{Transition}}}} -> List{Tuple{Id,Label}} to getTrace,
-         op p3_ : Tuple{Set{Tuple{Id,State}}, List{Tuple{Id,Label}}, Set{Tuple{Id, Set{Transition}}}} -> Set{Tuple{Id, Set{Transition}}} to getExec
-         ) .
-
-
   --- this operation updates the global state, the trace and the execution logs
   op updateSR : LRule Set{Device} Set{Tuple{Id,State}} List{Tuple{Id,Label}} Set{Id} Set{Tuple{Id, Set{Transition}}}
                 -> Tuple{Set{Tuple{Id,State}}, List{Tuple{Id,Label}}, Set{Tuple{Id, Set{Transition}}}} .
@@ -544,6 +532,8 @@ mod VERIF is
     ---- this operation checks which branch should be taken according to the given trace
     op matchTraceCompo : Composition Set{Device} Set{Tuple{Id,State}} List{Tuple{Id,Label}} Set{Id} -> Bool .
 
+    eq matchTraceCompo(rule(LR, RR), Devs, GS, Tr, Ids)
+      = leftRuleIsExecutableTrace(LR, Devs, GS, Tr, Ids) .
     eq matchTraceCompo(seq(rule(LR, RR), Compo), Devs, GS, Tr, Ids)
       = leftRuleIsExecutableTrace(LR, Devs, GS, Tr, Ids) .
     eq matchTraceCompo(ch(Compo1, Compo2), Devs, GS, Tr, Ids)

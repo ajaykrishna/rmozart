@@ -84,6 +84,4 @@ fmod EXAMPLES is
    eq compo4
      = seq( rule( evt(msid, move, val(true)), act(lightid2, on, val(1))),
             rule( evt(msid, move, val(false)), act(lightid2, on, val(0))) ) .  --- two rules
-
-
 endfm
