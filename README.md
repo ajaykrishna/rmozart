@@ -1,4 +1,4 @@
-# mozART: Advanced Web of Things Applications 
+# R-MOZART: Reconfiguration of Web of Things Applications
 ## Powered by Mozilla WebThings Gateway
 
 [![license](https://img.shields.io/badge/license-MPL--2.0-blue.svg)](LICENSE)
@@ -13,7 +13,9 @@ If you're installing on a Raspberry Pi then you may need to set up the OS on the
 
 ### Important!
 
-If you plan to use the verification services, you will have to acquire a license for [CADP](https://cadp.inria.fr/) and install it locally. mozART invokes [CADP](https://cadp.inria.fr/) tools from the terminal. [CADP](https://cadp.inria.fr/) does not support Raspberry Pi, yet. 
+Reconfiguration analysis is performed using [Maude](http://maude.cs.illinois.edu/w/index.php?title=The_Maude_System) system. As of now [Maude](http://maude.cs.illinois.edu/w/index.php?title=The_Maude_System) system supports only Linux/MacOS systems. Users of R-MOZART need to download the Maude executable (`maude.linux64`) and drop it in the `dist` folder of the project. An installation guide for standalone Maude system can be found [here](http://maude.cs.illinois.edu/w/index.php?title=Maude_download_and_installation). Maude is [distributed](http://maude.cs.illinois.edu/w/index.php?title=Maude_License_Agreement) under the GNU General Public License version 2. 
+
+If you plan to use the verification services, you will have to acquire a license for [CADP](https://cadp.inria.fr/) and install it locally. R-MOZART invokes [CADP](https://cadp.inria.fr/) tools from the terminal. [CADP](https://cadp.inria.fr/) does not support Raspberry Pi, yet. 
 
 ### Update Package Cache (Linux only)
 
