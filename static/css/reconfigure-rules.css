@@ -319,17 +319,20 @@ top: 9.6rem;
 .tableResult {
   font-family: arial, sans-serif;
   border-collapse: collapse;
+  table-layout: auto;
   width: 100%;
+  font-size: medium;
 }
 
-td, th {
-  border: 1px solid #dddddd;
+#reconf-result-tab td {
+  border: 1px solid #f0eeee;
   text-align: left;
-  padding: 8px;
+  padding: 2px;
 }
 
-tr:nth-child(even) {
-  background-color: #dddddd;
+#reconf-result-tab td img {
+  width: auto;
+  height: 30px;
+  display: block;
 }
-
 
