@@ -155,14 +155,30 @@ const VscadRulesScreen = {
         const padre = imagen.parentNode;
         padre.removeChild(imagen);
 
-        alertDialog.querySelector('#seamless').textContent = `seamless`;
-        alertDialog.querySelector('#seamlessResult').textContent = response.seamless;
+        alertDialog.querySelector('#seamless').textContent = 'Seamless';
+        //alertDialog.querySelector('#seamlessResult').textContent = response.seamless;
+        if(response.seamless) { 
+          alertDialog.querySelector('#seamlessResult').innerHTML = 
+          '<img src="../images/tick-mark.png"></img>';
+        } else {
+          alertDialog.querySelector('#seamlessResult').innerHTML = 
+          '<img src="../images/rejected-mark.png"></img>';
+        }
+      
 
-        alertDialog.querySelector('#conservative').textContent = 'conservative';
-        alertDialog.querySelector('#conservativeResult').textContent = response.conservative;
+        alertDialog.querySelector('#conservative').textContent = 'Conservative';
+        if(response.conservative) { 
+          alertDialog.querySelector('#conservativeResult').innerHTML = '<img src="../images/tick-mark.png"></img>';
+        } else {
+          alertDialog.querySelector('#conservativeResult').innerHTML = '<img src="../images/rejected-mark.png"></img>';
+        }
 
-        alertDialog.querySelector('#impactful').textContent = 'impactful';
-        alertDialog.querySelector('#impactfulResult').textContent = response.impactful;
+        alertDialog.querySelector('#impactful').textContent = 'Impactful';
+        if(response.impactful) { 
+          alertDialog.querySelector('#impactfulResult').innerHTML = '<img src="../images/tick-mark.png"></img>';
+        } else {
+          alertDialog.querySelector('#impactfulResult').innerHTML = '<img src="../images/rejected-mark.png"></img>';
+        }
 
       }
       alertDialog.querySelector('#noti-message').textContent = response.message;

@@ -128,7 +128,7 @@ const ReconfigureScreen = {
       body: JSON.stringify(datosJson),
     };
 
-    fetch('http://10.138.2.122:9001/compare', fetchedJson).then((res) => {
+    fetch('http://127.0.0.1:9001/compare', fetchedJson).then((res) => {
       return res.json();
     }).then((response) => {
       this.hiddeLoader();
