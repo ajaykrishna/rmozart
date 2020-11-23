@@ -1,5 +1,6 @@
 # R-MOZART: Reconfiguration of Web of Things Applications
 ## Powered by Mozilla WebThings Gateway
+## [https://ajaykrishna.github.io/rmozart](https://ajaykrishna.github.io/rmozart)
 
 [![license](https://img.shields.io/badge/license-MPL--2.0-blue.svg)](LICENSE)
 
@@ -13,9 +14,16 @@ If you're installing on a Raspberry Pi then you may need to set up the OS on the
 
 ### Important!
 
-Reconfiguration analysis is performed using [Maude](http://maude.cs.illinois.edu/w/index.php?title=The_Maude_System) system. As of now [Maude](http://maude.cs.illinois.edu/w/index.php?title=The_Maude_System) system supports only Linux/MacOS systems. Users of R-MOZART need to download the Maude executable (`maude.linux64`) and drop it in the [dist\snapshot](https://github.com/ajaykrishna/rmozart/tree/main/dist/0.0.1-SNAPSHOT) folder of the project. An installation guide for standalone Maude system can be found [here](http://maude.cs.illinois.edu/w/index.php?title=Maude_download_and_installation). Maude is [distributed](http://maude.cs.illinois.edu/w/index.php?title=Maude_License_Agreement) under the GNU General Public License version 2. 
+Reconfiguration analysis is performed using [Maude](http://maude.cs.illinois.edu/w/index.php?title=The_Maude_System) system. As of now [Maude](http://maude.cs.illinois.edu/w/index.php?title=The_Maude_System) system supports only Linux/MacOS systems. Users of R-MOZART need to download the Maude executable (`maude.linux64`) and drop it in the [dist](https://github.com/ajaykrishna/rmozart/tree/main/dist/) folder of the project. An installation guide for standalone Maude system can be found [here](http://maude.cs.illinois.edu/w/index.php?title=Maude_download_and_installation). Maude is [distributed](http://maude.cs.illinois.edu/w/index.php?title=Maude_License_Agreement) under the GNU General Public License version 2. 
 
 If you plan to use the verification services, you will have to acquire a license for [CADP](https://cadp.inria.fr/) and install it locally. R-MOZART invokes [CADP](https://cadp.inria.fr/) tools from the terminal. [CADP](https://cadp.inria.fr/) does not support Raspberry Pi, yet. 
+
+### Reconfiguration analysis
+The reconfiguration analysis can be performed outside of R-Mozart, on a terminal using the [Maude]() files. 
+
+`maude-Yices2.darwin64 execute.maude` returns a boolean result indicating whether the reconfiguration is safe
+
+Details about Maude and its standalone installation can be found on the Maude Website: [http://maude.cs.illinois.edu/w/index.php/The_Maude_System](http://maude.cs.illinois.edu/w/index.php/The_Maude_System)
 
 ### Update Package Cache (Linux only)
 
