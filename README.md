@@ -329,9 +329,9 @@ python3 -m pip install git+https://github.com/mozilla-iot/gateway-addon-python#e
             ```
             $ npm start
             ```
-            
+        * Start web server and verification components    
              ```
-            $ npm run vscad   --start WebThings + Verification component
+            $ npm run vscad   
             ```
 
         * Load `http://localhost:8080` in your web browser (or use the server's IP address if loading remotely). Then follow the instructions on the web page to set up domain and register. Once this is done you can load
@@ -352,6 +352,11 @@ python3 -m pip install git+https://github.com/mozilla-iot/gateway-addon-python#e
 
             ```
             $ npm start
+            ```
+           
+        * Start web server and verification components    
+             ```
+            $ npm run vscad   
             ```
 
         * Load `https://localhost:4443` in your web browser (or use the server's IP address if loading remotely). Since you're using a self-signed certificate, you'll need to add a security exception in the browser.
