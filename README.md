@@ -279,7 +279,7 @@ python3 -m pip install git+https://github.com/mozilla-iot/gateway-addon-python#e
 * Clone the GitHub repository (or fork it first):
 
     ```
-    $ git clone https://github.com/mozilla-iot/gateway.git
+    $ git clone https://github.com/ajaykrishna/rmozart.git
     ```
 
 * Change into the gateway directory:
