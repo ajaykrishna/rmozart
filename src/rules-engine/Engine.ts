@@ -6,15 +6,19 @@
 
 import Database from './Database';
 import Rule from './Rule';
+import MasterEngineImport from '../vscad-rules-engine/VscadMasterEngine';
 
 /**
  * An engine for running and managing list of rules
  */
 export default class Engine {
+
   private rules: Record<string, Rule> | null;
+  MasterEngine: MasterEngineImport;
 
   constructor() {
     this.rules = null;
+    this.MasterEngine = new MasterEngineImport();
   }
 
   /**
@@ -56,7 +60,7 @@ export default class Engine {
     if (!(id in this.rules!)) {
       return Promise.reject(new Error(`Rule ${id} does not exist`));
     }
-    this.MasterEngine = require('../vscad-rules-engine/VscadMasterEngine').default;
+    const rule = this.rules![id];
     rule.parent = this.MasterEngine;
     return Promise.resolve(rule);
   }
