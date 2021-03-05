@@ -36,6 +36,15 @@ class Things extends EventEmitter {
    */
   private getThingsPromise?: Promise<Map<string, Thing>> | null;
 
+  /**
+   * An EventEmitter used to bubble up added things
+   *
+   * Note that this differs from AddonManager's THING_ADDED because that thing
+   * added is when the addon discovers a thing, not when the model is
+   * instantiated
+   */
+  private emitter = new EventEmitter();
+
   private router?: Router;
 
   constructor() {
@@ -413,6 +422,14 @@ class Things extends EventEmitter {
 
       throw new HttpErrorWithCode(e, 500);
     }
+  }
+
+  on(name: string, listener: (...args: any[]) => void): void {
+    this.emitter.on(name, listener);
+  }
+
+  removeListener(name: string, listener: (...args: any[]) => void): void {
+    this.emitter.removeListener(name, listener);
   }
 
   clearState(): void {

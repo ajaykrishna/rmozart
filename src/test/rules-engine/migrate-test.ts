@@ -29,6 +29,7 @@ const oldRule = {
       },
     ],
   },
+  parent: null,
 };
 
 const newRule = {
@@ -58,6 +59,7 @@ const newRule = {
       },
     ],
   },
+  parent: null,
 };
 
 describe('rule migrate', () => {
