@@ -38,7 +38,7 @@ class RuleCard {
       if (thingTrigger) {
         iconTrigger = RuleUtils.icon(thingTrigger);
       } else if (trigger.type === 'TimeTrigger') {
-        iconTrigger = '/optimized-images/thing-icons/clock.svg';
+        iconTrigger = '/images/thing-icons/clock.svg';
       }
     }
 
@@ -102,8 +102,7 @@ class RuleCard {
     this.deleteConfirm.addEventListener('click', this.onDeleteConfirmClick);
 
     this.enabledCheckbox = this.elt.querySelector('.switch-checkbox');
-    this.enabledCheckbox.addEventListener('change',
-                                          this.onEnabledCheckboxChange);
+    this.enabledCheckbox.addEventListener('change', this.onEnabledCheckboxChange);
 
     this.editOverlay = this.elt.querySelector('.rule-edit-overlay');
   }

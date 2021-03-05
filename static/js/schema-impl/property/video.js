@@ -11,7 +11,7 @@
 
 'use strict';
 
-const API = require('../../api');
+const API = require('../../api').default;
 const Utils = require('../../utils');
 const shaka = require('shaka-player/dist/shaka-player.compiled');
 
@@ -24,16 +24,20 @@ class VideoDetail {
 
     this.dashHref = null;
     this.hlsHref = null;
+    this.mjpegHref = null;
     this.player = null;
 
     for (const link of property.links) {
       if (link.rel === 'alternate') {
-        if (this.dashHref === null &&
-            link.mediaType === 'application/dash+xml') {
+        if (this.dashHref === null && link.mediaType === 'application/dash+xml') {
           this.dashHref = link.href;
-        } else if (this.hlsHref === null &&
-                   link.mediaType === 'application/vnd.apple.mpegurl') {
+        } else if (this.hlsHref === null && link.mediaType === 'application/vnd.apple.mpegurl') {
           this.hlsHref = link.href;
+        } else if (
+          this.mjpegHref === null &&
+          (link.mediaType === 'video/x-motion-jpeg' || link.mediaType === 'video/x-jpeg')
+        ) {
+          this.mjpegHref = link.href;
         }
       }
     }
@@ -46,10 +50,7 @@ class VideoDetail {
    * Attach to the view.
    */
   attach() {
-    this.thing.element.querySelector(`#${this.id}`).addEventListener(
-      'click',
-      this.expandVideo
-    );
+    this.thing.element.querySelector(`#${this.id}`).addEventListener('click', this.expandVideo);
   }
 
   /**
@@ -69,7 +70,16 @@ class VideoDetail {
     const element = document.createElement('div');
     element.classList.add('media-modal-backdrop');
 
-    if (!shaka.Player.isBrowserSupported()) {
+    if (this.mjpegHref !== null) {
+      element.innerHTML = `
+        <div class="media-modal">
+          <div class="media-modal-frame">
+            <div class="media-modal-close"></div>
+            <img class="media-modal-video"></img>
+          </div>
+        </div>
+        `;
+    } else if (!shaka.Player.isBrowserSupported()) {
       element.innerHTML = `
         <div class="media-modal">
           <div class="media-modal-frame">
@@ -93,52 +103,52 @@ class VideoDetail {
     document.body.appendChild(element);
     document.querySelector('#things').style.display = 'none';
 
-    if (!shaka.Player.isBrowserSupported()) {
+    if (this.mjpegHref || !shaka.Player.isBrowserSupported()) {
       this.positionButtons();
     }
 
-    element.querySelector('.media-modal-close').addEventListener(
-      'click',
-      () => {
-        if (this.player) {
-          this.player.destroy();
-          this.player = null;
-        }
-
-        document.body.removeChild(element);
-        document.querySelector('#things').style.display = 'block';
-        window.removeEventListener('resize', this.positionButtons);
+    element.querySelector('.media-modal-close').addEventListener('click', () => {
+      if (this.player) {
+        this.player.destroy();
+        this.player = null;
       }
-    );
+
+      document.body.removeChild(element);
+      document.querySelector('#things').style.display = 'block';
+      window.removeEventListener('resize', this.positionButtons);
+    });
 
     window.addEventListener('resize', this.positionButtons);
 
-    if (shaka.Player.isBrowserSupported() && (this.dashHref || this.hlsHref)) {
-      element.querySelector('.media-modal-video').addEventListener(
-        'loadeddata',
-        this.positionButtons
-      );
+    if (this.mjpegHref) {
+      element.querySelector('.media-modal-video').addEventListener('load', this.positionButtons);
+      element.querySelector('.media-modal-video').src = `${this.mjpegHref}?jwt=${API.jwt}`;
+    } else if (shaka.Player.isBrowserSupported() && (this.dashHref || this.hlsHref)) {
+      element
+        .querySelector('.media-modal-video')
+        .addEventListener('loadeddata', this.positionButtons);
 
       const video = document.querySelector('.media-modal-video');
       this.player = new shaka.Player(video);
 
-      this.player.getNetworkingEngine().registerRequestFilter(
-        (type, request) => {
-          request.headers = {
-            Authorization: `Bearer ${API.jwt}`,
-          };
-        }
-      );
+      this.player.getNetworkingEngine().registerRequestFilter((type, request) => {
+        request.headers = {
+          Authorization: `Bearer ${API.jwt}`,
+        };
+      });
 
       this.player.addEventListener('error', (e) => {
         console.error('Error playing video:', e);
       });
 
-      this.player.load(this.dashHref || this.hlsHref).then(() => {
-        video.play();
-      }).catch((e) => {
-        console.error('Error loading video:', e);
-      });
+      this.player
+        .load(this.dashHref || this.hlsHref)
+        .then(() => {
+          video.play();
+        })
+        .catch((e) => {
+          console.error('Error loading video:', e);
+        });
     }
   }
 

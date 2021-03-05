@@ -1,17 +1,12 @@
-'use strict';
-
 import { URL } from 'url';
-import {Scope, ClientId, ClientRegistry} from '../oauth-types';
-const config = require('config');
-const Database = require('../db');
-
+import { ClientRegistry } from '../oauth-types';
+import config from 'config';
+import Database from '../db';
 
 class OAuthClients {
   private clients: Map<string, Array<ClientRegistry>> = new Map();
-  constructor() {
-  }
 
-  register(client: ClientRegistry) {
+  register(client: ClientRegistry): void {
     if (this.clients.get(client.id)) {
       this.clients.get(client.id)!.push(client);
     } else {
@@ -19,15 +14,15 @@ class OAuthClients {
     }
   }
 
-  get(id: string, redirectUri: URL|undefined): ClientRegistry|undefined {
+  get(id: string, redirectUri?: URL): ClientRegistry | null {
     const clients = this.clients.get(id);
     if (!clients) {
-      return;
+      return null;
     }
     if (!redirectUri) {
       return clients[0];
     }
-    for (let client of clients) {
+    for (const client of clients) {
       if (client.redirect_uri.href === redirectUri.href) {
         return client;
       }
@@ -36,17 +31,17 @@ class OAuthClients {
   }
 
   async getAuthorized(userId: number): Promise<Array<ClientRegistry>> {
-    let jwts = await Database.getJSONWebTokensByUser(userId);
-    let authorized = new Map();
+    const jwts = await Database.getJSONWebTokensByUser(userId);
+    const authorized = new Map();
 
-    for (let jwt of jwts) {
-      let payload = JSON.parse(jwt.payload);
+    for (const jwt of jwts) {
+      const payload = JSON.parse(<string>jwt.payload);
       if (payload.role !== 'access_token') {
         continue;
       }
       if (!this.clients.has(payload.client_id)) {
         console.warn('Orphaned access_token', jwt);
-        await Database.deleteJSONWebTokenByKeyId(jwt.keyId);
+        await Database.deleteJSONWebTokenByKeyId(<string>jwt.keyId);
         continue;
       }
       const defaultClient = this.clients.get(payload.client_id)![0];
@@ -59,51 +54,80 @@ class OAuthClients {
     return Array.from(authorized.values());
   }
 
-  async revokeClientAuthorization(userId: number, clientId: string) {
-    let jwts = await Database.getJSONWebTokensByUser(userId);
+  async revokeClientAuthorization(userId: number, clientId: string): Promise<void> {
+    const jwts = await Database.getJSONWebTokensByUser(userId);
 
-    for (let jwt of jwts) {
-      let payload = JSON.parse(jwt.payload);
+    for (const jwt of jwts) {
+      const payload = JSON.parse(<string>jwt.payload);
       if (payload.client_id === clientId) {
-        await Database.deleteJSONWebTokenByKeyId(jwt.keyId);
+        await Database.deleteJSONWebTokenByKeyId(<string>jwt.keyId);
       }
     }
   }
 }
 
-let oauthClients = new OAuthClients();
+const oauthClients = new OAuthClients();
 
-if (config.get('oauthTestClients')) {
+if (config.get('oauth.testClients')) {
   oauthClients.register(
-    new ClientRegistry(new URL('http://127.0.0.1:31338/callback'), 'test',
-                       'Test OAuth Client', 'super secret', '/things:readwrite')
+    new ClientRegistry(
+      new URL('http://127.0.0.1:31338/callback'),
+      'test',
+      'Test OAuth Client',
+      'super secret',
+      '/things:readwrite'
+    )
   );
 
   oauthClients.register(
-    new ClientRegistry(new URL('http://127.0.0.1:31338/bonus-entry'), 'test',
-                       'Test OAuth Client', 'other secret', '/things:readwrite')
+    new ClientRegistry(
+      new URL('http://127.0.0.1:31338/bonus-entry'),
+      'test',
+      'Test OAuth Client',
+      'other secret',
+      '/things:readwrite'
+    )
   );
 
   oauthClients.register(
-    new ClientRegistry(new URL('http://localhost:8888/callback'), 'mycroft',
-                       'Mycroft', 'bDaQN6yDgI0GlvJL2UVcIAb4M8c', '/things:readwrite')
+    new ClientRegistry(
+      new URL('http://localhost:8888/callback'),
+      'mycroft',
+      'Mycroft',
+      'bDaQN6yDgI0GlvJL2UVcIAb4M8c',
+      '/things:readwrite'
+    )
   );
 }
 
 oauthClients.register(
-  new ClientRegistry(new URL('https://gateway.localhost/oauth/local-token-service'), 'local-token',
-                     'Local Token Service', 'super secret',
-                     '/things:readwrite')
+  new ClientRegistry(
+    new URL('https://gateway.localhost/oauth/local-token-service'),
+    'local-token',
+    'Local Token Service',
+    'super secret',
+    '/things:readwrite'
+  )
 );
 
 oauthClients.register(
-  new ClientRegistry(new URL('https://api.mycroft.ai/v1/auth/callback'), 'mycroft',
-                     'Mycroft', 'bDaQN6yDgI0GlvJL2UVcIAb4M8c', '/things:readwrite')
+  new ClientRegistry(
+    new URL('https://api.mycroft.ai/v1/auth/callback'),
+    'mycroft',
+    'Mycroft',
+    'bDaQN6yDgI0GlvJL2UVcIAb4M8c',
+    '/things:readwrite'
+  )
 );
 
 oauthClients.register(
-  new ClientRegistry(new URL('https://api-test.mycroft.ai/v1/auth/callback'), 'mycroft',
-                     'Mycroft', 'bDaQN6yDgI0GlvJL2UVcIAb4M8c', '/things:readwrite')
+  new ClientRegistry(
+    new URL('https://api-test.mycroft.ai/v1/auth/callback'),
+    'mycroft',
+    'Mycroft',
+    'bDaQN6yDgI0GlvJL2UVcIAb4M8c',
+    '/things:readwrite'
+  )
 );
 
 export default oauthClients;

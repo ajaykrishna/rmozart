@@ -33,13 +33,13 @@ template.innerHTML = `
       background-repeat: no-repeat;
       transform: translate(0);
       background-color: #89b6d6;
-      background-image: url('/optimized-images/component-icons/door-sensor-closed.svg');
+      background-image: url('/images/component-icons/door-sensor-closed.svg');
       background-position: center 2rem;
     }
 
     .webthing-door-sensor-capability-icon.open {
       background-color: white;
-      background-image: url('/optimized-images/component-icons/door-sensor-open.svg');
+      background-image: url('/images/component-icons/door-sensor-open.svg');
     }
 
     .webthing-door-sensor-capability-label {
@@ -70,8 +70,7 @@ class DoorSensorCapability extends BaseComponent {
   }
 
   connectedCallback() {
-    this.open =
-      typeof this.dataset.open !== 'undefined' ? this.dataset.open : null;
+    this.open = typeof this.dataset.open !== 'undefined' ? this.dataset.open : null;
   }
 
   get open() {
@@ -83,7 +82,7 @@ class DoorSensorCapability extends BaseComponent {
 
     if (value === null) {
       this._icon.classList.remove('open');
-      this._label.innerText = fluent.getMessage('ellipses');
+      this._label.innerText = fluent.getMessage('ellipsis');
     } else if (this._open) {
       this._icon.classList.add('open');
       this._label.innerText = fluent.getMessage('open');
@@ -94,6 +93,5 @@ class DoorSensorCapability extends BaseComponent {
   }
 }
 
-window.customElements.define('webthing-door-sensor-capability',
-                             DoorSensorCapability);
+window.customElements.define('webthing-door-sensor-capability', DoorSensorCapability);
 module.exports = DoorSensorCapability;

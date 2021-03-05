@@ -29,7 +29,8 @@
   overflow: auto;
 }
 
-#main-menu a, .log-out-button {
+#main-menu a,
+.log-out-button {
   display: block;
   padding: 2rem;
   padding-left: 6.8rem;
@@ -42,7 +43,18 @@
   outline: 0;
 }
 
-#main-menu a:hover, #main-menu a.selected, .log-out-button:hover, .log-out-button.selected {
+.log-out-button {
+  background-color: unset;
+  text-align: left;
+  cursor: pointer;
+  width: 100%;
+  background-image: url('/images/log-out-icon.png');
+}
+
+#main-menu a:hover,
+#main-menu a.selected,
+.log-out-button:hover,
+.log-out-button.selected {
   background-color: rgba(0, 0, 0, 0.12);
 }
 
@@ -50,20 +62,16 @@
   display: none;
 }
 
-#main-menu #assistant-menu-item {
-  background-image: url('../optimized-images/assistant-icon.svg');
-}
-
 #main-menu #things-menu-item {
-  background-image: url('../optimized-images/things-icon.png');
+  background-image: url('/images/things-icon.png');
 }
 
 #main-menu #settings-menu-item {
-  background-image: url('../optimized-images/settings-icon.png');
+  background-image: url('/images/settings-icon.png');
 }
 
 #main-menu #floorplan-menu-item {
-  background-image: url('../optimized-images/floorplan-icon.png');
+  background-image: url('/images/floorplan-icon.png');
 }
 
 #main-menu #rules-manager-menu-item {
@@ -75,30 +83,32 @@
 }
 
 #main-menu #rules-menu-item {
-  background-image: url('../optimized-images/rules-icon.png');
+  background-image: url('/images/rules-icon.png');
 }
 
 #main-menu #logs-menu-item {
-  background-image: url('../optimized-images/logs-icon.svg');
+  background-image: url('/images/logs-icon.svg');
 }
 
 @keyframes show-scrim {
   from {
-      opacity: 0;
+    opacity: 0;
   }
+
   to {
-      opacity: 0.5;
+    opacity: 0.5;
   }
 }
 
 @keyframes hide-scrim {
   from {
-      opacity: 0.5;
-      width: 100%;
+    opacity: 0.5;
+    width: 100%;
   }
+
   to {
-      opacity: 0;
-      width: 100%;
+    opacity: 0;
+    width: 100%;
   }
 }
 
@@ -117,12 +127,4 @@
 #menu-scrim.hidden {
   animation: hide-scrim 0.25s ease 0s;
   width: 0%;
-}
-
-.log-out-button {
-  background-color: unset;
-  text-align: left;
-  cursor: pointer;
-  width: 100%;
-  background-image: url('../optimized-images/log-out-icon.png');
 }

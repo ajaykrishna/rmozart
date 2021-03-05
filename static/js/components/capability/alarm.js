@@ -33,13 +33,13 @@ template.innerHTML = `
       background-repeat: no-repeat;
       transform: translate(0);
       background-color: #89b6d6;
-      background-image: url('/optimized-images/component-icons/alarm-ok.svg');
+      background-image: url('/images/component-icons/alarm-ok.svg');
       background-position: center 2rem;
     }
 
     .webthing-alarm-capability-icon.alarm {
       background-color: white;
-      background-image: url('/optimized-images/component-icons/alarm-alarm.svg');
+      background-image: url('/images/component-icons/alarm-alarm.svg');
     }
 
     .webthing-alarm-capability-label {
@@ -70,8 +70,7 @@ class AlarmCapability extends BaseComponent {
   }
 
   connectedCallback() {
-    this.alarm =
-      typeof this.dataset.alarm !== 'undefined' ? this.dataset.alarm : null;
+    this.alarm = typeof this.dataset.alarm !== 'undefined' ? this.dataset.alarm : null;
   }
 
   get alarm() {
@@ -83,7 +82,7 @@ class AlarmCapability extends BaseComponent {
 
     if (value === null) {
       this._icon.classList.remove('alarm');
-      this._label.innerText = fluent.getMessage('ellipses');
+      this._label.innerText = fluent.getMessage('ellipsis');
     } else if (this._alarm) {
       this._icon.classList.add('alarm');
       this._label.innerText = fluent.getMessage('alarm');

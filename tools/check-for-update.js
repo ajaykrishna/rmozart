@@ -1,20 +1,40 @@
+process.env.ALLOW_CONFIG_MUTATIONS = 'true';
+
 const config = require('config');
-const exec = require('child_process').exec;
+const { exec } = require('child_process');
 const fetch = require('node-fetch');
-const semver = require('semver');
-
+const fs = require('fs');
+const path = require('path');
 const pkg = require('../package.json');
-const Utils = require('../src/utils');
+const semver = require('semver');
+const Utils = require('../build/utils');
 
-fetch(config.get('updateUrl'),
-      {headers: {'User-Agent': Utils.getGatewayUserAgent()}})
+// Load in the local.json file, if it exists
+const baseDir = path.resolve(process.env.WEBTHINGS_HOME || config.get('profileDir'));
+const userConfigPath = path.join(baseDir, 'config', 'local.json');
+if (fs.existsSync(userConfigPath)) {
+  const localConfig = config.util.parseFile(userConfigPath);
+  if (localConfig) {
+    config.util.extendDeep(config, localConfig);
+  }
+}
+
+fetch(config.get('updates.url'), { headers: { 'User-Agent': Utils.getGatewayUserAgent() } })
   .then((res) => {
     return res.json();
   })
   .then((releases) => {
     // Assumes that releases are in chronological order, latest-first
     return releases.filter((release) => {
-      return !release.prerelease && !release.draft;
+      if (release.prerelease && !config.get('updates.allowPrerelease')) {
+        return false;
+      }
+
+      if (release.draft) {
+        return false;
+      }
+
+      return true;
     })[0];
   })
   .then((latestRelease) => {
@@ -29,8 +49,7 @@ fetch(config.get('updateUrl'),
       // download latestRelease.assets[:].browser_download_url
       let gatewayUrl = null;
       let nodeModulesUrl = null;
-      const validAssetRe = new RegExp(
-        `/download/${releaseVer}/[a-z0-9_-]+.tar.gz$`);
+      const validAssetRe = new RegExp(`/download/${releaseVer}/[a-z0-9_-]+.tar.gz$`);
       for (const asset of latestRelease.assets) {
         if (!asset.browser_download_url.match(validAssetRe)) {
           continue;
@@ -44,18 +63,19 @@ fetch(config.get('updateUrl'),
       }
 
       if (nodeModulesUrl && gatewayUrl) {
-        exec(`./gateway/tools/upgrade.sh ${gatewayUrl} ${nodeModulesUrl}`,
-             {cwd: '..'},
-             (err, stdout, stderr) => {
-               if (err) {
-                 console.error('Upgrade failed', err, stdout, stderr);
-               } else {
-                 console.log('Upgrade succeeded');
-               }
-             });
+        exec(
+          `./gateway/tools/upgrade.sh ${gatewayUrl} ${nodeModulesUrl}`,
+          { cwd: '..' },
+          (err, stdout, stderr) => {
+            if (err) {
+              console.error('Upgrade failed', err, stdout, stderr);
+            } else {
+              console.log('Upgrade succeeded');
+            }
+          }
+        );
       } else {
-        console.warn(`Release ${releaseVer} does not include archives`,
-                     latestRelease.assets);
+        console.warn(`Release ${releaseVer} does not include archives`, latestRelease.assets);
       }
     } else {
       console.log(`Our version ${currentVer} >= ${releaseVer}, exiting`);

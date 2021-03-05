@@ -48,25 +48,16 @@
 }
 
 .section-title-back-flex,
-.section-title-speech-flex {
+.section-title-right-flex {
   flex: 1;
   min-width: 9.6rem;
   flex-shrink: 0;
   height: 9.6rem;
 }
 
-.section-title-speech-flex {
+.section-title-right-flex {
   flex: 1;
   min-width: 0;
-}
-
-#settings-menu ul {
-  box-sizing: border-box;
-  width: 100%;
-  max-width: 60rem;
-  margin: 0 auto;
-  padding: 2rem;
-  padding-top: 0;
 }
 
 #settings-back-button {
@@ -80,7 +71,7 @@
   list-style-type: none;
   background-color: #5288af;
   border-radius: 0.5rem;
-  background-image: url('../optimized-images/right-arrow.png');
+  background-image: url('/images/right-arrow.png');
   background-size: auto 2rem;
   background-repeat: no-repeat;
   background-position: right 2.8rem center;
@@ -101,51 +92,47 @@
 }
 
 #domain-settings-link {
-  background-image: url('../optimized-images/domain-icon.png');
+  background-image: url('/images/domain-icon.png');
 }
 
 #domain-settings-local-link {
-  background-image: url('../optimized-images/domain-icon.png');
-}
-
-#domain-settings-mozilla-link {
-  background-image: url('../optimized-images/domain-icon.png');
+  background-image: url('/images/domain-icon.png');
 }
 
 #network-settings-link {
-  background-image: url('../optimized-images/network.svg');
+  background-image: url('/images/network.svg');
 }
 
 #user-settings-link {
-  background-image: url('../optimized-images/users-icon.png');
+  background-image: url('/images/users-icon.png');
 }
 
 #adapter-settings-link {
-  background-image: url('../optimized-images/adapters-icon.png');
+  background-image: url('/images/adapters-icon.png');
 }
 
 #addon-settings-link {
-  background-image: url('../optimized-images/add-on.svg');
+  background-image: url('/images/add-on.svg');
 }
 
 #experiment-settings-link {
-  background-image: url('../optimized-images/experiments-icon.png');
+  background-image: url('/images/experiments-icon.png');
 }
 
 #localization-settings-link {
-  background-image: url('../optimized-images/localization-icon.svg');
+  background-image: url('/images/localization-icon.svg');
 }
 
 #update-settings-link {
-  background-image: url('../optimized-images/update-icon.svg');
+  background-image: url('/images/update-icon.svg');
 }
 
 #authorization-settings-link {
-  background-image: url('../optimized-images/authorization.svg');
+  background-image: url('/images/authorization.svg');
 }
 
 #developer-settings-link {
-  background-image: url('../optimized-images/developer-icon.svg');
+  background-image: url('/images/developer-icon.svg');
 }
 
 .settings-section {
@@ -185,7 +172,6 @@
   background-color: #48779a;
   border-radius: 0.5rem;
   padding: 2rem;
-  color: #fff;
   text-align: left;
   top: 50%;
   transform: translateY(-50%);
@@ -203,11 +189,27 @@
   padding-bottom: 0;
 }
 
+.network-settings-wrap ul {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 60rem;
+  padding: 9.6rem 2rem;
+  max-height: 100%;
+}
+
+#settings-menu ul {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 60rem;
+  margin: 0 auto;
+  padding: 0 2rem 2rem 2rem;
+}
+
 #network-settings-client ul,
-#network-settings-router ul,
 #user-settings ul,
 #adapter-settings ul,
-#addon-settings ul,
+#addon-main-settings ul,
+#addon-discovery-container,
 #domain-settings ul,
 #experiment-settings ul,
 #localization-settings ul,
@@ -225,17 +227,24 @@
   max-height: 100%;
 }
 
-.network-settings-wrap ul {
-  box-sizing: border-box;
-  width: 100%;
-  max-width: 60rem;
-  padding: 9.6rem 2rem;
-  max-height: 100%;
+#discovered-addons-list {
+  padding: 0;
 }
 
-#network-settings-client ul li:last-child,
-#network-settings-router ul li:last-child,
+#discovered-addons-search {
+  margin: 1rem auto;
+  height: 2.3rem;
+  background-color: #d2d9de;
+  border: none;
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+  width: calc(100% - 1rem);
+  display: block;
+  font-size: 1.6rem;
+}
+
 .network-settings-wrap ul li:last-child,
+#network-settings-client ul li:last-child,
 #user-settings ul li:last-child,
 #adapter-settings ul li:last-child,
 #addon-settings ul li:last-child,
@@ -247,11 +256,12 @@
 }
 
 #network-settings-unsupported-text,
+#no-experiments,
 #no-adapters {
   text-align: center;
   position: relative;
   top: 50%;
-  width: 100%;
+  width: calc(100% - 4rem);
   max-width: 60rem;
   margin: 0 auto;
   padding: 2rem;
@@ -259,6 +269,7 @@
   font-size: 2rem;
 }
 
+#no-experiments,
 #no-adapters {
   transform: translateY(calc(-50% - 4.8rem));
 }
@@ -267,6 +278,7 @@
   transform: translateY(calc(-50% - 9.6rem));
 }
 
+#no-experiments.hidden,
 #no-adapters.hidden,
 #no-authorizations.hidden {
   display: none;
@@ -323,6 +335,7 @@
 
 .network-settings-list-item-icon {
   height: 6rem;
+  width: 6rem;
   padding: 2rem 2rem;
 }
 
@@ -346,7 +359,7 @@
 }
 
 .network-settings-list-item-button {
-  background-image: url('../optimized-images/settings-icon.png');
+  background-image: url('/images/settings-icon.png');
   height: 4.2rem;
   margin: 2.9rem 2rem;
 }
@@ -370,24 +383,24 @@
 }
 
 .user-settings-header {
-  background-image: url('../optimized-images/user.svg');
+  background-image: url('/images/user.svg');
 }
 
 .adapter-settings-header {
-  background-image: url('../optimized-images/adapters-icon.png');
+  background-image: url('/images/adapters-icon.png');
 }
 
 .addon-settings-header,
 .addon-settings-header.extension {
-  background-image: url('../optimized-images/add-on.svg');
+  background-image: url('/images/add-on.svg');
 }
 
 .addon-settings-header.adapter {
-  background-image: url('../optimized-images/adapters-icon.png');
+  background-image: url('/images/adapters-icon.png');
 }
 
 .addon-settings-header.notifier {
-  background-image: url('../optimized-images/thing-icons/notification.svg');
+  background-image: url('/images/thing-icons/notification.svg');
 }
 
 .addon-settings-header.service {
@@ -404,7 +417,7 @@
 }
 
 .addon-updating {
-  margin-right: .8rem;
+  margin-right: 0.8rem;
 }
 
 .user-settings-description,
@@ -416,7 +429,7 @@
 }
 
 .domain-settings-error {
-  color: #ff9955;
+  color: #f95;
   font-size: 1.4rem;
   padding: 0 0 1rem 0;
 }
@@ -435,7 +448,7 @@
 }
 
 #domain-settings-local-update {
-  display:block;
+  display: block;
   font-size: 1.8rem;
 }
 
@@ -447,17 +460,12 @@
 .addon-settings-author {
   font-size: 1.4rem;
   font-style: italic;
+}
+
+.addon-settings-author {
   color: #ccc;
 }
 
-.addon-settings-license {
-  padding-left: 0.5rem;
-}
-
-.addon-settings-license a:link,
-.addon-settings-license a:visited,
-.addon-settings-license a:hover,
-.addon-settings-license a:active,
 .addon-settings-author a:link,
 .addon-settings-author a:visited,
 .addon-settings-author a:hover,
@@ -465,10 +473,17 @@
   color: #fff;
 }
 
+.addon-settings-license {
+  padding-left: 0.5rem;
+  cursor: pointer;
+  color: #fff;
+  text-decoration: underline;
+}
+
 .user-settings-controls,
 .adapter-settings-controls,
 .addon-settings-controls {
-  padding: 0rem 1rem 1rem 1rem;
+  padding: 0 1rem 1rem 1rem;
   text-align: right;
 }
 
@@ -512,6 +527,7 @@
 
 .addon-discovery-settings-add {
   background-color: #7f93a1;
+  background-image: url('/images/new.svg');
 }
 
 .addon-settings-config {
@@ -519,8 +535,8 @@
   background-repeat: no-repeat;
   background-position: 0.5em;
   padding-left: 4rem;
-  margin-right: .8rem;
-  background-image: url('../optimized-images/settings-icon.png');
+  margin-right: 0.8rem;
+  background-image: url('/images/settings-icon.png');
 }
 
 .addon-settings-config.hidden {
@@ -532,8 +548,8 @@
   background-repeat: no-repeat;
   background-position: 0.5em;
   padding-left: 4rem;
-  margin-right: .8rem;
-  background-image: url('../optimized-images/update-icon.svg');
+  margin-right: 0.8rem;
+  background-image: url('/images/update-icon.svg');
 }
 
 .addon-settings-update.hidden {
@@ -542,22 +558,22 @@
 
 .adapter-settings-disable,
 .addon-settings-disable {
-  background-image: url('../optimized-images/disable.svg');
+  background-image: url('/images/disable.svg');
 }
 
 .adapter-settings-enable,
 .addon-settings-enable {
-  background-image: url('../optimized-images/enable.svg');
+  background-image: url('/images/enable.svg');
 }
 
 .user-settings-edit {
-  background-image: url('../optimized-images/edit-plain.svg');
+  background-image: url('/images/edit-plain.svg');
 }
 
 .addon-settings-remove,
 .user-settings-remove {
-  margin-right: .8rem;
-  background-image: url('../optimized-images/remove.svg');
+  margin-right: 0.8rem;
+  background-image: url('/images/remove.svg');
 }
 
 @media only screen and (max-width: 560px) {
@@ -568,7 +584,7 @@
 
   .addon-settings-update {
     margin-right: 0;
-    margin-left: .8rem;
+    margin-left: 0.8rem;
   }
 
   .addon-settings-config {
@@ -576,16 +592,12 @@
   }
 }
 
-.addon-discovery-settings-add {
-  background-image: url('../optimized-images/new.svg');
-}
-
 #add-user-button,
 #discover-addons-button {
   position: fixed;
   bottom: 2rem;
   right: 2rem;
-  background-image: url('../optimized-images/add.svg');
+  background-image: url('/images/add.svg');
 }
 
 #user-settings-edit,
@@ -610,7 +622,7 @@
   grid-template-columns: repeat(3, 1fr);
 }
 
-.localization-item-content > span {
+.localization-item-content > label {
   grid-column: 1 / 2;
   padding-top: 1.6rem;
   text-align: right;
@@ -624,99 +636,119 @@
   padding: 2rem;
 }
 
+/* stylelint-disable no-descending-specificity */
+#enable-self-updates-checkbox + label::before,
+#domain-settings-local-checkbox + label::before,
+:root .transition-checkbox + label::before {
+  float: none;
+  vertical-align: middle;
+  margin-right: 0.5rem;
+}
+/* stylelint-enable no-descending-specificity */
+
+:root .update-checkbox,
 :root .network-checkbox,
+:root .user-checkbox,
 :root .developer-checkbox,
-:root .experiment-checkbox {
+:root .experiment-checkbox,
+:root .transition-checkbox {
   /* original check box is pushed outside the viewport */
   position: absolute;
   left: -1000em;
 }
 
-#network-settings-wifi-show-password + label:before {
-  float: none;
-  margin: -1rem 1rem -1rem -0.5rem;
-}
-
-#network-settings-wlan-show-password-wrap span,
-#network-settings-wifi .network-settings-wrap span {
-  width: 14rem;
+/* stylelint-disable no-descending-specificity */
+:root .network-checkbox + label::before {
+  content: '';
   display: inline-block;
-  text-align: left;
-}
-
-#network-settings-wlan-show-password-wrap span {
-  margin-left: -2rem;
-}
-
-:root .network-checkbox + label:before {
-  content: "";
-  display: inline-block;
-  width  : 3rem;
-  height : 3rem;
+  width: 3rem;
+  height: 3rem;
   float: left;
   margin: 1rem;
-  background: url("../optimized-images/checkbox-sprite.png") no-repeat 0 0;
+  background: url('/images/checkbox-sprite.png') no-repeat 0 0;
   background-size: 3rem auto;
 }
+/* stylelint-enable no-descending-specificity */
 
-:root .developer-checkbox + label:before,
-:root .experiment-checkbox + label:before {
-  content: "";
+/* stylelint-disable no-descending-specificity */
+:root .user-checkbox + label::before,
+:root .transition-checkbox + label::before {
+  content: '';
   display: inline-block;
-  width  : 3rem;
-  height : 3rem;
+  width: 3rem;
+  height: 3rem;
+  margin: 1rem 1rem 1rem -1rem;
+  background: url('/images/checkbox-sprite.png') no-repeat 0 0;
+  background-size: 3rem auto;
+}
+/* stylelint-enable no-descending-specificity */
+
+/* stylelint-disable no-descending-specificity */
+:root .update-checkbox + label::before,
+:root .developer-checkbox + label::before,
+:root .experiment-checkbox + label::before {
+  content: '';
+  display: inline-block;
+  width: 3rem;
+  height: 3rem;
   float: right;
   margin-top: -0.25rem;
-  background: url("../optimized-images/checkbox-sprite.png") no-repeat 0 0;
+  background: url('/images/checkbox-sprite.png') no-repeat 0 0;
   background-size: 3rem auto;
 }
+/* stylelint-enable no-descending-specificity */
 
-:root .network-checkbox:checked + label:before,
-:root .developer-checkbox:checked + label:before,
-:root .experiment-checkbox:checked + label:before {
+/* stylelint-disable no-descending-specificity */
+:root .update-checkbox:checked + label::before,
+:root .network-checkbox:checked + label::before,
+:root .user-checkbox:checked + label::before,
+:root .developer-checkbox:checked + label::before,
+:root .experiment-checkbox:checked + label::before,
+:root .transition-checkbox:checked + label::before {
   background-position: 0 -3rem;
 }
+/* stylelint-enable no-descending-specificity */
 
-:root .network-checkbox:disabled + label:before,
-:root .developer-checkbox:disabled + label:before,
-:root .experiment-checkbox:disabled + label:before {
+/* stylelint-disable no-descending-specificity */
+:root .update-checkbox:disabled + label::before,
+:root .network-checkbox:disabled + label::before,
+:root .user-checkbox:disabled + label::before,
+:root .developer-checkbox:disabled + label::before,
+:root .experiment-checkbox:disabled + label::before,
+:root .transition-checkbox:disabled + label::before {
   background-position: 0 -6rem;
 }
+/* stylelint-enable no-descending-specificity */
 
-:root .network-checkbox:checked:disabled + label:before,
-:root .developer-checkbox:checked:disabled + label:before,
-:root .experiment-checkbox:checked:disabled + label:before {
+/* stylelint-disable no-descending-specificity */
+:root .update-checkbox:checked:disabled + label::before,
+:root .network-checkbox:checked:disabled + label::before,
+:root .user-checkbox:checked:disabled + label::before,
+:root .developer-checkbox:checked:disabled + label::before,
+:root .experiment-checkbox:checked:disabled + label::before,
+:root .transition-checkbox:checked:disabled + label::before {
   background-position: 0 -9rem;
 }
-
-#domain-settings-local-checkbox + label:before {
-  float: none;
-  vertical-align: middle;
-  margin-right: 0.5rem;
-}
+/* stylelint-enable no-descending-specificity */
 
 #enable-ssh-item {
-  background-image: url('../optimized-images/ssh-icon.svg');
+  background-image: url('/images/ssh-icon.svg');
 }
 
-#assistant-experiment-item {
-  background-image: url('../optimized-images/assistant-icon.svg');
-}
+/* Uncomment this and change "example" to add a new experiment */
 
-#logs-experiment-item {
-  background-image: url('../optimized-images/logs-icon.svg');
+/*
+#example-experiment-item {
+  background-image: url('/images/example-icon.svg');
 }
-
-#speech-experiment-item {
-  background-image: url('../optimized-images/speech-icon.png');
-}
+*/
 
 #view-internal-logs {
-  background-image: url('../optimized-images/rules-icon.png');
+  background-image: url('/images/rules-icon.png');
 }
 
 #new-local-authorization {
-  background-image: url('../optimized-images/authorization.svg');
+  background-image: url('/images/authorization.svg');
 }
 
 #update-now.hidden {
@@ -740,13 +772,10 @@
   background: #305067;
 }
 
-#update-settings-up-to-date {
-}
-
 .authorization-item {
   position: relative;
   padding-left: 12rem;
-  background-image: url('../optimized-images/authorization.svg');
+  background-image: url('/images/authorization.svg');
   background-size: 8rem auto;
   background-repeat: no-repeat;
   background-position: left 2rem center;
@@ -765,8 +794,7 @@
   top: 50%;
   transform: translateY(-50%);
   background-color: #48779a;
-
-  background-image: url('../optimized-images/stop-16.svg');
+  background-image: url('/images/stop-16.svg');
   background-position: 1rem;
   background-size: 1.2rem;
   background-repeat: no-repeat;
@@ -778,7 +806,7 @@
 
 .user-form {
   top: 50%;
-  transform: translateY(calc(-50% - 6rem));
+  transform: translateY(-50%);
   position: relative;
   text-align: center;
   font-size: 1.6rem;
@@ -786,6 +814,7 @@
   min-width: 28rem;
   max-width: 38rem;
   margin: 0 auto;
+  max-height: 100%;
 }
 
 .network-settings-wrap {
@@ -814,11 +843,23 @@
   margin: 1rem auto;
 }
 
+.network-settings-wrap label:not(.checkbox),
 .network-settings-wrap span {
   font-size: 1.6rem;
   color: #fff;
   margin-top: 1.4rem;
   text-align: right;
+}
+
+#network-settings-wifi-show-password + label::before {
+  float: none;
+  margin: -1rem 1rem -1rem -0.5rem;
+}
+
+#network-settings-wifi .network-settings-wrap span {
+  width: 14rem;
+  display: inline-block;
+  text-align: left;
 }
 
 .network-button {
@@ -854,7 +895,7 @@
 }
 
 .wireless-network-info-disconnected {
-  color: #ff9955 !important;
+  color: #f95 !important;
 }
 
 .wireless-network-icon {
@@ -865,13 +906,29 @@
   float: right;
 }
 
-.network-settings-wrap input[type="password"],
-.network-settings-wrap input[type="text"],
+/* stylelint-disable no-descending-specificity */
+.network-settings-wrap input:not([type]),
+.network-settings-wrap input[type=''],
+.network-settings-wrap input[type='password'],
+.network-settings-wrap input[type='text'],
 .network-select,
 .user-form input {
   display: block;
-  width: 18rem;
   margin: 1rem;
+}
+
+.network-settings-wrap input:not([type]),
+.network-settings-wrap input[type=''],
+.network-settings-wrap input[type='password'],
+.network-settings-wrap input[type='text'],
+.network-select {
+  width: 18rem;
+}
+/* stylelint-enable no-descending-specificity */
+
+/* stylelint-disable-next-line no-descending-specificity */
+.user-form input {
+  width: 26rem;
 }
 
 .localization-select {
@@ -887,14 +944,19 @@
 }
 
 .user-form .error {
-  color: #ff9955;
+  color: #f95;
 }
 
-.network-settings-wrap input[type="text"],
-.network-settings-wrap input[type="password"],
-.user-form input[type="text"],
-.user-form input[type="password"],
-.user-form input[type="email"] {
+/* stylelint-disable no-descending-specificity */
+.network-settings-wrap input:not([type]),
+.network-settings-wrap input[type=''],
+.network-settings-wrap input[type='text'],
+.network-settings-wrap input[type='password'],
+.user-form input:not([type]),
+.user-form input[type=''],
+.user-form input[type='text'],
+.user-form input[type='password'],
+.user-form input[type='email'] {
   height: 2.3rem;
   background-color: #d2d9de;
   border: none;
@@ -902,12 +964,16 @@
   padding: 0.5rem;
 }
 
-.user-form input[type="text"],
-.user-form input[type="password"],
-.user-form input[type="email"] {
+.user-form input:not([type]),
+.user-form input[type=''],
+.user-form input[type='text'],
+.user-form input[type='password'],
+.user-form input[type='email'] {
   margin: 1rem auto;
 }
+/* stylelint-enable no-descending-specificity */
 
+/* stylelint-disable no-descending-specificity */
 .network-button,
 .user-form button {
   font-size: 1.6rem;
@@ -917,18 +983,23 @@
   padding: 1rem 4rem;
   color: #fff;
 }
+/* stylelint-enable no-descending-specificity */
 
+/* stylelint-disable no-descending-specificity */
+.network-button::-moz-focus-inner,
+.user-form button::-moz-focus-inner {
+  border: 0;
+}
+/* stylelint-enable no-descending-specificity */
+
+/* stylelint-disable no-descending-specificity */
 .network-button:hover,
 .network-button:active,
 .user-form button:hover,
 .user-form button:active {
   background-color: #658196;
 }
-
-.network-button::-moz-focus-inner,
-.user-form button::-moz-focus-inner {
-  border: 0;
-}
+/* stylelint-enable no-descending-specificity */
 
 .network-button:disabled {
   background-color: #597285;
@@ -953,7 +1024,7 @@
   -moz-appearance: none;
   -webkit-appearance: none;
   appearance: none;
-  background-image: url('/optimized-images/select-arrow.svg');
+  background-image: url('/images/select-arrow.svg');
   background-repeat: no-repeat;
   background-size: 1.25rem;
   background-position: calc(100% - 1rem);
@@ -965,6 +1036,48 @@
   background-color: #48779a;
 }
 
-#network-settings-wlan-show-password-wrap {
-  grid-column: 2 / 3;
+#edit-user-form {
+  color: #fff;
+}
+
+/* stylelint-disable-next-line no-descending-specificity */
+#edit-user-form span {
+  max-width: calc(100% - 4rem);
+  display: inline-block;
+  text-align: left;
+  position: relative;
+  top: -1.6rem;
+}
+
+#user-settings-mfa {
+  padding-top: 4rem;
+}
+
+#user-settings-mfa-secret {
+  word-break: break-all;
+  padding-bottom: 4rem;
+}
+
+#user-settings-mfa-qr-code {
+  padding: 2rem 0 2rem 0;
+}
+
+#user-settings-mfa-error {
+  padding-bottom: 1rem;
+}
+
+#user-settings-mfa-verify {
+  margin-bottom: 2rem;
+}
+
+#user-settings-mfa-backup-codes-message {
+  padding: 1rem 0;
+}
+
+#user-settings-mfa-backup-codes {
+  padding-bottom: 2rem;
+}
+
+#user-settings-mfa-backup-codes > p {
+  margin: 0.1rem 0;
 }

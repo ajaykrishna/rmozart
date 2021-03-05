@@ -1,0 +1,52 @@
+name: Build
+
+on:
+  pull_request:
+    branches:
+      - master
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [
+          10,
+          12,
+          14,
+        ]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Install system dependencies
+        run: |
+          sudo apt -qq update
+          sudo apt install -y google-chrome-stable
+      - name: Install node dependencies
+        run: |
+          npm ci
+      - name: Check formatting
+        run: |
+          npx prettier -u -c '*.ts' '*.js' config src static tools
+      - name: Lint with eslint and stylelint
+        run: |
+          npm run lint
+      - name: Run build
+        run: |
+          npm run build
+      - name: Run integration tests
+        run: |
+          ./tools/make-self-signed-cert.sh
+          npm run jest
+          npm run coverage
+        env:
+          WEBTHINGS_HOME: "${HOME}/.webthings/test"
+          NODE_TLS_REJECT_UNAUTHORIZED: 0
+      - name: Check dependencies
+        run: |
+          npm run dependencies-check

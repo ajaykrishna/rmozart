@@ -13,6 +13,11 @@ const Menu = require('./views/menu');
 class Extension {
   constructor(id) {
     this.id = id;
+    this.preferences = {
+      language: App.LANGUAGE,
+      timezone: App.TIMEZONE,
+      units: App.UNITS,
+    };
     this.view = App.registerExtension(this);
   }
 
@@ -25,6 +30,16 @@ class Extension {
    */
   addMenuEntry(name) {
     return Menu.addExtensionItem(this, name);
+  }
+
+  /**
+   * Load your html page here
+   *
+   * @returns {Promise} Promise which should resolve as soon as the extension
+   *                    is ready to be shown
+   */
+  load() {
+    return Promise.resolve();
   }
 
   /**

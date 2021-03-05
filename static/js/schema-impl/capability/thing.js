@@ -12,11 +12,12 @@
 
 const ActionDetail = require('../action/action');
 const AlarmDetail = require('../property/alarm');
-const API = require('../../api');
+const API = require('../../api').default;
 const App = require('../../app');
 const BooleanDetail = require('../property/boolean');
 const BrightnessDetail = require('../property/brightness');
 const ColorDetail = require('../property/color');
+const ColorModeDetail = require('../property/color-mode');
 const ColorTemperatureDetail = require('../property/color-temperature');
 const Constants = require('../../constants');
 const CurrentDetail = require('../property/current');
@@ -26,6 +27,7 @@ const fluent = require('../../fluent');
 const HeatingCoolingDetail = require('../property/heating-cooling');
 const ImageDetail = require('../property/image');
 const InstantaneousPowerDetail = require('../property/instantaneous-power');
+const InstantaneousPowerFactorDetail = require('../property/instantaneous-power-factor');
 const LeakDetail = require('../property/leak');
 const LevelDetail = require('../property/level');
 const LockActionDetail = require('../action/lock');
@@ -35,6 +37,7 @@ const NumberDetail = require('../property/number');
 const OnOffDetail = require('../property/on-off');
 const OpenDetail = require('../property/open');
 const PushedDetail = require('../property/pushed');
+const SmokeDetail = require('../property/smoke');
 const StringDetail = require('../property/string');
 const TargetTemperatureDetail = require('../property/target-temperature');
 const TemperatureDetail = require('../property/temperature');
@@ -69,16 +72,14 @@ class Thing {
     };
 
     this.title = description.title;
-    this.type = description.type;
     this.model = model;
     this.listeners = [];
     this.connected = this.model.connected;
 
-    if (Array.isArray(description['@type']) &&
-        description['@type'].length > 0) {
+    if (Array.isArray(description['@type']) && description['@type'].length > 0) {
       this['@type'] = description['@type'];
     } else {
-      this['@type'] = Utils.legacyTypeToCapabilities(this.type);
+      this['@type'] = [];
     }
 
     this.selectedCapability = description.selectedCapability;
@@ -103,9 +104,11 @@ class Thing {
         if (link.rel === 'alternate' && link.mediaType === 'text/html') {
           if (link.href.startsWith('/proxy/')) {
             this.uiHref = `${link.href}?jwt=${API.jwt}`;
-          } else if (link.href.startsWith('http://') ||
-                     link.href.startsWith('https://') ||
-                     link.href.startsWith('/extensions/')) {
+          } else if (
+            link.href.startsWith('http://') ||
+            link.href.startsWith('https://') ||
+            link.href.startsWith('/extensions/')
+          ) {
             this.uiHref = link.href;
           }
 
@@ -117,8 +120,13 @@ class Thing {
     // Parse base URL of Thing
     if (description.href) {
       this.href = new URL(description.href, App.ORIGIN);
-      this.eventsHref = `${this.href.pathname}/events?referrer=${
-        encodeURIComponent(this.href.pathname)}`;
+      // double-encode slashes to make page.js happy
+      const params = new URLSearchParams();
+      params.set('referrer', encodeURIComponent(this.href.pathname.replace(/%2F/g, '%252F')));
+      this.eventsHref = `${this.href.pathname.replace(
+        /%2F/g,
+        '%252F'
+      )}/events?${params.toString()}`;
       this.id = decodeURIComponent(this.href.pathname.split('/').pop());
     }
 
@@ -135,18 +143,17 @@ class Thing {
             convertedProperty.unit = newUnit;
 
             if (property.hasOwnProperty('minimum')) {
-              convertedProperty.minimum =
-                Units.convert(property.minimum, property.unit).value;
+              convertedProperty.minimum = Units.convert(property.minimum, property.unit).value;
             }
 
             if (property.hasOwnProperty('maximum')) {
-              convertedProperty.maximum =
-                Units.convert(property.maximum, property.unit).value;
+              convertedProperty.maximum = Units.convert(property.maximum, property.unit).value;
             }
 
             if (property.hasOwnProperty('enum')) {
-              convertedProperty.enum =
-                property.enum.map((v) => Units.convert(v, property.unit).value);
+              convertedProperty.enum = property.enum.map(
+                (v) => Units.convert(v, property.unit).value
+              );
             }
 
             if (property.hasOwnProperty('multipleOf')) {
@@ -186,12 +193,17 @@ class Thing {
           case 'ColorProperty':
             detail = new ColorDetail(this, name, convertedProperty);
             break;
+          case 'ColorModeProperty':
+            detail = new ColorModeDetail(this, name, convertedProperty);
+            break;
           case 'ColorTemperatureProperty':
             detail = new ColorTemperatureDetail(this, name, convertedProperty);
             break;
           case 'InstantaneousPowerProperty':
-            detail =
-              new InstantaneousPowerDetail(this, name, convertedProperty);
+            detail = new InstantaneousPowerDetail(this, name, convertedProperty);
+            break;
+          case 'InstantaneousPowerFactorProperty':
+            detail = new InstantaneousPowerFactorDetail(this, name, convertedProperty);
             break;
           case 'CurrentProperty':
             detail = new CurrentDetail(this, name, convertedProperty);
@@ -210,6 +222,9 @@ class Thing {
             break;
           case 'LeakProperty':
             detail = new LeakDetail(this, name, convertedProperty);
+            break;
+          case 'SmokeProperty':
+            detail = new SmokeDetail(this, name, convertedProperty);
             break;
           case 'PushedProperty':
             detail = new PushedDetail(this, name, convertedProperty);
@@ -261,8 +276,7 @@ class Thing {
                   detail = new BooleanDetail(this, name, convertedProperty);
                   break;
                 default:
-                  console.warn('Unable to build property detail for:',
-                               property);
+                  console.warn('Unable to build property detail for:', property);
                   continue;
               }
             }
@@ -305,7 +319,7 @@ class Thing {
                 break;
             }
 
-            this.displayedActions[name] = {detail};
+            this.displayedActions[name] = { detail };
           }
         }
       }
@@ -317,24 +331,31 @@ class Thing {
         menu.push({
           href: this.eventsHref,
           name: fluent.getMessage('event-log'),
-          icon: '/optimized-images/rules-icon.png',
+          icon: '/images/rules-icon.png',
         });
       } else {
         this.displayEvents = false;
       }
 
-      menu.push({
-        listener: this.handleEdit.bind(this),
-        name: fluent.getMessage('edit'),
-        icon: '/optimized-images/edit-plain.svg',
-      }, {
-        listener: this.handleRemove.bind(this),
-        name: fluent.getMessage('remove'),
-        icon: '/optimized-images/remove.svg',
-      });
+      menu.push(
+        {
+          listener: this.handleEdit.bind(this),
+          name: fluent.getMessage('edit'),
+          icon: '/images/edit-plain.svg',
+        },
+        {
+          listener: this.handleRemove.bind(this),
+          name: fluent.getMessage('remove'),
+          icon: '/images/remove.svg',
+        }
+      );
 
       App.buildOverflowMenu(menu);
-      App.showOverflowButton();
+
+      const thingsView = document.getElementById('things-view');
+      if (!thingsView.classList.contains('hidden')) {
+        App.showOverflowButton();
+      }
     } else {
       App.hideOverflowButton();
     }
@@ -360,32 +381,45 @@ class Thing {
    * Find any properties required for this view.
    */
   findProperties() {
+    // pass
   }
 
   /**
    * HTML view for Thing.
    */
   attachExpandedView() {
-    for (const prop of Object.values(this.displayedProperties)) {
+    // Note: the UI will not show them in actual sorted order around the hub.
+    // However, sorting here will at least make it draw them in a consistent
+    // position each time.
+    const props = Array.from(Object.values(this.displayedProperties)).sort((a, b) =>
+      a.detail.label.localeCompare(b.detail.label)
+    );
+    for (const prop of props) {
       // only attach the first time.
-      if ((!prop.hasOwnProperty('attached') || !prop.attached) &&
-            prop.hasOwnProperty('detail')) {
+      if ((!prop.hasOwnProperty('attached') || !prop.attached) && prop.hasOwnProperty('detail')) {
         prop.detail.attach();
         prop.attached = true;
       }
     }
 
-    for (const action of Object.values(this.displayedActions)) {
+    const actions = Array.from(Object.values(this.displayedActions)).sort((a, b) =>
+      a.detail.label.localeCompare(b.detail.label)
+    );
+    for (const action of actions) {
       // only attach the first time.
-      if ((!action.hasOwnProperty('attached') || !action.attached) &&
-            action.hasOwnProperty('detail')) {
+      if (
+        (!action.hasOwnProperty('attached') || !action.attached) &&
+        action.hasOwnProperty('detail')
+      ) {
         action.detail.attach();
         action.attached = true;
       }
     }
 
     this.layout = new ThingDetailLayout(
-      this, this.element.querySelectorAll('.thing-detail-container'));
+      this,
+      this.element.querySelectorAll('.thing-detail-container')
+    );
   }
 
   /**
@@ -402,7 +436,9 @@ class Thing {
    * HTML link for Thing Detail view
    */
   detailLink() {
-    return `<a href="${encodeURI(this.href)}" class="thing-details-link"></a>`;
+    // double-encode slashes to make page.js happy
+    return `<a href="${this.href.pathname.replace(/%2F/g, '%252F')}"
+      class="thing-details-link" data-l10n-id="thing-details"></a>`;
   }
 
   /**
@@ -440,15 +476,13 @@ class Thing {
 
     for (const prop of Object.values(this.displayedProperties)) {
       if (prop.hasOwnProperty('detail')) {
-        detailsHTML +=
-          `<div class="thing-detail-container">${prop.detail.view()}</div>`;
+        detailsHTML += `<div class="thing-detail-container">${prop.detail.view()}</div>`;
       }
     }
 
     for (const action of Object.values(this.displayedActions)) {
       if (action.hasOwnProperty('detail')) {
-        detailsHTML +=
-          `<div class="thing-detail-container">${action.detail.view()}</div>`;
+        detailsHTML += `<div class="thing-detail-container">${action.detail.view()}</div>`;
       }
     }
 
@@ -519,7 +553,7 @@ class Thing {
    */
   registerEventListener(element, event, handler) {
     element.addEventListener(event, handler);
-    this.listeners.push({element, event, handler});
+    this.listeners.push({ element, event, handler });
   }
 
   /**
@@ -541,11 +575,12 @@ class Thing {
    * @return {String}
    */
   linkIconView() {
+    // double-encode slashes to make page.js happy
     return `<div
         class="floorplan-thing"
         data-x="${this.x}"
         data-y="${this.y}"
-        data-href="${encodeURI(this.href)}"
+        data-href="${this.href.pathname.replace(/%2F/g, '%252F')}"
         >
       ${this.iconView()}
       <div class="floorplan-thing-title">${Utils.escapeHtml(this.title)}</div>
@@ -616,7 +651,7 @@ class Thing {
       const dropNodeStart = dropNode.getBoundingClientRect().x;
       const dropNodeWidth = dropNode.getBoundingClientRect().width;
 
-      if ((dropX - dropNodeStart) < (dropNodeWidth / 2)) {
+      if (dropX - dropNodeStart < dropNodeWidth / 2) {
         dropNode.classList.add('drag-start');
       } else {
         dropNode.classList.add('drag-end');
@@ -662,7 +697,7 @@ class Thing {
 
     this.container.removeChild(dragNode);
 
-    if ((dropX - dropNodeStart) < (dropNodeWidth / 2)) {
+    if (dropX - dropNodeStart < dropNodeWidth / 2) {
       this.container.insertBefore(dragNode, dropNode);
     } else {
       const sibling = dropNode.nextSibling;
@@ -677,11 +712,13 @@ class Thing {
       node.dataset.layoutIndex = index;
 
       const id = Utils.unescapeHtml(node.id).replace(/^thing-/, '');
-      API.setThingLayoutIndex(id, index).then(() => {
-        App.gatewayModel.refreshThings();
-      }).catch((e) => {
-        console.error(`Error trying to arrange thing ${id}: ${e}`);
-      });
+      API.setThingLayoutIndex(id, index)
+        .then(() => {
+          App.gatewayModel.refreshThings();
+        })
+        .catch((e) => {
+          console.error(`Error trying to arrange thing ${id}: ${e}`);
+        });
     });
   }
 
@@ -754,9 +791,7 @@ class Thing {
     }
 
     for (const name in data) {
-      App.showMessage(
-        `<a href="${this.eventsHref}">${Utils.escapeHtml(name)}</a>`,
-        3000);
+      App.showMessage(`<a href="${this.eventsHref}">${Utils.escapeHtml(name)}</a>`, 3000);
     }
   }
 

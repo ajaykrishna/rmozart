@@ -2,43 +2,80 @@
 
 # Performs any necessary steps after the main upgrade process is complete.
 
-sudo apt update -y
+# Load nvm
+export NVM_DIR=${HOME}/.nvm
+\. "$NVM_DIR/nvm.sh"
+nvm use
+nvm alias default node
 
-# Install ffmpeg, if necessary
-if ! dpkg -s ffmpeg 2>/dev/null | grep -q '^Status.*installed'; then
-  sudo apt install -y ffmpeg
-fi
+# Check for and install any missing system dependencies
+_all_deps="ffmpeg mosquitto arping wiringpi python-six"
+_missing_deps=""
+for dep in $_all_deps; do
+  if ! dpkg -s "$dep" 2>/dev/null | grep -q '^Status.*installed'; then
+    _missing_deps="$_missing_deps $dep"
+  fi
+done
 
-# Install mosquitto, if necessary
-if ! dpkg -s mosquitto 2>/dev/null | grep -q '^Status.*installed'; then
-  sudo apt install -y mosquitto
-fi
-
-# Install arping, if necessary
-if ! dpkg -s arping 2>/dev/null | grep -q '^Status.*installed'; then
-  sudo apt install -y arping
+if [ -n "$_missing_deps" ]; then
+  sudo apt update -y
+  sudo apt install -y $_missing_deps
 fi
 
 # Upgrade gateway-addon Python package
-_url="git+https://github.com/mozilla-iot/gateway-addon-python@v0.10.0#egg=gateway_addon"
-sudo pip3 install -U "$_url"
+sudo pip3 install -U -r "$HOME/webthings/gateway/requirements.txt"
 
 # Uninstall py2 version of gateway-addon, if present
 sudo pip2 uninstall -y gateway_addon || true
 
-# Upgrade adapt-parser Python package
-_url="git+https://github.com/mycroftai/adapt#egg=adapt-parser"
-sudo pip3 install -U "$_url"
+# Uninstall adapt-parser, if present
+sudo pip3 uninstall -y adapt-parser || true
 
-sudo systemctl enable mozilla-iot-gateway.service
+# Disable old system services
+sudo systemctl disable mozilla-iot-gateway.service || true
+# mozilla-iot-gateway.service is already stopped
+sudo systemctl disable mozilla-iot-gateway.check-for-update.timer || true
+sudo systemctl stop mozilla-iot-gateway.check-for-update.timer || true
 sudo systemctl disable mozilla-gateway-wifi-setup.service || true
+sudo systemctl stop mozilla-gateway-wifi-setup.service || true
 sudo systemctl disable mozilla-iot-gateway.renew-certificates.timer || true
+sudo systemctl stop mozilla-iot-gateway.renew-certificates.timer || true
+sudo systemctl disable mozilla-iot-gateway.intent-parser.service || true
+sudo systemctl stop mozilla-iot-gateway.intent-parser.service || true
 
+# Enable new system services
+sudo systemctl enable webthings-gateway.service
+# webthings-gateway.service will be started by upgrade.sh
+sudo systemctl enable webthings-gateway.check-for-update.timer
+sudo systemctl start webthings-gateway.check-for-update.timer
+
+# Handle legacy wifiskip file
 if sudo test -e "/root/gateway-wifi-setup/wifiskip"; then
-  touch "$HOME/.mozilla-iot/config/wifiskip"
+  if [ -d "$HOME/.webthings" ]; then
+    touch "$HOME/.webthings/config/wifiskip"
+  elif [ -d "$HOME/.mozilla-iot" ]; then
+    touch "$HOME/.mozilla-iot/config/wifiskip"
+  fi
 fi
 
-(cd "$HOME/mozilla-iot/intent-parser"; git pull)
-sudo systemctl restart mozilla-iot-gateway.intent-parser.service
+# Remove old intent parser
+rm -rf "$HOME/webthings/intent-parser"
 
+# If the node version changed, and we have a user profile, we need to update
+# add-ons
+if [ -d "$HOME/.webthings" ]; then
+  if [[ ! -f "$HOME/webthings/gateway_old/.nvmrc" ||
+        $(sha256sum "$HOME/webthings/gateway_old/.nvmrc") != $(sha256sum "$HOME/webthings/gateway/.nvmrc") ]]; then
+    cd "$HOME/webthings/gateway"
+    ./tools/update-addons.sh
+    cd -
+  fi
+fi
+
+# Link the gateway-addon module globally
+cd "$HOME/webthings/gateway/node_modules/gateway-addon"
+npm link
+cd -
+
+# Finished
 touch .post_upgrade_complete

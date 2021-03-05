@@ -48,7 +48,7 @@ class BooleanProperty extends BaseComponent {
       display: block;
       width: 3rem;
       height: 3rem;
-      background: url("/optimized-images/checkbox-sprite.png") no-repeat 0 0;
+      background: url("/images/checkbox-sprite.png") no-repeat 0 0;
       background-size: 3rem auto;
     }
 
@@ -85,10 +85,8 @@ class BooleanProperty extends BaseComponent {
   <div id="name-${BaseComponent.count}" class="webthing-boolean-property-name"></div>
 `;
     super(template);
-    this._input =
-      this.shadowRoot.querySelector('.webthing-boolean-property-checkbox');
-    this._name =
-      this.shadowRoot.querySelector('.webthing-boolean-property-name');
+    this._input = this.shadowRoot.querySelector('.webthing-boolean-property-checkbox');
+    this._name = this.shadowRoot.querySelector('.webthing-boolean-property-name');
 
     this._onClick = this.__onClick.bind(this);
     this._onKeyUp = this.__onKeyUp.bind(this);
@@ -98,9 +96,7 @@ class BooleanProperty extends BaseComponent {
     this.name = this.dataset.name;
 
     this.readOnly =
-      typeof this.dataset.readOnly !== 'undefined' ?
-        this.dataset.readOnly === 'true' :
-        false;
+      typeof this.dataset.readOnly !== 'undefined' ? this.dataset.readOnly === 'true' : false;
 
     this._upgradeProperty('checked');
 
@@ -180,12 +176,14 @@ class BooleanProperty extends BaseComponent {
     }
 
     this.checked = !this.checked;
-    this.dispatchEvent(new CustomEvent('change', {
-      detail: {
-        checked: this.checked,
-      },
-      bubbles: true,
-    }));
+    this.dispatchEvent(
+      new CustomEvent('change', {
+        detail: {
+          checked: this.checked,
+        },
+        bubbles: true,
+      })
+    );
   }
 }
 

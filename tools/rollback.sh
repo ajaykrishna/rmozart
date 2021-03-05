@@ -1,12 +1,15 @@
 #!/bin/bash
 
 # This script performs a rollback of a failed upgrade. It expects to be run in
-# the ~/mozilla-iot directory where it can see gateway, gateway_old, and
-# gateway_failed
+# the ~/webthings directory where it can see gateway and gateway_old.
 
-COUNTER_FILE=/tmp/mozilla-iot-gateway-reset-counter
+COUNTER_FILE=/tmp/webthings-gateway-reset-counter
 
-# from https://stackoverflow.com/questions/552724/
+# Load nvm
+export NVM_DIR=${HOME}/.nvm
+\. "$NVM_DIR/nvm.sh"
+
+# From https://stackoverflow.com/questions/552724/
 function recentEnough() {
   local filename=$1
   local changed=$(stat -c %Y "$filename")
@@ -14,7 +17,7 @@ function recentEnough() {
   local elapsed
 
   let elapsed=now-changed
-  # if less than 60 * 60 * 24 * 14 seconds have passed
+  # if less than 60 * 60 * 24 * 14 seconds (14 days) have passed
   if [ $elapsed -lt 1209600 ]; then
     return 0 # successful exit
   fi
@@ -47,10 +50,48 @@ function checkCounter() {
   return 1
 }
 
+# Roll back if we need to
 if [ -d "gateway_old" ] && $(recentEnough "gateway_old") && $(checkCounter); then
-  systemctl stop mozilla-iot-gateway
-  rm -fr gateway_failed
-  mv gateway gateway_failed
+  # Stop the gateway
+  sudo systemctl stop webthings-gateway.service || true
+  sudo systemctl stop mozilla-iot-gateway.service || true
+
+  # Roll back to the old gateway
+  rm -rf gateway
   mv gateway_old gateway
-  systemctl start mozilla-iot-gateway
+
+  # Restore the user profile
+  if [ -d "$HOME/.webthings.old" ]; then
+    rm -rf "$HOME/.webthings"
+    mv "$HOME/.webthings.old" "$HOME/.webthings"
+  elif [ -d "$HOME/.mozilla-iot.old" ]; then
+    rm -rf "$HOME/.webthings"
+    mv "$HOME/.mozilla-iot.old" "$HOME/.mozilla-iot"
+  fi
+
+  # Install and use the version of node specified in .nvmrc
+  pushd ./gateway
+  nvm install
+  nvm use
+  nvm alias default node
+  nvm install-latest-npm
+  popd
+
+  # Link the gateway-addon module globally
+  cd "$HOME/webthings/gateway/node_modules/gateway-addon"
+  npm link || true
+  cd -
+
+  # Start the gateway back up
+  if [ -f "$HOME/webthings/gateway/image/stage3/02-systemd-units/files/etc/systemd/system/webthings-gateway.service" ]; then
+    sudo systemctl start webthings-gateway.service
+  else
+    sudo systemctl disable webthings-gateway || true
+    sudo systemctl disable webthings-gateway.check-for-update.timer || true
+    sudo systemctl stop webthings-gateway.check-for-update.timer || true
+    sudo systemctl enable mozilla-iot-gateway.service
+    sudo systemctl start mozilla-iot-gateway.service
+    sudo systemctl enable mozilla-iot-gateway.check-for-update.timer
+    sudo systemctl start mozilla-iot-gateway.check-for-update.timer
+  fi
 fi

@@ -105,37 +105,39 @@ class LightCapability extends BaseComponent {
     this._haveBrightness = false;
     this._haveColor = false;
     this._haveColorTemperature = false;
+    this._haveColorMode = false;
     this._on = false;
     this._brightness = 0;
     this._color = OFF_FILL;
     this._colorTemperature = 2700;
+    this._colorMode = 'color';
 
     this._onClick = this.__onClick.bind(this);
   }
 
   connectedCallback() {
     this._haveBrightness =
-      typeof this.dataset.haveBrightness !== 'undefined' ?
-        this.dataset.haveBrightness === 'true' :
-        false;
+      typeof this.dataset.haveBrightness !== 'undefined'
+        ? this.dataset.haveBrightness === 'true'
+        : false;
     this._haveColor =
-      typeof this.dataset.haveColor !== 'undefined' ?
-        this.dataset.haveColor === 'true' :
-        false;
+      typeof this.dataset.haveColor !== 'undefined' ? this.dataset.haveColor === 'true' : false;
     this._haveColorTemperature =
-      typeof this.dataset.haveColorTemperature !== 'undefined' ?
-        this.dataset.haveColorTemperature === 'true' :
-        false;
+      typeof this.dataset.haveColorTemperature !== 'undefined'
+        ? this.dataset.haveColorTemperature === 'true'
+        : false;
+    this._haveColorMode =
+      typeof this.dataset.haveColorMode !== 'undefined'
+        ? this.dataset.haveColorMode === 'true'
+        : false;
     this.on = typeof this.dataset.on !== 'undefined' ? this.dataset.on : false;
     this.brightness =
-      typeof this.dataset.brightness !== 'undefined' ?
-        this.dataset.brightness :
-        false;
+      typeof this.dataset.brightness !== 'undefined' ? this.dataset.brightness : false;
     this.color = this.dataset.color || OFF_FILL;
     this.colorTemperature =
-      typeof this.dataset.colorTemperature !== 'undefined' ?
-        this.dataset.colorTemperature :
-        2700;
+      typeof this.dataset.colorTemperature !== 'undefined' ? this.dataset.colorTemperature : 2700;
+    this.colorMode =
+      typeof this.dataset.colorMode !== 'undefined' ? this.dataset.colorMode : 'color';
     this._container.addEventListener('click', this._onClick);
   }
 
@@ -164,10 +166,8 @@ class LightCapability extends BaseComponent {
       this._label.innerText = fluent.getMessage('off');
     }
 
-    if (this._haveColor) {
-      this.color = this._color;
-    } else if (this._haveColorTemperature) {
-      this.colorTemperature = this._colorTemperature;
+    if (this._haveColor || this._haveColorTmperature) {
+      this._updateIconColor();
     } else if (this._on) {
       this._icon.style.fill = ON_FILL;
     } else {
@@ -203,7 +203,7 @@ class LightCapability extends BaseComponent {
     }
 
     this._color = value;
-    this._updateIconColor(value);
+    this._updateIconColor();
   }
 
   get colorTemperature() {
@@ -216,10 +216,40 @@ class LightCapability extends BaseComponent {
     }
 
     this._colorTemperature = Number(value);
-    this._updateIconColor(Utils.colorTemperatureToRGB(this._colorTemperature));
+    this._updateIconColor();
   }
 
-  _updateIconColor(value) {
+  get colorMode() {
+    return this._colorMode;
+  }
+
+  set colorMode(value) {
+    if (!this._haveColorMode) {
+      return;
+    }
+
+    this._colorMode = value;
+    this._updateIconColor();
+  }
+
+  _updateIconColor() {
+    let value;
+    if (this._haveColorMode) {
+      if (this.colorMode === 'color') {
+        value = this.color;
+      } else if (this.colorMode === 'temperature') {
+        value = Utils.colorTemperatureToRGB(this.colorTemperature);
+      } else {
+        value = ON_FILL;
+      }
+    } else if (this._haveColor) {
+      value = this.color;
+    } else if (this._haveColorTemperature) {
+      value = Utils.colorTemperatureToRGB(this.colorTemperature);
+    } else {
+      value = ON_FILL;
+    }
+
     this._icon.style.fill = value;
 
     const r = parseInt(value.substr(1, 2), 16);
@@ -238,9 +268,11 @@ class LightCapability extends BaseComponent {
     e.preventDefault();
     e.stopPropagation();
 
-    this.dispatchEvent(new CustomEvent('click', {
-      bubbles: true,
-    }));
+    this.dispatchEvent(
+      new CustomEvent('click', {
+        bubbles: true,
+      })
+    );
   }
 }
 

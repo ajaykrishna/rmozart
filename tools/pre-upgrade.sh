@@ -2,24 +2,29 @@
 
 # Performs any necessary steps before the main upgrade process is complete.
 
-# For some reason NVM_DIR isn't set at this point
+# Load nvm
 export NVM_DIR=${HOME}/.nvm
-\. "$NVM_DIR/nvm.sh"  # This loads nvm
-NODE_VERSION="--lts=carbon"
-nvm install ${NODE_VERSION}
-nvm use ${NODE_VERSION}
-# always use most recent version (lts)
-nvm alias default node
+\. "$NVM_DIR/nvm.sh"
 
-# Clean up old node versions
-for version in $(nvm ls --no-colors | grep '^ ' | awk '{ print $1 }'); do
-    nvm uninstall "${version/^v/}"
-done
+# Rename the base directory
+if [[ -d "$HOME/mozilla-iot" && ! -e "$HOME/webthings" ]]; then
+  ln -sf "$HOME/mozilla-iot" "$HOME/webthings"
+fi
+
+# Install and use the version of node specified in .nvmrc
+nvm install
+nvm use
+nvm alias default node
+nvm install-latest-npm
+
+# Clean up the nvm cache to free some space
+nvm cache clear
 
 # Allow node and python3 to use the Bluetooth adapter
 sudo setcap cap_net_raw+eip $(eval readlink -f `which node`)
 sudo setcap cap_net_raw+eip $(eval readlink -f `which python3`)
 
-sudo chown -R root:root "image/etc"
-sudo cp -r "image/etc" /
-sudo chown -R $(id -u):$(id -g) "image/etc"
+# Copy any new system config files
+sudo chown -R root:root image/stage3/02-systemd-units/files/etc
+sudo cp -r image/stage3/02-systemd-units/files/etc /
+sudo chown -R $(id -u):$(id -g) image/stage3/02-systemd-units/files/etc

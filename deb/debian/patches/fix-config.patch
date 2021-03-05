@@ -1,0 +1,30 @@
+Update the default configuration for running as a package.
+--- a/config/default.js
++++ b/config/default.js
+@@ -14,7 +14,7 @@
+
+ module.exports = {
+   // Base profile directory
+-  profileDir: `${home}/.webthings`,
++  profileDir: '/etc/webthings-gateway',
+
+   ports: {
+     // HTTPS port
+@@ -29,7 +29,7 @@
+
+   // Whether the gateway is behind port forwarding and should use simplified
+   // port-free urls
+-  behindForwarding: true,
++  behindForwarding: false,
+
+   addonManager: {
+     // URLs of add-on lists to parse, in order
+@@ -50,7 +50,7 @@
+     defaults: {
+       mdns: {
+         // Whether or not to enable mDNS advertisements
+-        enabled: true,
++        enabled: false,
+
+         // Domain to advertise via mDNS
+         domain: os.hostname().split('.')[0],

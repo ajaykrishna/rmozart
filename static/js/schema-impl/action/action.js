@@ -10,7 +10,7 @@
 
 'use strict';
 
-const API = require('../../api');
+const API = require('../../api').default;
 const Utils = require('../../utils');
 const page = require('page');
 
@@ -32,28 +32,35 @@ class ActionDetail {
   view() {
     let disabled = '';
     if (typeof this.input !== 'undefined') {
-      const base = `${window.location.pathname}/actions/${this.name}`;
-      const referrer = encodeURIComponent(window.location.pathname);
-      this.inputPageRef = `${encodeURI(base)}?referrer=${referrer}`;
-      if (typeof this.input === 'object' &&
-          ((this.input.hasOwnProperty('required') &&
-            Array.isArray(this.input.required) &&
-            this.input.required.length > 0) ||
-           this.input.type !== 'object')) {
+      // double-encode slashes to make page.js happy
+      const base = `${window.location.pathname}/actions/${encodeURIComponent(this.name).replace(
+        /%2F/g,
+        '%252F'
+      )}`;
+      const params = new URLSearchParams();
+      params.set('referrer', encodeURIComponent(window.location.pathname));
+      this.inputPageRef = `${base}?${params.toString()}`;
+      if (
+        typeof this.input === 'object' &&
+        ((this.input.hasOwnProperty('required') &&
+          Array.isArray(this.input.required) &&
+          this.input.required.length > 0) ||
+          this.input.type !== 'object')
+      ) {
         disabled = 'disabled';
       }
     }
 
     return `
       <webthing-action ${disabled} id="${this.id}"
-        data-name="${Utils.escapeHtml(this.label)}"
+        data-name="${Utils.escapeHtml(this.label)}">
       </webthing-action>`;
   }
 
   handleClick() {
     const input = {};
     if (typeof this.input === 'undefined') {
-      API.postJson(this.href, {[this.name]: {input}}).catch((e) => {
+      API.postJson(this.href, { [this.name]: { input } }).catch((e) => {
         console.error(`Error performing action "${this.name}": ${e}`);
       });
     } else {

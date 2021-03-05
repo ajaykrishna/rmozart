@@ -11,7 +11,8 @@ section {
   overflow: auto;
 }
 
-a, a:visited {
+a,
+a:visited {
   color: white;
 }
 
@@ -26,17 +27,15 @@ a, a:visited {
 .title-bar > h1 {
   font-family: 'Open Sans', sans-serif;
   font-weight: normal;
-
   padding: 0;
   margin: 0 auto;
   display: inline-block;
   line-height: 9.6rem;
-
   padding-left: 6.8rem;
   background-size: 3.2rem;
   background-repeat: no-repeat;
   background-position: 2rem;
-  background-image: url('../optimized-images/authorization.svg');
+  background-image: url('/images/authorization.svg');
 }
 
 .main-container {
@@ -75,4 +74,14 @@ span.insecure {
 
 .insecure .insecure {
   display: inline;
+}
+
+#copy-token-button {
+  background-color: #78acd0;
+  font-size: 1.6rem;
+}
+
+#copy-token-button:hover,
+#copy-token-button:active {
+  background-color: #305067;
 }

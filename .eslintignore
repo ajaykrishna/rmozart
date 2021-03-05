@@ -1,4 +1,5 @@
+/.eslintrc.js
+/.eslintrc-typescript.js
 /build/
-/coverage/
-/static/js/lib/
 /config/
+/coverage/

@@ -99,6 +99,14 @@ const Units = {
       case 'feet':
         return fluent.getMessage('abbrev-foot');
 
+      case 'micrograms per cubic metre':
+      case 'micrograms per cubic meter':
+        return fluent.getMessage('abbrev-micrograms-per-cubic-meter');
+
+      case 'hectopascal':
+      case 'hectopascals':
+        return fluent.getMessage('abbrev-hectopascal');
+
       default:
         return unit;
     }
@@ -120,7 +128,7 @@ const Units = {
       case 'celsius':
         if ((toUnit || App.UNITS.temperature) === 'degree fahrenheit') {
           toUnit = App.UNITS.temperature;
-          value = (value * 1.8) + 32;
+          value = value * 1.8 + 32;
         }
         break;
       case 'degree fahrenheit':
@@ -135,7 +143,7 @@ const Units = {
         break;
     }
 
-    return {value, unit: toUnit || fromUnit};
+    return { value, unit: toUnit || fromUnit };
   },
 };
 

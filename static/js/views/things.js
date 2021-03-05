@@ -13,41 +13,18 @@
 const page = require('page');
 const ActionInputForm = require('./action-input-form');
 const AddThingScreen = require('./add-thing');
-const Alarm = require('../schema-impl/capability/alarm');
 const App = require('../app');
-const BinarySensor = require('../schema-impl/capability/binary-sensor');
-const Camera = require('../schema-impl/capability/camera');
-const ColorControl = require('../schema-impl/capability/color-control');
-const ColorSensor = require('../schema-impl/capability/color-sensor');
 const Constants = require('../constants');
-const DoorSensor = require('../schema-impl/capability/door-sensor');
-const EnergyMonitor = require('../schema-impl/capability/energy-monitor');
 const EventList = require('./event-list');
 const fluent = require('../fluent');
 const Icons = require('../icons');
-const LeakSensor = require('../schema-impl/capability/leak-sensor');
-const Light = require('../schema-impl/capability/light');
-const Lock = require('../schema-impl/capability/lock');
-const MotionSensor = require('../schema-impl/capability/motion-sensor');
-const MultiLevelSensor =
-  require('../schema-impl/capability/multi-level-sensor');
-const MultiLevelSwitch =
-  require('../schema-impl/capability/multi-level-switch');
-const OnOffSwitch = require('../schema-impl/capability/on-off-switch');
-const PushButton = require('../schema-impl/capability/push-button');
-const SmartPlug = require('../schema-impl/capability/smart-plug');
-const TemperatureSensor =
-  require('../schema-impl/capability/temperature-sensor');
-const Thermostat = require('../schema-impl/capability/thermostat');
-const Thing = require('../schema-impl/capability/thing');
-const VideoCamera = require('../schema-impl/capability/video-camera');
+const { createThingFromCapability } = require('../schema-impl/capability/capabilities');
 
-// eslint-disable-next-line no-unused-vars
 const ThingsScreen = {
   /**
    * Initialise Things Screen.
    */
-  init: function() {
+  init: function () {
     this.thingsElement = document.getElementById('things');
     this.thingTitleElement = document.getElementById('thing-title');
     this.addButton = document.getElementById('add-button');
@@ -55,105 +32,18 @@ const ThingsScreen = {
     this.backButton = document.getElementById('back-button');
     this.backRef = '/things';
     this.backButton.addEventListener('click', () => page(this.backRef));
-    this.addButton.addEventListener('click',
-                                    AddThingScreen.show.bind(AddThingScreen));
+    this.addButton.addEventListener('click', AddThingScreen.show.bind(AddThingScreen));
     this.refreshThings = this.refreshThings.bind(this);
     this.things = [];
   },
 
-  renderThing: function(thingModel, description, format) {
-    let thing;
-    if (description.selectedCapability) {
-      switch (description.selectedCapability) {
-        case 'OnOffSwitch':
-          thing = new OnOffSwitch(thingModel, description, format);
-          break;
-        case 'MultiLevelSwitch':
-          thing = new MultiLevelSwitch(thingModel, description, format);
-          break;
-        case 'ColorControl':
-          thing = new ColorControl(thingModel, description, format);
-          break;
-        case 'ColorSensor':
-          thing = new ColorSensor(thingModel, description, format);
-          break;
-        case 'EnergyMonitor':
-          thing = new EnergyMonitor(thingModel, description, format);
-          break;
-        case 'BinarySensor':
-          thing = new BinarySensor(thingModel, description, format);
-          break;
-        case 'MultiLevelSensor':
-          thing = new MultiLevelSensor(thingModel, description, format);
-          break;
-        case 'SmartPlug':
-          thing = new SmartPlug(thingModel, description, format);
-          break;
-        case 'Light':
-          thing = new Light(thingModel, description, format);
-          break;
-        case 'DoorSensor':
-          thing = new DoorSensor(thingModel, description, format);
-          break;
-        case 'MotionSensor':
-          thing = new MotionSensor(thingModel, description, format);
-          break;
-        case 'LeakSensor':
-          thing = new LeakSensor(thingModel, description, format);
-          break;
-        case 'PushButton':
-          thing = new PushButton(thingModel, description, format);
-          break;
-        case 'VideoCamera':
-          thing = new VideoCamera(thingModel, description, format);
-          break;
-        case 'Camera':
-          thing = new Camera(thingModel, description, format);
-          break;
-        case 'TemperatureSensor':
-          thing = new TemperatureSensor(thingModel, description, format);
-          break;
-        case 'Alarm':
-          thing = new Alarm(thingModel, description, format);
-          break;
-        case 'Thermostat':
-          thing = new Thermostat(thingModel, description, format);
-          break;
-        case 'Lock':
-          thing = new Lock(thingModel, description, format);
-          break;
-        default:
-          thing = new Thing(thingModel, description, format);
-          break;
-      }
-    } else {
-      switch (description.type) {
-        case 'onOffSwitch':
-          thing = new OnOffSwitch(thingModel, description, format);
-          break;
-        case 'binarySensor':
-          thing = new BinarySensor(thingModel, description, format);
-          break;
-        case 'multiLevelSensor':
-          thing = new MultiLevelSensor(thingModel, description, format);
-          break;
-        case 'onOffLight':
-        case 'onOffColorLight':
-        case 'dimmableLight':
-        case 'dimmableColorLight':
-          thing = new Light(thingModel, description, format);
-          break;
-        case 'multiLevelSwitch':
-          thing = new MultiLevelSwitch(thingModel, description, format);
-          break;
-        case 'smartPlug':
-          thing = new SmartPlug(thingModel, description, format);
-          break;
-        default:
-          thing = new Thing(thingModel, description, format);
-          break;
-      }
-    }
+  renderThing: function (thingModel, description, format) {
+    const thing = createThingFromCapability(
+      description.selectedCapability,
+      thingModel,
+      description,
+      format
+    );
     this.things.push(thing);
     return thing;
   },
@@ -165,9 +55,7 @@ const ThingsScreen = {
    * @param {String} actionName Optional action input form to show.
    * @param {Boolean} events Whether or not to display the events screen.
    */
-  show: function(thingId, actionName, events, queryString) {
-    document.getElementById('speech-wrapper').classList.remove('assistant');
-
+  show: function (thingId, actionName, events, queryString) {
     const params = new URLSearchParams(`?${queryString || ''}`);
     if (params.has('referrer')) {
       this.backRef = params.get('referrer');
@@ -200,14 +88,13 @@ const ThingsScreen = {
       this.showThings();
 
       const messageArea = document.getElementById('message-area');
-      if (App.blockMessages &&
-          messageArea.innerText === fluent.getMessage('disconnected')) {
+      if (App.blockMessages && messageArea.innerText === fluent.getMessage('disconnected')) {
         App.hidePersistentMessage();
       }
     }
   },
 
-  refreshThings: function(things) {
+  refreshThings: function (things) {
     let thing;
     while (typeof (thing = this.things.pop()) !== 'undefined') {
       thing.cleanup();
@@ -227,14 +114,11 @@ const ThingsScreen = {
   /**
    * Display all connected web things.
    */
-  showThings: function() {
+  showThings: function () {
     App.gatewayModel.unsubscribe(Constants.REFRESH_THINGS, this.refreshThing);
     App.gatewayModel.unsubscribe(Constants.DELETE_THINGS, this.refreshThing);
     App.gatewayModel.subscribe(Constants.DELETE_THINGS, this.refreshThings);
-    App.gatewayModel.subscribe(
-      Constants.REFRESH_THINGS,
-      this.refreshThings,
-      true);
+    App.gatewayModel.subscribe(Constants.REFRESH_THINGS, this.refreshThings, true);
   },
 
   /**
@@ -242,55 +126,50 @@ const ThingsScreen = {
    *
    * @param {String} thingId The ID of the Thing to show.
    */
-  showThing: function(thingId) {
+  showThing: function (thingId) {
     App.gatewayModel.unsubscribe(Constants.REFRESH_THINGS, this.refreshThing);
     App.gatewayModel.unsubscribe(Constants.DELETE_THINGS, this.refreshThing);
     App.gatewayModel.unsubscribe(Constants.REFRESH_THINGS, this.refreshThings);
     App.gatewayModel.unsubscribe(Constants.DELETE_THINGS, this.refreshThings);
 
     this.refreshThing = () => {
-      return App.gatewayModel.getThing(thingId).then(async (description) => {
-        this.thingsElement.innerHTML = '';
+      return App.gatewayModel
+        .getThing(thingId)
+        .then(async (description) => {
+          if (!description) {
+            this.thingsElement.innerHTML = fluent.getMessage('thing-not-found');
+            return;
+          }
 
-        const thingModel = await App.gatewayModel.getThingModel(thingId);
-        const thing = this.renderThing(thingModel,
-                                       description,
-                                       Constants.ThingFormat.EXPANDED);
+          this.thingsElement.innerHTML = '';
 
-        const iconEl = document.getElementById('thing-title-icon');
-        const customIconEl = document.getElementById('thing-title-custom-icon');
-        if (thing.iconHref && thing.selectedCapability === 'Custom') {
-          customIconEl.iconHref = thing.iconHref;
-          customIconEl.classList.remove('hidden');
-          iconEl.style.backgroundImage = '';
-          iconEl.classList.add('custom-thing');
-        } else {
-          iconEl.style.backgroundImage = `url("${thing.baseIcon}")`;
-          iconEl.classList.remove('custom-thing');
-          customIconEl.classList.add('hidden');
-        }
+          const thingModel = await App.gatewayModel.getThingModel(thingId);
+          const thing = this.renderThing(thingModel, description, Constants.ThingFormat.EXPANDED);
 
-        document.getElementById('thing-title-title').innerText = thing.title;
+          const iconEl = document.getElementById('thing-title-icon');
+          const customIconEl = document.getElementById('thing-title-custom-icon');
+          if (thing.iconHref && thing.selectedCapability === 'Custom') {
+            customIconEl.iconHref = thing.iconHref;
+            customIconEl.classList.remove('hidden');
+            iconEl.style.backgroundImage = '';
+            iconEl.classList.add('custom-thing');
+          } else {
+            iconEl.style.backgroundImage = `url("${thing.baseIcon}")`;
+            iconEl.classList.remove('custom-thing');
+            customIconEl.classList.add('hidden');
+          }
 
-        const speechWrapper = document.getElementById('speech-wrapper');
-        if (speechWrapper.classList.contains('hidden')) {
-          this.thingTitleElement.classList.remove('speech-enabled');
-        } else {
-          this.thingTitleElement.classList.add('speech-enabled');
-        }
+          document.getElementById('thing-title-title').innerText = thing.title;
 
-        this.thingTitleElement.classList.remove('hidden');
-      }).catch((e) => {
-        console.error(`Thing id ${thingId} not found ${e}`);
-        this.thingsElement.innerHTML = fluent.getMessage('thing-not-found');
-      });
+          this.thingTitleElement.classList.remove('hidden');
+        })
+        .catch((e) => {
+          console.error(`Thing id ${thingId} not found ${e}`);
+          this.thingsElement.innerHTML = fluent.getMessage('thing-not-found');
+        });
     };
 
-    App.gatewayModel.subscribe(
-      Constants.REFRESH_THINGS,
-      this.refreshThing,
-      true
-    );
+    App.gatewayModel.subscribe(Constants.REFRESH_THINGS, this.refreshThing, true);
     App.gatewayModel.subscribe(Constants.DELETE_THINGS, this.refreshThing);
   },
 
@@ -300,58 +179,57 @@ const ThingsScreen = {
    * @param {String} thingId The ID of the Thing to show.
    * @param {String} actionName The name of the action to show.
    */
-  showActionInputForm: function(thingId, actionName) {
-    App.gatewayModel.getThing(thingId).then((description) => {
-      this.thingsElement.innerHTML = '';
+  showActionInputForm: function (thingId, actionName) {
+    App.gatewayModel
+      .getThing(thingId)
+      .then((description) => {
+        this.thingsElement.innerHTML = '';
 
-      if (!description.hasOwnProperty('actions') ||
+        if (
+          !description.hasOwnProperty('actions') ||
           !description.actions.hasOwnProperty(actionName) ||
-          !description.actions[actionName].hasOwnProperty('input')) {
-        this.thingsElement.innerHTML = fluent.getMessage('action-not-found');
-        return;
-      }
-
-      let href;
-      for (const link of description.links) {
-        if (link.rel === 'actions') {
-          href = link.href;
-          break;
+          !description.actions[actionName].hasOwnProperty('input')
+        ) {
+          this.thingsElement.innerHTML = fluent.getMessage('action-not-found');
+          return;
         }
-      }
 
-      let icon;
-      if (description.selectedCapability) {
-        icon = Icons.capabilityToIcon(description.selectedCapability);
-      } else {
-        icon = Icons.typeToIcon(description.type);
-      }
+        let href;
+        for (const link of description.links) {
+          if (link.rel === 'actions') {
+            href = link.href;
+            break;
+          }
+        }
 
-      const iconEl = document.getElementById('thing-title-icon');
-      const customIconEl = document.getElementById('thing-title-custom-icon');
-      if (description.iconHref &&
-          description.selectedCapability === 'Custom') {
-        customIconEl.iconHref = description.iconHref;
-        customIconEl.classList.remove('hidden');
-        iconEl.style.backgroundImage = '';
-        iconEl.classList.add('custom-thing');
-      } else {
-        iconEl.style.backgroundImage = `url("${icon}")`;
-        iconEl.classList.remove('custom-thing');
-        customIconEl.classList.add('hidden');
-      }
+        const icon = Icons.capabilityToIcon(description.selectedCapability);
+        const iconEl = document.getElementById('thing-title-icon');
+        const customIconEl = document.getElementById('thing-title-custom-icon');
+        if (description.iconHref && description.selectedCapability === 'Custom') {
+          customIconEl.iconHref = description.iconHref;
+          customIconEl.classList.remove('hidden');
+          iconEl.style.backgroundImage = '';
+          iconEl.classList.add('custom-thing');
+        } else {
+          iconEl.style.backgroundImage = `url("${icon}")`;
+          iconEl.classList.remove('custom-thing');
+          customIconEl.classList.add('hidden');
+        }
 
-      document.getElementById('thing-title-title').innerText =
-        description.title;
+        document.getElementById('thing-title-title').innerText = description.title;
 
-      this.thingsElement.innerHTML = '';
-      new ActionInputForm(href, actionName,
-                          description.actions[actionName].title ||
-                            description.actions[actionName].label,
-                          description.actions[actionName].input);
-    }).catch((e) => {
-      console.error(`Thing id ${thingId} not found ${e}`);
-      this.thingsElement.innerHTML = fluent.getMessage('thing-not-found');
-    });
+        this.thingsElement.innerHTML = '';
+        new ActionInputForm(
+          href,
+          actionName,
+          description.actions[actionName].title || description.actions[actionName].label,
+          description.actions[actionName].input
+        );
+      })
+      .catch((e) => {
+        console.error(`Thing id ${thingId} not found ${e}`);
+        this.thingsElement.innerHTML = fluent.getMessage('thing-not-found');
+      });
   },
 
   /**
@@ -359,48 +237,44 @@ const ThingsScreen = {
    *
    * @param {String} thingId The ID of the Thing to show.
    */
-  showEvents: function(thingId) {
+  showEvents: function (thingId) {
     if (typeof this.eventList !== 'undefined') {
       this.eventList.cleanup();
     }
-    App.gatewayModel.getThing(thingId).then(async (description) => {
-      this.thingsElement.innerHTML = '';
-      if (!description.hasOwnProperty('events')) {
-        this.thingsElement.innerHTML = fluent.getMessage('events-not-found');
-        return;
-      }
+    App.gatewayModel
+      .getThing(thingId)
+      .then(async (description) => {
+        this.thingsElement.innerHTML = '';
+        if (!description.hasOwnProperty('events')) {
+          this.thingsElement.innerHTML = fluent.getMessage('events-not-found');
+          return;
+        }
 
-      const thingModel = await App.gatewayModel.getThingModel(thingId);
+        const thingModel = await App.gatewayModel.getThingModel(thingId);
 
-      let icon;
-      if (description.selectedCapability) {
-        icon = Icons.capabilityToIcon(description.selectedCapability);
-      } else {
-        icon = Icons.typeToIcon(description.type);
-      }
+        const icon = Icons.capabilityToIcon(description.selectedCapability);
+        const iconEl = document.getElementById('thing-title-icon');
+        const customIconEl = document.getElementById('thing-title-custom-icon');
+        if (description.iconHref && description.selectedCapability === 'Custom') {
+          customIconEl.iconHref = description.iconHref;
+          customIconEl.classList.remove('hidden');
+          iconEl.style.backgroundImage = '';
+          iconEl.classList.add('custom-thing');
+        } else {
+          iconEl.style.backgroundImage = `url("${icon}")`;
+          iconEl.classList.remove('custom-thing');
+          customIconEl.classList.add('hidden');
+        }
 
-      const iconEl = document.getElementById('thing-title-icon');
-      const customIconEl = document.getElementById('thing-title-custom-icon');
-      if (description.iconHref && description.selectedCapability === 'Custom') {
-        customIconEl.iconHref = description.iconHref;
-        customIconEl.classList.remove('hidden');
-        iconEl.style.backgroundImage = '';
-        iconEl.classList.add('custom-thing');
-      } else {
-        iconEl.style.backgroundImage = `url("${icon}")`;
-        iconEl.classList.remove('custom-thing');
-        customIconEl.classList.add('hidden');
-      }
+        document.getElementById('thing-title-title').innerText = description.title;
 
-      document.getElementById('thing-title-title').innerText =
-        description.title;
-
-      this.thingsElement.innerHTML = '';
-      this.eventList = new EventList(thingModel, description);
-    }).catch((e) => {
-      console.error(`Thing id ${thingId} not found ${e}`);
-      this.thingsElement.innerHTML = fluent.getMessage('thing-not-found');
-    });
+        this.thingsElement.innerHTML = '';
+        this.eventList = new EventList(thingModel, description);
+      })
+      .catch((e) => {
+        console.error(`Thing id ${thingId} not found ${e}`);
+        this.thingsElement.innerHTML = fluent.getMessage('thing-not-found');
+      });
   },
 };
 

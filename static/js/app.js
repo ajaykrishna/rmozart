@@ -12,8 +12,6 @@
 // eslint-disable-next-line prefer-const
 let API;
 // eslint-disable-next-line prefer-const
-let AssistantScreen;
-// eslint-disable-next-line prefer-const
 let GatewayModel;
 // eslint-disable-next-line prefer-const
 let ThingsScreen;
@@ -38,7 +36,7 @@ let RuleScreen;
 // eslint-disable-next-line prefer-const
 let LogsScreen;
 // eslint-disable-next-line prefer-const
-let Speech;
+let ReopeningWebSocket;
 
 const page = require('page');
 const shaka = require('shaka-player/dist/shaka-player.compiled');
@@ -79,7 +77,7 @@ const App = {
   /**
    * Start WebThings Gateway app.
    */
-  init: function() {
+  init: function () {
     fluent.init();
 
     // after loading fluent, we need to add a couple extra DOM elements
@@ -97,20 +95,14 @@ const App = {
     shaka.polyfill.installAll();
     MobileDragDrop.polyfill({
       holdToDrag: 500,
-      // eslint-disable-next-line max-len
       dragImageTranslateOverride: ScrollBehavior.scrollBehaviourDragImageTranslateOverride,
     });
 
     AddThingScreen.init();
     ContextMenu.init();
-    AssistantScreen.init();
     ThingsScreen.init();
     SettingsScreen.init();
     FloorplanScreen.init();
-
-    if (navigator.mediaDevices && window.MediaRecorder) {
-      Speech.init();
-    }
 
     RulesScreen.init();
     VscadComposedRuleScreen.init();
@@ -125,16 +117,15 @@ const App = {
     this.views.rules = document.getElementById('rules-view');
     this.views['rules-manager'] = document.getElementById('rules-manager-view');
     this.views.rule = document.getElementById('rule-view');
-    this.views.assistant = document.getElementById('assistant-view');
     this.views.logs = document.getElementById('logs-view');
     this.currentView = this.views.things;
     this.displayedExtension = null;
+    this.addThingScreen = document.getElementById('add-thing-screen');
     this.menuButton = document.getElementById('menu-button');
     this.menuButton.addEventListener('click', Menu.toggle.bind(Menu));
     this.extensionBackButton = document.getElementById('extension-back-button');
     this.overflowButton = document.getElementById('overflow-button');
-    this.overflowButton.addEventListener('click',
-                                         this.toggleOverflowMenu.bind(this));
+    this.overflowButton.addEventListener('click', this.toggleOverflowMenu.bind(this));
     this.overflowMenu = document.getElementById('overflow-menu');
     this.blockMessages = false;
     this.messageArea = document.getElementById('message-area');
@@ -148,7 +139,6 @@ const App = {
 
     this.gatewayModel = new GatewayModel();
 
-    this.wsBackoff = 1000;
     this.initWebSocket();
 
     this.extensions = {};
@@ -185,103 +175,76 @@ const App = {
 
   initWebSocket() {
     const path = `${this.ORIGIN.replace(/^http/, 'ws')}/internal-logs?jwt=${API.jwt}`;
-    this.messageSocket = new WebSocket(path);
-
-    this.messageSocket.addEventListener('open', () => {
-      // Reset the backoff period
-      this.wsBackoff = 1000;
-    }, {once: true});
-
-    const onMessage = (msg) => {
+    this.ws = new ReopeningWebSocket(path);
+    this.ws.addEventListener('message', (msg) => {
       const message = JSON.parse(msg.data);
       if (message && message.message) {
         this.showMessage(message.message, 5000, message.url);
       }
-    };
-
-    const cleanup = () => {
-      this.messageSocket.removeEventListener('message', onMessage);
-      this.messageSocket.removeEventListener('close', cleanup);
-      this.messageSocket.removeEventListener('error', cleanup);
-      this.messageSocket.close();
-      this.messageSocket = null;
-
-      setTimeout(() => {
-        this.wsBackoff *= 2;
-        if (this.wsBackoff > 30000) {
-          this.wsBackoff = 30000;
-        }
-        this.initWebSocket();
-      }, this.wsBackoff);
-    };
-
-    this.messageSocket.addEventListener('message', onMessage);
-    this.messageSocket.addEventListener('close', cleanup);
-    this.messageSocket.addEventListener('error', cleanup);
+    });
   },
 
   startPinger() {
-    API.ping().then(() => {
-      if (this.pingerLastStatus === 'offline') {
-        window.location.reload();
-      } else {
-        this.failedPings = 0;
-        this.pingerLastStatus = 'online';
-        this.connectivityOverlay.classList.add('hidden');
-        this.messageArea.classList.remove('disconnected');
+    API.ping()
+      .then(() => {
+        if (this.pingerLastStatus === 'offline') {
+          window.location.reload();
+        } else {
+          this.failedPings = 0;
+          this.pingerLastStatus = 'online';
+          this.connectivityOverlay.classList.add('hidden');
+          this.messageArea.classList.remove('disconnected');
 
-        if (this.messageArea.innerText ===
-            fluent.getMessage('gateway-unreachable')) {
-          this.hidePersistentMessage();
+          if (this.messageArea.innerText === fluent.getMessage('gateway-unreachable')) {
+            this.hidePersistentMessage();
+          }
         }
-      }
-    }).catch((e) => {
-      console.error('Gateway unreachable:', e);
-      if (++this.failedPings >= this.MAX_PING_FAILURES) {
-        this.connectivityOverlay.classList.remove('hidden');
-        this.messageArea.classList.add('disconnected');
-        this.showPersistentMessage(fluent.getMessage('gateway-unreachable'));
-        this.pingerLastStatus = 'offline';
-      }
-    });
+      })
+      .catch((e) => {
+        console.error('Gateway unreachable:', e);
+        if (++this.failedPings >= this.MAX_PING_FAILURES) {
+          this.connectivityOverlay.classList.remove('hidden');
+          this.messageArea.classList.add('disconnected');
+          this.showPersistentMessage(fluent.getMessage('gateway-unreachable'));
+          this.pingerLastStatus = 'offline';
+        }
+      });
 
     if (!this.pingerInterval) {
-      this.pingerInterval =
-        setInterval(this.startPinger.bind(this), this.PING_INTERVAL);
+      this.pingerInterval = setInterval(this.startPinger.bind(this), this.PING_INTERVAL);
     }
   },
 
-  showAssistant: function() {
-    this.hideExtensionBackButton();
-    AssistantScreen.show();
-    this.selectView('assistant');
-  },
-
-  showThings: function(context) {
+  showThings: function (context) {
     this.hideExtensionBackButton();
     const events = context.pathname.split('/').pop() === 'events';
-    ThingsScreen.show(context.params.thingId || null,
-                      context.params.actionName || null,
-                      events,
-                      context.querystring);
+    ThingsScreen.show(
+      context.params.thingId || null,
+      context.params.actionName || null,
+      events,
+      context.querystring
+    );
     this.selectView('things');
   },
 
-  showSettings: function(context) {
+  showSettings: function (context) {
+    this.addThingScreen.classList.add('hidden');
     this.hideExtensionBackButton();
-    SettingsScreen.show(context.params.section || null,
-                        context.params.subsection || null,
-                        context.params.id || null);
+    SettingsScreen.show(
+      context.params.section || null,
+      context.params.subsection || null,
+      context.params.id || null
+    );
     this.selectView('settings');
   },
 
-  showFloorplan: function() {
+  showFloorplan: function () {
     this.hideExtensionBackButton();
     FloorplanScreen.show();
     this.selectView('floorplan');
   },
 
-  showRules: function() {
+  showRules: function () {
     this.hideExtensionBackButton();
     RulesScreen.show();
     this.selectView('rules');
@@ -299,7 +262,7 @@ const App = {
     this.selectView('rule');
   },
 
-  showLogs: function(context) {
+  showLogs: function (context) {
     this.hideExtensionBackButton();
     if (context.params.thingId) {
       const descr = {
@@ -314,7 +277,7 @@ const App = {
     this.selectView('logs');
   },
 
-  registerExtension: function(extension) {
+  registerExtension: function (extension) {
     this.extensions[extension.id] = extension;
 
     // Go ahead and draw a <section> for this extension to draw to, if it so
@@ -326,26 +289,52 @@ const App = {
     newSection.classList.add('hidden');
     document.body.appendChild(newSection);
 
+    const context = this.requestedContext;
+
+    if (context) {
+      const extensionId = context.params.extensionId;
+
+      if (extensionId == extension.id) {
+        this.requestedContext = null;
+        this.showExtension(context);
+      }
+    }
+
     return newSection;
   },
 
-  showExtension: function(context) {
+  showExtension: function (context) {
     this.hideExtensionBackButton();
     const extensionId = context.params.extensionId;
 
     if (this.extensions.hasOwnProperty(extensionId)) {
-      this.extensions[extensionId].show(context);
-      this.selectView(
-        `extension-${Utils.escapeHtmlForIdClass(extensionId)}-view`
-      );
-      this.displayedExtension = extensionId;
+      const extension = this.extensions[extensionId];
+      // wait until the extensions is loaded before showing it
+      extension.load().then(() => {
+        extension.show(context);
+        this.selectView(`extension-${Utils.escapeHtmlForIdClass(extensionId)}-view`);
+        this.displayedExtension = extensionId;
+      });
     } else {
-      console.warn('Unknown extension:', extensionId);
-      page('/things');
+      // Check if it's a valid extension id
+      API.getExtensions()
+        .then((extensions) => {
+          if (Object.keys(extensions).indexOf(extensionId) > -1) {
+            // Save the context until the extension is loaded
+            this.requestedContext = context;
+          } else {
+            console.warn('Unknown extension:', extensionId);
+            page('/things');
+          }
+        })
+        .catch((err) => {
+          console.warn('Could not load extensions: ', err);
+          page('/things');
+        });
     }
   },
 
-  selectView: function(view) {
+  selectView: function (view) {
     let el = null;
     if (view.startsWith('extension-')) {
       // load extensions at runtime
@@ -355,14 +344,17 @@ const App = {
     }
 
     if (!el) {
-      console.error('Tried to select view that didn\'t exist:', view);
+      // eslint-disable-next-line @typescript-eslint/quotes
+      console.error("Tried to select view that didn't exist:", view);
       return;
     }
 
     this.currentView.classList.add('hidden');
     this.currentView.classList.remove('selected');
-    if (this.displayedExtension !== null &&
-        this.extensions.hasOwnProperty(this.displayedExtension)) {
+    if (
+      this.displayedExtension !== null &&
+      this.extensions.hasOwnProperty(this.displayedExtension)
+    ) {
       this.extensions[this.displayedExtension].hide();
     }
 
@@ -377,29 +369,29 @@ const App = {
     }
   },
 
-  showMenuButton: function() {
+  showMenuButton: function () {
     this.menuButton.classList.remove('hidden');
   },
 
-  hideMenuButton: function() {
+  hideMenuButton: function () {
     this.menuButton.classList.add('hidden');
   },
 
-  showOverflowButton: function() {
+  showOverflowButton: function () {
     this.overflowButton.classList.remove('hidden');
   },
 
-  hideOverflowButton: function() {
+  hideOverflowButton: function () {
     this.overflowMenu.classList.add('hidden');
     this.overflowButton.classList.add('hidden');
   },
 
-  hideExtensionBackButton: function() {
+  hideExtensionBackButton: function () {
     this.extensionBackButton.classList.add('hidden');
     this.extensionBackButton.href = '/things';
   },
 
-  buildOverflowMenu: function(links) {
+  buildOverflowMenu: function (links) {
     this.overflowMenu.innerHTML = '';
 
     for (const link of links) {
@@ -431,7 +423,7 @@ const App = {
     }
   },
 
-  toggleOverflowMenu: function() {
+  toggleOverflowMenu: function () {
     if (this.overflowMenu.classList.contains('hidden')) {
       this.overflowMenu.classList.remove('hidden');
     } else {
@@ -439,27 +431,27 @@ const App = {
     }
   },
 
-  showPersistentMessage: function(message) {
+  showPersistentMessage: function (message) {
     this.showMessage(message);
     this.blockMessages = true;
   },
 
-  hidePersistentMessage: function() {
+  hidePersistentMessage: function () {
     if (this.blockMessages) {
       this.hideMessageArea();
       this.blockMessages = false;
     }
   },
 
-  showMessageArea: function() {
+  showMessageArea: function () {
     this.messageArea.classList.remove('hidden');
   },
 
-  hideMessageArea: function() {
+  hideMessageArea: function () {
     this.messageArea.classList.add('hidden');
   },
 
-  showMessage: function(message, duration, extraUrl = null) {
+  showMessage: function (message, duration, extraUrl = null) {
     if (this.messageTimeout !== null) {
       clearTimeout(this.messageTimeout);
       this.messageTimeout = null;
@@ -471,8 +463,8 @@ const App = {
 
     if (extraUrl) {
       message += `<br><br>
-        <a href="${Utils.escapeHtml(extraUrl)}" target="_blank" rel="noopener" data-l10n-id="more-information">
-        </a>`;
+        <a href="${Utils.escapeHtml(extraUrl)}" target="_blank" rel="noopener"
+           data-l10n-id="more-information"></a>`;
     }
 
     this.messageArea.innerHTML = message;
@@ -490,8 +482,7 @@ const App = {
 module.exports = App;
 
 // avoid circular dependency
-API = require('./api');
-AssistantScreen = require('./views/assistant');
+API = require('./api').default;
 GatewayModel = require('./models/gateway-model');
 ThingsScreen = require('./views/things');
 AddThingScreen = require('./views/add-thing');
@@ -505,13 +496,16 @@ RuleScreen = require('./views/rule-screen');
 LogsScreen = require('./views/logs-screen');
 VscadComposedRuleScreen = require('./vscad-composed-rule-screen');
 Speech = require('./speech');
+ReopeningWebSocket = require('./models/reopening-web-socket');
 
 // load web components
 require('@webcomponents/webcomponentsjs/webcomponents-bundle');
 require('./components/action/action');
 require('./components/action/lock');
 require('./components/action/unlock');
+require('./components/capability/air-quality-sensor');
 require('./components/capability/alarm');
+require('./components/capability/barometric-pressure-sensor');
 require('./components/capability/binary-sensor');
 require('./components/capability/camera');
 require('./components/capability/color-control');
@@ -519,6 +513,7 @@ require('./components/capability/color-sensor');
 require('./components/capability/custom');
 require('./components/capability/door-sensor');
 require('./components/capability/energy-monitor');
+require('./components/capability/humidity-sensor');
 require('./components/capability/label');
 require('./components/capability/leak-sensor');
 require('./components/capability/light');
@@ -529,6 +524,7 @@ require('./components/capability/multi-level-switch');
 require('./components/capability/on-off-switch');
 require('./components/capability/push-button');
 require('./components/capability/smart-plug');
+require('./components/capability/smoke-sensor');
 require('./components/capability/temperature-sensor');
 require('./components/capability/thermostat');
 require('./components/capability/video-camera');
@@ -537,13 +533,16 @@ require('./components/property/alarm');
 require('./components/property/boolean');
 require('./components/property/brightness');
 require('./components/property/color');
+require('./components/property/color-mode');
 require('./components/property/color-temperature');
 require('./components/property/current');
 require('./components/property/enum');
 require('./components/property/frequency');
 require('./components/property/heating-cooling');
+require('./components/property/humidity');
 require('./components/property/image');
 require('./components/property/instantaneous-power');
+require('./components/property/instantaneous-power-factor');
 require('./components/property/leak');
 require('./components/property/level');
 require('./components/property/locked');
@@ -554,6 +553,7 @@ require('./components/property/on-off');
 require('./components/property/open');
 require('./components/property/pushed');
 require('./components/property/slider');
+require('./components/property/smoke');
 require('./components/property/string');
 require('./components/property/string-label');
 require('./components/property/switch');
@@ -566,25 +566,79 @@ require('./components/property/voltage');
 require('./extension');
 
 if (navigator.serviceWorker) {
-  navigator.serviceWorker.register('/service-worker.js', {
-    scope: '/',
-  });
+  // eslint-disable-next-line no-inner-declarations
+  function notifyUpdateReady() {
+    const updateMessageArea = document.getElementById('update-message-area');
+
+    const updateMessageAreaReload = document.getElementById('update-message-area-reload');
+    updateMessageAreaReload.addEventListener('click', () => {
+      window.location.reload(true);
+    });
+
+    const updateMessageAreaClose = document.getElementById('update-message-area-close');
+    updateMessageAreaClose.addEventListener('click', () => {
+      updateMessageArea.classList.add('hidden');
+    });
+
+    updateMessageArea.classList.remove('hidden');
+  }
+
+  navigator.serviceWorker
+    .register('/service-worker.js', {
+      scope: '/',
+    })
+    .then((reg) => {
+      if (reg.active === null) {
+        return;
+      }
+
+      // If there is already an active service worker, plus another waiting, that
+      // means an updated one has been loaded in the background but is not yet
+      // active.
+      if (reg.waiting !== null) {
+        notifyUpdateReady();
+        return;
+      }
+
+      reg.addEventListener('updatefound', () => {
+        const newWorker = reg.installing;
+
+        newWorker.addEventListener('statechange', () => {
+          if (newWorker.state !== 'installed') {
+            return;
+          }
+
+          notifyUpdateReady();
+        });
+      });
+
+      // Check for an updated service worker every hour. This is useful when
+      // running as a PWA. When an update is found, the updatefound handler
+      // above will be called to allow the user to refresh properly.
+      setInterval(() => {
+        reg.update();
+      }, 60 * 60 * 1000);
+    });
   navigator.serviceWorker.ready.then(Notifications.onReady);
 }
 
 /**
-  * Start app on page load.
-  */
+ * Start app on page load.
+ */
 window.addEventListener('load', function app_onLoad() {
   window.removeEventListener('load', app_onLoad);
-  fluent.load().then(() => {
-    return API.getUnits();
-  }).then((response) => {
-    App.UNITS = response || App.UNITS;
-    return API.getTimezone();
-  }).then((response) => {
-    App.TIMEZONE = response.current || App.TIMEZONE;
-    App.LANGUAGE = fluent.getLanguage() || App.LANGUAGE;
-    App.init();
-  });
+  fluent
+    .load()
+    .then(() => {
+      return API.getUnits();
+    })
+    .then((response) => {
+      App.UNITS = response || App.UNITS;
+      return API.getTimezone();
+    })
+    .then((response) => {
+      App.TIMEZONE = response.current || App.TIMEZONE;
+      App.LANGUAGE = fluent.getLanguage() || App.LANGUAGE;
+      App.init();
+    });
 });

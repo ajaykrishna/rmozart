@@ -1,24 +1,35 @@
 {
   "compilerOptions": {
-    "experimentalDecorators": true,
-    "outDir": "./tsdist/",
+    "target": "es2018",
+    "module": "commonjs",
     "moduleResolution": "node",
-    "module": "es6",
-    "target": "es2017",
-    "strict": true,
-    "strictNullChecks": true,
-    "noImplicitAny": true,
-    "removeComments": true,
-    "preserveConstEnums": true,
+    "lib": [
+      "es2018",
+      "dom"
+    ],
+    "declaration": true,
+    "declarationMap": true,
     "sourceMap": true,
+    "outDir": "build",
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "noImplicitThis": true,
+    "alwaysStrict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "esModuleInterop": true,
     "allowJs": true,
-    "jsx": "react",
-    "lib":[
-      "es2015",
-      "dom",
-      "dom.iterable",
-      "es6",
-      "scripthost"
+    "checkJs": true,
+    "resolveJsonModule": true,
+    "types": [
+      "node",
+      "jest",
+      "webdriverio/async"
     ]
   },
   "include": [

@@ -9,7 +9,7 @@
  */
 'use strict';
 
-const API = require('../api');
+const API = require('../api').default;
 const DevicePropertyBlock = require('../rules/DevicePropertyBlock');
 const Gateway = require('../rules/Gateway');
 const Rule = require('../rules/Rule');
@@ -19,9 +19,8 @@ const NotifierOutletBlock = require('../rules/NotifierOutletBlock');
 const TimeTriggerBlock = require('../rules/TimeTriggerBlock');
 const page = require('page');
 
-// eslint-disable-next-line no-unused-vars
 const RuleScreen = {
-  init: function() {
+  init: function () {
     this.gateway = new Gateway();
 
     this.onPresentationChange = this.onPresentationChange.bind(this);
@@ -92,6 +91,7 @@ const RuleScreen = {
 
     this.deleteConfirm.addEventListener('click', () => {
       this.rule.delete().then(() => {
+        this.deleteOverlay.classList.remove('active');
         page('/rules');
       });
     });
@@ -112,9 +112,8 @@ const RuleScreen = {
     this.onWindowResize();
   },
 
-  getEffectType: function() {
-    const effectSelect =
-      this.ruleDescription.querySelector('.rule-effect-select');
+  getEffectType: function () {
+    const effectSelect = this.ruleDescription.querySelector('.rule-effect-select');
     return effectSelect.value === 'If' ? 'SetEffect' : 'PulseEffect';
   },
 
@@ -122,7 +121,7 @@ const RuleScreen = {
    * Change the rule based on a change to its description's drop down menus
    * @param {Event} event
    */
-  onRuleDescriptionInput: function(event) {
+  onRuleDescriptionInput: function (event) {
     const value = event.target.value;
     if (event.target.classList.contains('rule-trigger-select')) {
       if (value === 'and') {
@@ -150,7 +149,7 @@ const RuleScreen = {
    * @param {ThingDescription} thing
    * @param {Event} event
    */
-  onDeviceBlockDown: function(thing, event) {
+  onDeviceBlockDown: function (thing, event) {
     if (!this.rule) {
       return;
     }
@@ -159,7 +158,11 @@ const RuleScreen = {
     const x = deviceRect.left;
     const y = deviceRect.top;
     const newBlock = new DevicePropertyBlock(
-      this.ruleArea, this.onPresentationChange, this.onRuleChange, thing);
+      this.ruleArea,
+      this.onPresentationChange,
+      this.onRuleChange,
+      thing
+    );
     newBlock.snapToGrid(x, y);
     newBlock.draggable.onDown(event);
     this.partBlocks.push(newBlock);
@@ -169,7 +172,7 @@ const RuleScreen = {
    * Instantiate a draggable block from a template in the palette
    * @param {Event} event
    */
-  onBlockDown: function(builder, event) {
+  onBlockDown: function (builder, event) {
     if (!this.rule) {
       return;
     }
@@ -207,23 +210,24 @@ const RuleScreen = {
    * @param {'trigger'|'effect'} role
    * @param {Object} part
    */
-  makeRulePartBlock: function(role, part) {
+  makeRulePartBlock: function (role, part) {
     let block = null;
     if (part.type === 'TimeTrigger') {
-      block = new TimeTriggerBlock(this.ruleArea, this.onPresentationChange,
-                                   this.onRuleChange);
+      block = new TimeTriggerBlock(this.ruleArea, this.onPresentationChange, this.onRuleChange);
     } else if (part.type === 'NotificationEffect') {
-      block = new NotificationEffectBlock(this.ruleArea,
-                                          this.onPresentationChange,
-                                          this.onRuleChange);
+      block = new NotificationEffectBlock(
+        this.ruleArea,
+        this.onPresentationChange,
+        this.onRuleChange
+      );
     } else if (part.type === 'NotifierOutletEffect') {
-      const notifier = this.gateway.notifiers
-        .filter((notifier) => notifier.id === part.notifier)[0];
+      const notifier = this.gateway.notifiers.filter(
+        (notifier) => notifier.id === part.notifier
+      )[0];
       if (!notifier) {
         return;
       }
-      const outlet = notifier.outlets
-        .filter((outlet) => outlet.id === part.outlet)[0];
+      const outlet = notifier.outlets.filter((outlet) => outlet.id === part.outlet)[0];
       if (!outlet) {
         return;
       }
@@ -238,15 +242,19 @@ const RuleScreen = {
           title: part.title,
           message: part.message,
           level: part.level,
-        },
+        }
       );
     } else {
       const thing = RuleUtils.thingFromPart(this.gateway, part);
       if (!thing) {
         return;
       }
-      block = new DevicePropertyBlock(this.ruleArea, this.onPresentationChange,
-                                      this.onRuleChange, thing);
+      block = new DevicePropertyBlock(
+        this.ruleArea,
+        this.onPresentationChange,
+        this.onRuleChange,
+        thing
+      );
     }
     const rulePart = {};
     rulePart[role] = part;
@@ -255,7 +263,7 @@ const RuleScreen = {
     this.partBlocks.push(block);
   },
 
-  showConnection: function() {
+  showConnection: function () {
     this.connection.classList.remove('hidden');
 
     const dragHint = document.getElementById('drag-hint');
@@ -264,24 +272,26 @@ const RuleScreen = {
     function isValidSelection(block) {
       const selectedOption = block.querySelector('.selected');
       if (!selectedOption) {
-        return block.querySelector('.time-input') ||
+        return (
+          block.querySelector('.time-input') ||
           block.querySelector('.message-input-container') ||
-          block.querySelector('.open-button');
+          block.querySelector('.open-button')
+        );
       }
       return JSON.parse(selectedOption.dataset.ruleFragment);
     }
 
-    const triggerBlocks = Array.from(
-      this.ruleArea.querySelectorAll('.rule-part-block.trigger')
-    ).map((elt) => {
-      return elt.parentNode;
-    }).filter(isValidSelection);
+    const triggerBlocks = Array.from(this.ruleArea.querySelectorAll('.rule-part-block.trigger'))
+      .map((elt) => {
+        return elt.parentNode;
+      })
+      .filter(isValidSelection);
 
-    const effectBlocks = Array.from(
-      this.ruleArea.querySelectorAll('.rule-part-block.effect')
-    ).map((elt) => {
-      return elt.parentNode;
-    }).filter(isValidSelection);
+    const effectBlocks = Array.from(this.ruleArea.querySelectorAll('.rule-part-block.effect'))
+      .map((elt) => {
+        return elt.parentNode;
+      })
+      .filter(isValidSelection);
 
     if (triggerBlocks.length === 0 || effectBlocks.length === 0) {
       return;
@@ -291,7 +301,7 @@ const RuleScreen = {
       const re = /translate\((\d+)px, +(\d+)px\)/;
       const matches = elt.style.transform.match(re);
       if (!matches) {
-        return {x: 0, y: 0};
+        return { x: 0, y: 0 };
       }
       const x = parseFloat(matches[1]);
       const y = parseFloat(matches[2]);
@@ -340,28 +350,25 @@ const RuleScreen = {
 
     function makePath(start, end) {
       const midX = (start.x + end.x) / 2;
-      const pathDesc = [
-        'M', start.x, start.y,
-        'C', midX, start.y, midX, end.y, end.x, end.y,
-      ].join(' ');
+      const pathDesc = ['M', start.x, start.y, 'C', midX, start.y, midX, end.y, end.x, end.y].join(
+        ' '
+      );
 
-      const path =
-        document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
       path.setAttribute('d', pathDesc);
 
       return path;
     }
 
-    for (let i = 0; i < effectBlocks.length; i++) {
-      const effectCoords = effectTransformToCoords(effectBlocks[i]);
+    for (const effectBlock of effectBlocks) {
+      const effectCoords = effectTransformToCoords(effectBlock);
 
       let start = center;
       if (!multiTrigger) {
         start = triggerTransformToCoords(triggerBlocks[0]);
       }
 
-      const circleEffect =
-        document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      const circleEffect = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
       circleEffect.classList.add('effect');
       circleEffect.setAttribute('r', 6);
       circleEffect.setAttribute('cx', effectCoords.x);
@@ -377,10 +384,9 @@ const RuleScreen = {
       }
     }
 
-    for (let i = 0; i < triggerBlocks.length; i++) {
-      const triggerCoords = triggerTransformToCoords(triggerBlocks[i]);
-      const circleTrigger =
-        document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    for (const triggerBlock of triggerBlocks) {
+      const triggerCoords = triggerTransformToCoords(triggerBlock);
+      const circleTrigger = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
       circleTrigger.classList.add('trigger');
       circleTrigger.setAttribute('r', 6);
       circleTrigger.setAttribute('cx', triggerCoords.x);
@@ -402,8 +408,7 @@ const RuleScreen = {
     }
 
     if (multiTrigger && multiEffect) {
-      const circleCenter =
-        document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      const circleCenter = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
       circleCenter.classList.add('center');
       circleCenter.setAttribute('r', 6);
       circleCenter.setAttribute('cx', center.x);
@@ -412,11 +417,11 @@ const RuleScreen = {
     }
   },
 
-  hideConnection: function() {
+  hideConnection: function () {
     this.connection.classList.add('hidden');
   },
 
-  partBlocksByRole: function() {
+  partBlocksByRole: function () {
     const triggerBlocks = [];
     const effectBlocks = [];
 
@@ -438,7 +443,7 @@ const RuleScreen = {
     };
   },
 
-  onRuleChange: function() {
+  onRuleChange: function () {
     if (!this.rule) {
       return;
     }
@@ -447,7 +452,7 @@ const RuleScreen = {
       return partBlock.role !== 'removed';
     });
 
-    const {triggerBlocks, effectBlocks} = this.partBlocksByRole();
+    const { triggerBlocks, effectBlocks } = this.partBlocksByRole();
 
     const triggers = triggerBlocks.map((triggerBlock) => {
       return triggerBlock.rulePart.trigger;
@@ -483,14 +488,12 @@ const RuleScreen = {
     this.onPresentationChange();
   },
 
-  onPresentationChange: function() {
+  onPresentationChange: function () {
     this.ruleName.textContent = this.rule.name || 'Rule Name';
     this.ruleDescription.innerHTML = this.rule.toHumanInterface();
-    const ruleEffectSelect =
-      this.ruleDescription.querySelector('.rule-effect-select');
+    const ruleEffectSelect = this.ruleDescription.querySelector('.rule-effect-select');
     if (this.rule.effect && this.rule.effect.effects.length === 0) {
-      ruleEffectSelect.value =
-        this.ruleEffectType === 'SetEffect' ? 'If' : 'While';
+      ruleEffectSelect.value = this.ruleEffectType === 'SetEffect' ? 'If' : 'While';
     }
     if (ruleEffectSelect.value === 'If') {
       ruleEffectSelect.style.width = '1.8rem';
@@ -516,9 +519,7 @@ const RuleScreen = {
     }
   },
 
-  show: async function(ruleId) {
-    document.getElementById('speech-wrapper').classList.remove('assistant');
-
+  show: async function (ruleId) {
     this.rule = null;
     this.ruleEffectType = 'SetEffect';
 
@@ -579,21 +580,26 @@ const RuleScreen = {
         this.rule.trigger = {
           type: 'MultiTrigger',
           op: 'AND',
-          triggers: [
-            this.rule.trigger,
-          ],
+          triggers: [this.rule.trigger],
         };
       }
 
       const triggers = this.rule.trigger.triggers;
-      for (let i = 0; i < triggers.length; i++) {
+      for (const trigger of triggers) {
         if (flexDir === 'column') {
-          this.makeRulePartBlock('trigger', triggers[i], centerX,
-                                 areaRect.height / 4 - dpbRect.height / 2);
+          this.makeRulePartBlock(
+            'trigger',
+            trigger,
+            centerX,
+            areaRect.height / 4 - dpbRect.height / 2
+          );
         } else {
-          this.makeRulePartBlock('trigger', triggers[i],
-                                 areaRect.width / 4 - dpbRect.width / 2,
-                                 centerY);
+          this.makeRulePartBlock(
+            'trigger',
+            trigger,
+            areaRect.width / 4 - dpbRect.width / 2,
+            centerY
+          );
         }
       }
 
@@ -607,22 +613,26 @@ const RuleScreen = {
       if (this.rule.effect.type !== 'MultiEffect') {
         this.rule.effect = {
           type: 'MultiEffect',
-          effects: [
-            this.rule.effect,
-          ],
+          effects: [this.rule.effect],
         };
       }
 
       const effects = this.rule.effect.effects;
-      for (let i = 0; i < effects.length; i++) {
+      for (const effect of effects) {
         if (flexDir === 'column') {
-          this.makeRulePartBlock('effect', effects[i], centerX,
-                                 areaRect.height * 3 / 4 - dpbRect.height /
-                                 2);
+          this.makeRulePartBlock(
+            'effect',
+            effect,
+            centerX,
+            (areaRect.height * 3) / 4 - dpbRect.height / 2
+          );
         } else {
-          this.makeRulePartBlock('effect', effects[i],
-                                 areaRect.width * 3 / 4 - dpbRect.width / 2,
-                                 centerY);
+          this.makeRulePartBlock(
+            'effect',
+            effect,
+            (areaRect.width * 3) / 4 - dpbRect.width / 2,
+            centerY
+          );
         }
       }
     }
@@ -630,43 +640,49 @@ const RuleScreen = {
     this.onRuleChange();
   },
 
-  showSimpleBlocks: function() {
+  showSimpleBlocks: function () {
     const createNotificationEffectBlock = () => {
       return new NotificationEffectBlock(
-        this.ruleArea, this.onPresentationChange, this.onRuleChange);
+        this.ruleArea,
+        this.onPresentationChange,
+        this.onRuleChange
+      );
     };
     const createTimeTriggerBlock = () => {
-      return new TimeTriggerBlock(
-        this.ruleArea, this.onPresentationChange, this.onRuleChange);
+      return new TimeTriggerBlock(this.ruleArea, this.onPresentationChange, this.onRuleChange);
     };
 
-    const ttBlock = this.makeBlock('time-trigger-block',
-                                   '/optimized-images/thing-icons/clock.svg',
-                                   'Clock');
-    const onTimeTriggerBlockDown =
-      this.onBlockDown.bind(this, createTimeTriggerBlock);
+    const ttBlock = this.makeBlock('time-trigger-block', '/images/thing-icons/clock.svg', 'Clock');
+    const onTimeTriggerBlockDown = this.onBlockDown.bind(this, createTimeTriggerBlock);
     ttBlock.addEventListener('mousedown', onTimeTriggerBlockDown);
     ttBlock.addEventListener('touchstart', onTimeTriggerBlockDown);
     this.rulePartsList.appendChild(ttBlock);
 
     const neBlock = this.makeBlock(
       'notification-effect-block',
-      '/optimized-images/thing-icons/notification.svg',
-      'Browser Notification');
-    const onNotificationEffectBlockDown =
-      this.onBlockDown.bind(this, createNotificationEffectBlock);
+      '/images/thing-icons/notification.svg',
+      'Browser Notification'
+    );
+    const onNotificationEffectBlockDown = this.onBlockDown.bind(
+      this,
+      createNotificationEffectBlock
+    );
     neBlock.addEventListener('mousedown', onNotificationEffectBlockDown);
     neBlock.addEventListener('touchstart', onNotificationEffectBlockDown);
     this.rulePartsList.appendChild(neBlock);
   },
 
-  showNotifierOutletBlocks: async function() {
+  showNotifierOutletBlocks: async function () {
     const notifiers = await this.gateway.readNotifiers();
     const createNotifierOutletBlock = (notifier, outlet) => {
       return () => {
         return new NotifierOutletBlock(
-          this.ruleArea, this.onPresentationChange, this.onRuleChange,
-          notifier, outlet);
+          this.ruleArea,
+          this.onPresentationChange,
+          this.onRuleChange,
+          notifier,
+          outlet
+        );
       };
     };
 
@@ -674,12 +690,13 @@ const RuleScreen = {
       for (const outlet of notifier.outlets) {
         const noBlock = this.makeBlock(
           'notifier-outlet-block',
-          '/optimized-images/thing-icons/notification.svg',
-          `${outlet.name} Notification`);
-        const onNotifierOutletBlockDown =
-          this.onBlockDown.bind(
-            this,
-            createNotifierOutletBlock(notifier, outlet));
+          '/images/thing-icons/notification.svg',
+          `${outlet.name} Notification`
+        );
+        const onNotifierOutletBlockDown = this.onBlockDown.bind(
+          this,
+          createNotifierOutletBlock(notifier, outlet)
+        );
         noBlock.addEventListener('mousedown', onNotifierOutletBlockDown);
         noBlock.addEventListener('touchstart', onNotifierOutletBlockDown);
         this.rulePartsList.appendChild(noBlock);
@@ -687,20 +704,17 @@ const RuleScreen = {
     }
   },
 
-  showDeviceBlocks: async function() {
+  showDeviceBlocks: async function () {
     const things = await this.gateway.readThings();
     for (const thing of things) {
-      const elt = this.makeBlock('device-block', RuleUtils.icon(thing),
-                                 thing.title);
-      elt.addEventListener('mousedown',
-                           this.onDeviceBlockDown.bind(this, thing));
-      elt.addEventListener('touchstart',
-                           this.onDeviceBlockDown.bind(this, thing));
+      const elt = this.makeBlock('device-block', RuleUtils.icon(thing), thing.title);
+      elt.addEventListener('mousedown', this.onDeviceBlockDown.bind(this, thing));
+      elt.addEventListener('touchstart', this.onDeviceBlockDown.bind(this, thing));
       this.rulePartsList.appendChild(elt);
     }
   },
 
-  onWindowResize: function() {
+  onWindowResize: function () {
     const scrollWidth = this.rulePartsList.scrollWidth;
     const boundingWidth = this.rulePartsList.getBoundingClientRect().width;
     const scrollLeft = document.getElementById('rule-parts-list-scroll-left');
@@ -715,7 +729,7 @@ const RuleScreen = {
     }
 
     if (this.rule) {
-      const {triggerBlocks, effectBlocks} = this.partBlocksByRole();
+      const { triggerBlocks, effectBlocks } = this.partBlocksByRole();
 
       triggerBlocks.forEach((triggerBlock, index) => {
         triggerBlock.snapToCenter(index, triggerBlocks.length);
@@ -729,15 +743,15 @@ const RuleScreen = {
     }
   },
 
-  onScrollLeftClick: function() {
+  onScrollLeftClick: function () {
     this.rulePartsList.scrollLeft -= 128;
   },
 
-  onScrollRightClick: function() {
+  onScrollRightClick: function () {
     this.rulePartsList.scrollLeft += 128;
   },
 
-  onAnimatePlayStopClick: function() {
+  onAnimatePlayStopClick: function () {
     if (this.animatePlayStop.classList.contains('stop')) {
       this.stopAnimate();
     } else {
@@ -745,7 +759,7 @@ const RuleScreen = {
     }
   },
 
-  startAnimate: function() {
+  startAnimate: function () {
     if (this.animateTimeout) {
       clearTimeout(this.animateTimeout);
     }
@@ -754,16 +768,14 @@ const RuleScreen = {
     }
     this.animateStep = -1;
 
-    this.ruleArea.querySelectorAll(
-      '.rule-part-block'
-    ).forEach((elt) => {
+    this.ruleArea.querySelectorAll('.rule-part-block').forEach((elt) => {
       elt.classList.add('inactive');
     });
     this.animatePlayStop.classList.add('stop');
 
     setTimeout(this.animate, this.animateDelay);
   },
-  animate: function() {
+  animate: function () {
     this.animateStep += 1;
     const animateIndex = this.animateStep >> 1;
     const animateOffPhase = !!(this.animateStep & 1);
@@ -773,10 +785,8 @@ const RuleScreen = {
       return;
     }
 
-    const triggerBlocks =
-      this.ruleArea.querySelectorAll('.rule-part-block.trigger');
-    const effectBlocks =
-      this.ruleArea.querySelectorAll('.rule-part-block.effect');
+    const triggerBlocks = this.ruleArea.querySelectorAll('.rule-part-block.trigger');
+    const effectBlocks = this.ruleArea.querySelectorAll('.rule-part-block.effect');
     const triggerPaths = this.connection.querySelectorAll('path.trigger');
     const effectPaths = this.connection.querySelectorAll('path.effect');
     const triggerCircles = this.connection.querySelectorAll('circle.trigger');
@@ -811,8 +821,7 @@ const RuleScreen = {
       deactivate(animateIndex - 1);
     }
 
-    const andActive = animateIndex === triggerBlocks.length ||
-      triggerBlocks.length === 1;
+    const andActive = animateIndex === triggerBlocks.length || triggerBlocks.length === 1;
 
     if (!animateOffPhase) {
       if (animateIndex === this.rule.trigger.triggers.length) {
@@ -824,7 +833,7 @@ const RuleScreen = {
       }
     }
 
-    const active = (!animateOffPhase) || this.getEffectType() === 'SetEffect';
+    const active = !animateOffPhase || this.getEffectType() === 'SetEffect';
 
     if (active && (andActive || this.rule.trigger.op === 'OR')) {
       effectBlocks.forEach((block) => {
@@ -860,19 +869,15 @@ const RuleScreen = {
     }
     this.animateTimeout = setTimeout(this.animate, animateDelay);
   },
-  stopAnimate: function() {
+  stopAnimate: function () {
     if (this.animateTimeout) {
       clearTimeout(this.animateTimeout);
       this.animateTimeout = null;
     }
-    this.ruleArea.querySelectorAll(
-      '.rule-part-block.inactive'
-    ).forEach((elt) => {
+    this.ruleArea.querySelectorAll('.rule-part-block.inactive').forEach((elt) => {
       elt.classList.remove('inactive');
     });
-    this.connection.querySelectorAll(
-      '.active'
-    ).forEach((elt) => {
+    this.connection.querySelectorAll('.active').forEach((elt) => {
       elt.classList.remove('active');
     });
     this.animatePlayStop.classList.remove('stop');

@@ -4,24 +4,19 @@ const Units = require('../units');
 const Utils = require('../utils');
 
 function propertyEqual(a, b) {
-  if ((!a) && (!b)) {
+  if (!a && !b) {
     return true;
   }
 
-  return a && b &&
-    a.type === b.type &&
-    a.id === b.id &&
-    a.thing === b.thing;
+  return a && b && a.type === b.type && a.id === b.id && a.thing === b.thing;
 }
 
 function getProperty(ruleFragment) {
-  return ruleFragment.trigger ?
-    ruleFragment.trigger.property :
-    ruleFragment.effect.property;
+  return ruleFragment.trigger ? ruleFragment.trigger.property : ruleFragment.effect.property;
 }
 
 function ruleFragmentEqual(a, b) {
-  if ((!!a) !== (!!b)) {
+  if (!!a !== !!b) {
     return false;
   }
   if (a.trigger && !b.trigger) {
@@ -219,16 +214,11 @@ class PropertySelect {
         if (valueInput) {
           value = parseFloat(valueInput.value);
         } else {
-          value =
-            parseFloat(valueSelect.options[valueSelect.selectedIndex].value);
+          value = parseFloat(valueSelect.options[valueSelect.selectedIndex].value);
         }
 
         // convert value back
-        value = Units.convert(
-          value,
-          Units.convert(0, property.unit).unit,
-          property.unit
-        ).value;
+        value = Units.convert(value, Units.convert(0, property.unit).unit, property.unit).value;
 
         // Adjust the value to match limits
         value = Utils.adjustInputValue(value, property);
@@ -252,6 +242,9 @@ class PropertySelect {
         this.devicePropertyBlock.rulePart = ruleFragment;
         this.devicePropertyBlock.onRuleChange();
         elt.dataset.ruleFragment = JSON.stringify(ruleFragment);
+
+        // select this property, since it's been changed
+        this.select(elt);
       });
     } else if (property.type === 'string') {
       let valueInput, valueSelect;
@@ -292,15 +285,16 @@ class PropertySelect {
         let selected = !dpbRulePart;
         if (ruleFragment.trigger) {
           ruleFragment.trigger.value = value;
-          selected = selected || (dpbRulePart.trigger &&
-            dpbRulePart.trigger.type === ruleFragment.trigger.type);
+          selected =
+            selected ||
+            (dpbRulePart.trigger && dpbRulePart.trigger.type === ruleFragment.trigger.type);
         } else {
           ruleFragment.effect.value = value;
-          selected = selected || (dpbRulePart.effect &&
-            (dpbRulePart.effect.property.id ===
-             ruleFragment.effect.property.id) &&
-            (dpbRulePart.effect.property.thing ===
-             ruleFragment.effect.property.thing));
+          selected =
+            selected ||
+            (dpbRulePart.effect &&
+              dpbRulePart.effect.property.id === ruleFragment.effect.property.id &&
+              dpbRulePart.effect.property.thing === ruleFragment.effect.property.thing);
         }
         elt.dataset.ruleFragment = JSON.stringify(ruleFragment);
 
@@ -308,6 +302,9 @@ class PropertySelect {
           this.devicePropertyBlock.rulePart = ruleFragment;
           this.devicePropertyBlock.onRuleChange();
         }
+
+        // select this property, since it's been changed
+        this.select(elt);
       });
     }
 
@@ -328,19 +325,18 @@ class PropertySelect {
       return;
     }
 
-    const fragmentValue = ruleFragment.trigger ?
-      ruleFragment.trigger.value :
-      ruleFragment.effect.value;
+    const fragmentValue = ruleFragment.trigger
+      ? ruleFragment.trigger.value
+      : ruleFragment.effect.value;
 
-    const input = optionElt.querySelector('.value-input') ||
-      optionElt.querySelector('.value-select');
+    const input =
+      optionElt.querySelector('.value-input') || optionElt.querySelector('.value-select');
 
     if (property.type === 'number' || property.type === 'integer') {
       if (ruleFragment.trigger) {
         if (ruleFragment.trigger.levelType === 'GREATER') {
           optionElt.querySelector('.gt-option').setAttribute('selected', '');
-        } else if (property.type === 'integer' &&
-                   ruleFragment.trigger.levelType === 'EQUAL') {
+        } else if (property.type === 'integer' && ruleFragment.trigger.levelType === 'EQUAL') {
           optionElt.querySelector('.eq-option').setAttribute('selected', '');
         } else {
           optionElt.querySelector('.lt-option').setAttribute('selected', '');
@@ -366,15 +362,13 @@ class PropertySelect {
     this.clearOptions();
 
     for (const propName of Object.keys(this.thing.properties)) {
-      const property =
-        JSON.parse(JSON.stringify(this.thing.properties[propName]));
+      const property = JSON.parse(JSON.stringify(this.thing.properties[propName]));
 
       if (!property.name) {
         property.name = propName;
       }
 
-      const links =
-        property.links.filter((l) => !l.rel || l.rel === 'property');
+      const links = property.links.filter((l) => !l.rel || l.rel === 'property');
       if (links.length === 0) {
         continue;
       }
@@ -504,8 +498,7 @@ class PropertySelect {
 
   addEventOptions() {
     for (const name of Object.keys(this.thing.events)) {
-      const label =
-        this.thing.events[name].title || this.thing.events[name].label || name;
+      const label = this.thing.events[name].title || this.thing.events[name].label || name;
       const eventTrigger = {
         type: 'EventTrigger',
         thing: RuleUtils.extractThing(this.thing.href),
@@ -520,12 +513,13 @@ class PropertySelect {
 
   addActionOptions() {
     for (const name of Object.keys(this.thing.actions)) {
-      if (this.thing.actions[name].input &&
-          Object.keys(this.thing.actions[name].input).length > 0) {
+      if (
+        this.thing.actions[name].input &&
+        Object.keys(this.thing.actions[name].input).length > 0
+      ) {
         continue;
       }
-      const label = this.thing.actions[name].title ||
-        this.thing.actions[name].label || name;
+      const label = this.thing.actions[name].title || this.thing.actions[name].label || name;
       const actionEffect = {
         type: 'ActionEffect',
         thing: RuleUtils.extractThing(this.thing.href),
@@ -546,6 +540,8 @@ class PropertySelect {
   onClick(e) {
     this.elt.classList.toggle('open');
     if (!this.elt.classList.contains('open')) {
+      document.activeElement.blur();
+
       let target = e.target;
       if (!target.classList.contains('property-select-option')) {
         target = target.parentNode;
@@ -619,6 +615,7 @@ class PropertySelect {
       node = node.parentNode;
     }
     this.elt.classList.remove('open');
+    document.activeElement.blur();
   }
 
   remove() {
