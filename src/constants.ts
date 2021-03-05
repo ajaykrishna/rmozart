@@ -33,6 +33,7 @@ export const PUSH_PATH = '/push';
 export const PING_PATH = '/ping';
 export const PROXY_PATH = '/proxy';
 export const EXTENSIONS_PATH = '/extensions';
+export const COMPOSED_RULES_PATH = '/composed-rules';
 // Remember we end up in the build/* directory so these paths looks slightly
 // different than you might expect const
 export const STATIC_PATH = path.join(__dirname, '../static');

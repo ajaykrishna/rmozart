@@ -39,6 +39,7 @@ import ThingsController from './controllers/things_controller';
 import UpdatesController from './controllers/updates_controller';
 import UploadsController from './controllers/uploads_controller';
 import UsersController from './controllers/users_controller';
+import VscadController from './vscad-rules-engine/VscadIndex';
 
 const nocache = NoCache();
 const auth = jwtMiddleware.middleware();
@@ -172,6 +173,7 @@ class Router {
 
     app.use(API_PREFIX + Constants.OAUTH_PATH, nocache, oauthController);
     app.use(API_PREFIX + Constants.OAUTHCLIENTS_PATH, nocache, auth, OAuthClientsController());
+    app.use(API_PREFIX + Constants.COMPOSED_RULES_PATH, nocache, auth, VscadController.getController());
   }
 
   addProxyServer(thingId: string, server: string): void {
