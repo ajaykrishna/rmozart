@@ -5,26 +5,39 @@
  */
 
 
-  const Database = require('./VscadDatabase');
-  const Rule = require('./VscadComposedRule');
- 
+import Database from './VscadDatabase';
+import Rule from './VscadComposedRule';
+
 
 /**
  * An engine for running and managing list of rules
  */
 class VscadEngine {
+
+  private rules: Record<string, Rule> | null;
+
+  constructor() {
+    this.rules = null;
+  }
+
   /**
    * Get a list of all current rules
    * @return {Promise<Array<Rule>>} rules
    */
-  getThings(){
-  
-      return  Database.getThings();
-    
+  getThings() {
+
+    return Database.getThings();
+
   }
-  getRules() {
+
+  
+  /**
+   * Get a list of all current rules
+   * @return {Promise<Array<Rule>>} rules
+   */
+  getRules(): Promise<Rule[]> {
     let rulesPromise = Promise.resolve(this.rules);
-// TODO  get the atual rules so we can activate the next
+    // TODO  get the atual rules so we can activate the next
     if (!this.rules) {
       rulesPromise = Database.getRules().then(async (ruleDescs) => {
         this.rules = {};
@@ -37,8 +50,8 @@ class VscadEngine {
     }
 
     return rulesPromise.then((rules) => {
-      return Object.keys(rules).map((ruleId) => {
-        return rules[ruleId];
+      return Object.keys(<object>rules).map((ruleId: string) => {
+        return rules![ruleId];
       });
     });
   }
@@ -48,12 +61,11 @@ class VscadEngine {
    * @param {number} id
    * @return {Promise<Rule>}
    */
-  getRule(id) {
-    const rule = this.rules[id];
-    if (!rule) {
+  getRule(id: number) {
+    if (!(id in this.rules!)) {
       return Promise.reject(new Error(`Rule ${id} does not exist`));
     }
-    return Promise.resolve(rule);
+    return Promise.resolve(this.rules![id]);
   }
 
   /**
@@ -61,10 +73,11 @@ class VscadEngine {
    * @param {Rule} rule
    * @return {Promise<number>} rule id
    */
-  async addRule(rule) {
+  async addRule(rule: Rule): Promise<number>  {
+    console.log(rule);
     const id = await Database.createRule(rule.toDescription());
-    rule.id = id;
-    this.rules[id] = rule;
+    rule.setId(id);
+    this.rules![id] = rule;
     return id;
   }
 
@@ -74,13 +87,13 @@ class VscadEngine {
    * @param {Rule} rule
    * @return {Promise}
    */
-  async updateRule(ruleId, rule) {
-    if (!this.rules[ruleId]) {
+  async updateRule(ruleId:  number, rule: Rule): Promise<void>  {
+    if (!(ruleId in this.rules!)) {
       return Promise.reject(new Error(`Rule ${ruleId} does not exist`));
     }
-    rule.id = ruleId;
+    rule.setId(ruleId);
     await Database.updateRule(ruleId, rule.toDescription());
-    this.rules[ruleId] = rule;
+    this.rules![ruleId] = rule;
   }
 
   /**
@@ -88,15 +101,15 @@ class VscadEngine {
    * @param {number} rule id
    * @return {Promise}
    */
-  deleteRule(ruleId) {
-    if (!this.rules[ruleId]) {
-      return Promise.reject(
-        new Error(`Rule ${ruleId} already does not exist`));
+  deleteRule(ruleId: number): Promise<void> {
+    if (!(ruleId in this.rules!)) {
+      return Promise.reject(new Error(`Rule ${ruleId} does not exist`));
     }
     return Database.deleteRule(ruleId).then(() => {
-      delete this.rules[ruleId];
+      delete this.rules![ruleId];
     });
   }
 }
 
-module.exports = VscadEngine;
+// module.exports = VscadEngine;
+export default VscadEngine;
