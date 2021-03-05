@@ -20,16 +20,16 @@ import { HttpErrorWithCode } from '../errors';
 
 const ajv = new Ajv({ strict: false });
 
-class Things extends EventEmitter {
+class Things {
   /**
    * A Map of Things in the Things database.
    */
-  private things: Map<string, Thing>;
+  private things = new Map<string, Thing>();
 
   /**
    * A collection of open websockets listening for new things.
    */
-  private websockets: WebSocket[];
+  private websockets: WebSocket[] = [];
 
   /**
    * The promise object returned by Database.getThings()
@@ -46,13 +46,6 @@ class Things extends EventEmitter {
   private emitter = new EventEmitter();
 
   private router?: Router;
-
-  constructor() {
-    super();
-
-    this.things = new Map<string, Thing>();
-    this.websockets = [];
-  }
 
   setRouter(router: Router): void {
     this.router = router;
@@ -211,7 +204,7 @@ class Things extends EventEmitter {
 
     return Database.createThing(thing.getId(), thing.getDescription()).then((thingDesc) => {
       this.things.set(thing.getId(), thing);
-      this.emit(Constants.THING_ADDED, thing);
+      this.emitter.emit(Constants.THING_ADDED, thing);
       return thingDesc;
     });
   }
@@ -435,7 +428,7 @@ class Things extends EventEmitter {
   clearState(): void {
     this.websockets = [];
     this.things = new Map();
-    this.removeAllListeners();
+    this.emitter.removeAllListeners();
   }
 }
 
