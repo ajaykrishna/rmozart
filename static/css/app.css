@@ -229,6 +229,19 @@ h6 {
   transform: translateY(-100%) translateY(-4rem);
 }
 
+#speech-wrapper {
+  box-sizing: border-box;
+  z-index: 0;
+  position: fixed;
+  right: 0rem;
+  top: 0rem;
+}
+
+#speech-wrapper.assistant,
+#speech-wrapper.hidden {
+  display: none;
+}
+
 #message-area {
   position: fixed;
   bottom: 3rem;

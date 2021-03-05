@@ -14,6 +14,24 @@
     <link rel="apple-touch-icon" sizes="512x512" href="/images/icon-2x.png" />
   </head>
   <body class="hidden">
+	<!-- Assistant View -->
+    <section data-view="assistant" id="assistant-view">
+      <div id="assistant-content">
+        <div id="assistant-messages"></div>
+        <div id="assistant-hint"></div>
+        <div id="assistant-avatar">
+          <img data-l10n-id="assistant-avatar-image"
+               id="assistant-avatar-image" src="/optimized-images/fox.svg" />
+        </div>
+      </div>
+      <div id="assistant-controls">
+        <button id="assistant-speech-button" class="icon-button"></button>
+        <canvas id="assistant-stm-levels" class="hidden"></canvas>
+        <input id="assistant-text-input" type="text"
+               data-l10n-id="assistant-controls-text-input" />
+        <button id="assistant-text-submit"></button>
+      </div>
+    </section>
     <!-- Things View -->
     <section data-view="things" class="selected" id="things-view">
       <div id="thing-title" class="hidden">

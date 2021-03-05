@@ -115,7 +115,7 @@ const App = {
     this.views.floorplan = document.getElementById('floorplan-view');
     this.views.settings = document.getElementById('settings-view');
     this.views.rules = document.getElementById('rules-view');
-    this.views['rules-manager'] = document.getElementById('rules-manager-view');
+    this.views.rulesManager = document.getElementById('rules-manager-view');
     this.views.rule = document.getElementById('rule-view');
     this.views.logs = document.getElementById('logs-view');
     this.currentView = this.views.things;
@@ -250,13 +250,13 @@ const App = {
     this.selectView('rules');
   },
 
-  showComposedRule: function(context) {
+  showComposedRule: function (context) {
     this.hideExtensionBackButton();
     VscadComposedRuleScreen.show(context.params.rule);
-    this.selectView('rules-manager');
+    this.selectView('rulesManager');
   },
 
-  showRule: function(context) {
+  showRule: function (context) {
     this.hideExtensionBackButton();
     RuleScreen.show(context.params.rule);
     this.selectView('rule');
@@ -495,7 +495,7 @@ RulesScreen = require('./views/rules-screen');
 RuleScreen = require('./views/rule-screen');
 LogsScreen = require('./views/logs-screen');
 VscadComposedRuleScreen = require('./vscad-composed-rule-screen');
-Speech = require('./speech');
+// Speech = require('./speech');
 ReopeningWebSocket = require('./models/reopening-web-socket');
 
 // load web components
