@@ -19,7 +19,7 @@
     "build": "rm -rf build && cp -rL src build && find build -name '*.ts' -delete && tsc -p . && webpack",
     "java": "java -jar ./dist/0.0.1-SNAPSHOT/mozart-0.0.1-SNAPSHOT.jar",
     "vscad": "concurrently --kill-others \"npm run java\" \" npm run start\"",
-    "esau": "npm run java && npm run start"
+    "esau": "concurrently --kill-others \"npm run java\" \" npm run run-only\""
   },
   "repository": {
     "type": "git",

@@ -80,6 +80,8 @@ export default class MasterEngine {
     }
   }
   initGraph(data: any) {
+    console.log(data);
+    
     this.turnOffAllRules();
     let testNodes: any = {};
 

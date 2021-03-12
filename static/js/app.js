@@ -115,7 +115,7 @@ const App = {
     this.views.floorplan = document.getElementById('floorplan-view');
     this.views.settings = document.getElementById('settings-view');
     this.views.rules = document.getElementById('rules-view');
-    this.views.rulesManager = document.getElementById('rules-manager-view');
+    this.views[rules-manager] = document.getElementById('rules-manager-view');
     this.views.rule = document.getElementById('rule-view');
     this.views.logs = document.getElementById('logs-view');
     this.currentView = this.views.things;
@@ -253,7 +253,7 @@ const App = {
   showComposedRule: function (context) {
     this.hideExtensionBackButton();
     VscadComposedRuleScreen.show(context.params.rule);
-    this.selectView('rulesManager');
+    this.selectView('rules-manager');
   },
 
   showRule: function (context) {
