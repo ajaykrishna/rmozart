@@ -25,10 +25,16 @@ class VscadEngine {
    * @return {Promise<Array<Rule>>} rules
    */
   getThings() {
-
     return Database.getThings();
-
   }
+  
+  // /**
+  //  * Get history from data base
+  //  * @return {Promise<*[]>}
+  //  */
+  // getHisotry() {
+  //   return Database.getHistory();
+  // }
 
   
   /**
@@ -109,6 +115,16 @@ class VscadEngine {
       delete this.rules![ruleId];
     });
   }
+
+  // /**
+  //  * Create history
+  //  * @param {String} composition
+  //  */
+  // async createHistory(composition) {
+  //   await Database.createHistory(composition);
+  //   return 'is working';
+  // }
+
 }
 
 // module.exports = VscadEngine;

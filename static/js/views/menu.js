@@ -21,12 +21,16 @@ const Menu = {
     this.element.addEventListener('click', this.handleClick.bind(this));
     this.scrim.addEventListener('click', this.handleScrimClick.bind(this));
     this.items = {};
+    this.items.assistant = [
+      document.getElementById('assistant-menu-item'),
+      document.getElementById('speech-wrapper'),
+    ];
     this.items.things = [document.getElementById('things-menu-item')];
     this.items.settings = [document.getElementById('settings-menu-item')];
     this.items.floorplan = [document.getElementById('floorplan-menu-item')];
     this.items.rules = [document.getElementById('rules-menu-item')];
-    this.items['rules-manager'] =
-    [document.getElementById('rules-manager-menu-item')];
+    this.items['rules-manager'] = [document.getElementById('rules-manager-menu-item')];
+    this.items['reconfigure'] = [document.getElementById('reconfigure-view')];
     this.items.rule = [document.getElementById('rules-menu-item')];
     this.items.logs = [document.getElementById('logs-menu-item')];
     this.currentItem = 'things';

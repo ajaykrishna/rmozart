@@ -12,6 +12,8 @@
 // eslint-disable-next-line prefer-const
 let API;
 // eslint-disable-next-line prefer-const
+let AssistantScreen;
+// eslint-disable-next-line prefer-const
 let GatewayModel;
 // eslint-disable-next-line prefer-const
 let ThingsScreen;
@@ -32,11 +34,14 @@ let RulesScreen;
 // eslint-disable-next-line prefer-const
 let VscadComposedRuleScreen;
 // eslint-disable-next-line prefer-const
+let ReconfigureRuleScreen;
+// eslint-disable-next-line prefer-const
 let RuleScreen;
 // eslint-disable-next-line prefer-const
 let LogsScreen;
 // eslint-disable-next-line prefer-const
 let ReopeningWebSocket;
+let Speech;
 
 const page = require('page');
 const shaka = require('shaka-player/dist/shaka-player.compiled');
@@ -100,12 +105,18 @@ const App = {
 
     AddThingScreen.init();
     ContextMenu.init();
+    AssistantScreen.init();
     ThingsScreen.init();
     SettingsScreen.init();
     FloorplanScreen.init();
 
+    if (navigator.mediaDevices && window.MediaRecorder) {
+      Speech.init();
+    }
+
     RulesScreen.init();
     VscadComposedRuleScreen.init();
+    ReconfigureRuleScreen.init();
     RuleScreen.init();
 
     LogsScreen.init();
@@ -113,10 +124,12 @@ const App = {
     this.views = [];
     this.views.things = document.getElementById('things-view');
     this.views.floorplan = document.getElementById('floorplan-view');
+    this.views.reconfigure = document.getElementById('reconfigure-view');
     this.views.settings = document.getElementById('settings-view');
     this.views.rules = document.getElementById('rules-view');
-    this.views[rules-manager] = document.getElementById('rules-manager-view');
+    this.views.rulesManager = document.getElementById('rules-manager-view');
     this.views.rule = document.getElementById('rule-view');
+    this.views.assistant = document.getElementById('assistant-view');
     this.views.logs = document.getElementById('logs-view');
     this.currentView = this.views.things;
     this.displayedExtension = null;
@@ -139,6 +152,7 @@ const App = {
 
     this.gatewayModel = new GatewayModel();
 
+    this.wsBackoff = 1000;
     this.initWebSocket();
 
     this.extensions = {};
@@ -215,7 +229,13 @@ const App = {
     }
   },
 
-  showThings: function (context) {
+  showAssistant: function() {
+    this.hideExtensionBackButton();
+    AssistantScreen.show();
+    this.selectView('assistant');
+  },
+
+  showThings: function(context) {
     this.hideExtensionBackButton();
     const events = context.pathname.split('/').pop() === 'events';
     ThingsScreen.show(
@@ -253,10 +273,18 @@ const App = {
   showComposedRule: function (context) {
     this.hideExtensionBackButton();
     VscadComposedRuleScreen.show(context.params.rule);
-    this.selectView('rules-manager');
+    this.selectView('rulesManager');
   },
 
-  showRule: function (context) {
+  showReconfigure: function(context) {
+    console.log('evento');
+    this.hideExtensionBackButton();
+    this.hideMenuButton();
+    ReconfigureRuleScreen.show(context.params.rule);
+    this.selectView('reconfigure');
+  },
+
+  showRule: function(context) {
     this.hideExtensionBackButton();
     RuleScreen.show(context.params.rule);
     this.selectView('rule');
@@ -483,6 +511,7 @@ module.exports = App;
 
 // avoid circular dependency
 API = require('./api').default;
+AssistantScreen = require('./views/assistant');
 GatewayModel = require('./models/gateway-model');
 ThingsScreen = require('./views/things');
 AddThingScreen = require('./views/add-thing');
@@ -497,6 +526,8 @@ LogsScreen = require('./views/logs-screen');
 VscadComposedRuleScreen = require('./vscad-composed-rule-screen');
 // Speech = require('./speech');
 ReopeningWebSocket = require('./models/reopening-web-socket');
+ReconfigureRuleScreen = require('./reconfigure-composed');
+Speech = require('./speech');
 
 // load web components
 require('@webcomponents/webcomponentsjs/webcomponents-bundle');

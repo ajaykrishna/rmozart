@@ -1,6 +1,6 @@
-const Rule = require('./Rule');
-const RuleUtils = require('./RuleUtils');
-const Utils = require('../utils');
+const Rule = require("./Rule");
+const RuleUtils = require("./RuleUtils");
+const Utils = require("../utils");
 
 /**
  * A summary of a Rule in card format
@@ -15,15 +15,14 @@ function VscadRuleCardItem(gateway, elt, id, desc) {
   this.id = id;
   this.rule = new Rule(gateway, desc);
 
-  let invalidWarning = '';
+  let invalidWarning = "";
   if (!this.rule.valid()) {
-    checked = '';
-    invalidWarning = '[INVALID] ';
-    this.elt.classList.add('invalid');
+    checked = "";
+    invalidWarning = "[INVALID] ";
+    this.elt.classList.add("invalid");
   }
 
-  let iconTrigger = '/optimized-images/thing-icons/thing.svg';
- 
+  let iconTrigger = "/images/thing-icons/thing.svg";
 
   if (this.rule.trigger) {
     let trigger = this.rule.trigger;
@@ -33,8 +32,8 @@ function VscadRuleCardItem(gateway, elt, id, desc) {
     const thingTrigger = RuleUtils.thingFromPart(gateway, trigger);
     if (thingTrigger) {
       iconTrigger = RuleUtils.icon(thingTrigger);
-    } else if (trigger.type === 'TimeTrigger') {
-      iconTrigger = '/optimized-images/thing-icons/clock.svg';
+    } else if (trigger.type === "TimeTrigger") {
+      iconTrigger = "/images/thing-icons/clock.svg";
     }
   }
 
@@ -46,10 +45,6 @@ function VscadRuleCardItem(gateway, elt, id, desc) {
       <h3>${invalidWarning}${Utils.escapeHtml(this.rule.name)}</h3>
     </div>
   `;
-
 }
-
-
-
 
 module.exports = VscadRuleCardItem;

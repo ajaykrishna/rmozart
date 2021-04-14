@@ -77,9 +77,12 @@
 #main-menu #rules-manager-menu-item {
   background-image: url('../optimized-images/composed-rules.png');
 }
+#main-menu #rules-reconfigure-menu-item {
+  background-image: url('../images/customize-16.svg');
+}
 
 #main-menu #microphone-menu-item {
-  background-image: url('../optimized-images/microphone.svg');
+  background-image: url('../images/microphone.svg');
 }
 
 #main-menu #rules-menu-item {

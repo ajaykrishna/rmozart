@@ -21,7 +21,7 @@
         <div id="assistant-hint"></div>
         <div id="assistant-avatar">
           <img data-l10n-id="assistant-avatar-image"
-               id="assistant-avatar-image" src="/optimized-images/fox.svg" />
+               id="assistant-avatar-image" src="/images/fox.svg" />
         </div>
       </div>
       <div id="assistant-controls">
@@ -133,40 +133,41 @@
 
       <section id="domain-settings" class="hidden settings-section">
         <ul>
-          <li class="domain-item">
-            <input
-              id="domain-settings-local-checkbox"
-              name="domain-settings"
-              class="experiment-checkbox"
-              type="checkbox"
-            />
-            <label
-              id="domain-settings-local-label"
-              data-l10n-id="domain-settings-local-label"
-              for="domain-settings-local-checkbox"
-            >
-            </label>
-            <input
-              type="text"
-              id="domain-settings-local-name"
-              name="gateway"
-              data-l10n-id="domain-settings-local-name"
-            />
-            <span id="domain-settings-local-suffix">.local</span>
-            <div id="domain-settings-error" class="domain-settings-error hidden"></div>
-            <button
-              id="domain-settings-local-update"
-              class="domain-settings-update text-button"
-              data-l10n-id="domain-settings-local-update"
-              type="submit"
-            ></button>
-          </li>
-          <li class="domain-item">
-            <p class="domain-settings-container" data-l10n-id="domain-settings-remote-access"></p>
-            <p id="domain-settings-tunnel-name" class="domain-settings-container">
-              &nbsp;.webthings.io
-            </p>
-          </li>
+            <li class="domain-item">
+                <input id="domain-settings-local-checkbox" name="domain-settings" class="experiment-checkbox"
+                       type="checkbox">
+                <label id="domain-settings-local-label" data-l10n-id="domain-settings-local-label"
+                       for="domain-settings-local-checkbox">
+                </label>
+                <input type="text" id="domain-settings-local-name" name="gateway"
+                       data-l10n-id="domain-settings-local-name"/>
+                <span id="domain-settings-local-suffix">.local</span>
+                <div id="domain-settings-error" class="domain-settings-error hidden"></div>
+                <button id="domain-settings-local-update" class="domain-settings-update text-button"
+                        data-l10n-id="domain-settings-local-update" type="submit">
+                </button>
+            </li>
+            <li class="domain-item">
+                <p class="domain-settings-container" data-l10n-id="domain-settings-remote-access">
+                </p>
+                <p id="domain-settings-tunnel-name" class="domain-settings-container">
+                    &nbsp;. mozilla-iot.org
+                </p>
+            </li>
+
+            <!-- Removed until full integration of service discovery and tunnel endpoints
+              <li class="domain-item">
+                <input id="domain-settings-tunnel-checkbox" name="domain-settings" class="experiment-checkbox" type="checkbox">
+                <label for="domain-settings-tunnel-checkbox">Use Mozilla IoT Tunnel Service (mozilla-iot.org) </label>
+                <p class="domain-settings-description-small">Choose a web address for your gateway e.g. "johns-house"</p>
+                <p><input type="text" id="domain-settings-tunnel-name" name="domain" placeholder="example">.mozilla-iot.org</p>
+                <p class="domain-settings-description-small">Input your email address to get your secure keys emailed to you.</p>
+                <input type="text" id="domain-settings-tunnel-email" name="email" placeholder="email address">
+                <br/>
+                <button id="domain-settings-moz-tunnel-change" class="text-button" type="submit">Request Change</button>
+              </li>
+              -->
+
         </ul>
       </section>
 
@@ -178,56 +179,82 @@
           ></div>
         </section>
         <section id="network-settings-client" class="hidden settings-subsection">
-          <ul class="network-settings-list">
-            <li class="network-item">
-              <img
-                src="/images/ethernet.svg"
-                data-l10n-id="network-settings-ethernet-image"
-                class="network-settings-list-item-icon"
-              />
-              <div class="network-settings-list-item-container-2">
-                <div
-                  class="network-settings-list-item-header"
-                  data-l10n-id="network-settings-ethernet"
-                ></div>
-                <div
-                  class="network-settings-list-item-detail"
-                  id="network-settings-list-item-ethernet-ip"
-                ></div>
-              </div>
-              <button
-                class="network-settings-list-item-button text-button"
-                id="network-settings-list-item-ethernet-configure"
-                data-l10n-id="network-settings-configure"
-              ></button>
-            </li>
-            <li class="network-item">
-              <img
-                src="/images/wifi.svg"
-                data-l10n-id="network-settings-wifi-image"
-                class="network-settings-list-item-icon"
-              />
-              <div class="network-settings-list-item-container-3">
-                <div
-                  class="network-settings-list-item-header"
-                  data-l10n-id="network-settings-wifi"
-                ></div>
-                <div
-                  class="network-settings-list-item-detail"
-                  id="network-settings-list-item-wifi-ssid"
-                ></div>
-                <div
-                  class="network-settings-list-item-detail"
-                  id="network-settings-list-item-wifi-ip"
-                ></div>
-              </div>
-              <button
-                class="network-settings-list-item-button text-button"
-                id="network-settings-list-item-wifi-configure"
-                data-l10n-id="network-settings-configure"
-              ></button>
-            </li>
-          </ul>
+            <ul class="network-settings-list">
+                <li class="network-item">
+                    <img src="/images/ethernet.svg" data-l10n-id="network-settings-ethernet-image"
+                         class="network-settings-list-item-icon"/>
+                    <div class="network-settings-list-item-container-2">
+                        <div class="network-settings-list-item-header" data-l10n-id="network-settings-ethernet"></div>
+                        <div class="network-settings-list-item-detail" id="network-settings-list-item-ethernet-ip">
+                        </div>
+                    </div>
+                    <button class="network-settings-list-item-button text-button"
+                            id="network-settings-list-item-ethernet-configure"
+                            data-l10n-id="network-settings-configure">
+                    </button>
+                </li>
+                <li class="network-item">
+                    <img src="/images/wifi.svg" data-l10n-id="network-settings-wifi-image"
+                         class="network-settings-list-item-icon"/>
+                    <div class="network-settings-list-item-container-3">
+                        <div class="network-settings-list-item-header" data-l10n-id="network-settings-wifi"></div>
+                        <div class="network-settings-list-item-detail" id="network-settings-list-item-wifi-ssid">
+                        </div>
+                        <div class="network-settings-list-item-detail" id="network-settings-list-item-wifi-ip">
+                        </div>
+                    </div>
+                    <button class="network-settings-list-item-button text-button"
+                            id="network-settings-list-item-wifi-configure"
+                            data-l10n-id="network-settings-configure">
+                    </button>
+                </li>
+            </ul>
+        </section>
+        <section id="network-settings-router" class="hidden settings-subsection">
+            <ul class="network-settings-list">
+                <li class="network-item">
+                    <img src="/images/internet.svg" data-l10n-id="network-settings-internet-image"
+                         class="network-settings-list-item-icon"/>
+                    <div class="network-settings-list-item-container-2">
+                        <div class="network-settings-list-item-header" data-l10n-id="network-settings-internet-wan">
+                        </div>
+                        <div class="network-settings-list-item-detail" id="network-settings-list-item-wan-ip">
+                        </div>
+                    </div>
+                    <button class="network-settings-list-item-button text-button"
+                            id="network-settings-list-item-wan-configure"
+                            data-l10n-id="network-settings-configure">
+                    </button>
+                </li>
+                <li class="network-item">
+                    <img src="/images/network.svg" data-l10n-id="network-settings-home-network-image"
+                         class="network-settings-list-item-icon"/>
+                    <div class="network-settings-list-item-container-2">
+                        <div class="network-settings-list-item-header" data-l10n-id="network-settings-home-network-lan">
+                        </div>
+                        <div class="network-settings-list-item-detail" id="network-settings-list-item-lan-ip">
+                        </div>
+                    </div>
+                    <button class="network-settings-list-item-button text-button"
+                            id="network-settings-list-item-lan-configure"
+                            data-l10n-id="network-settings-configure">
+                    </button>
+                </li>
+                <li class="network-item">
+                    <img src="/images/wifi.svg" data-l10n-id="network-settings-wifi-image"
+                         class="network-settings-list-item-icon"/>
+                    <div class="network-settings-list-item-container-2">
+                        <div class="network-settings-list-item-header" data-l10n-id="network-settings-wifi-wlan">
+                        </div>
+                        <div class="network-settings-list-item-detail" id="network-settings-list-item-wlan-ssid">
+                        </div>
+                    </div>
+                    <button class="network-settings-list-item-button text-button"
+                            id="network-settings-list-item-wlan-configure"
+                            data-l10n-id="network-settings-configure">
+                    </button>
+                </li>
+            </ul>
         </section>
         <section id="network-settings-ethernet" class="hidden settings-subsection">
           <div class="network-settings-wrap">
@@ -290,7 +317,63 @@
             </div>
           </div>
         </section>
-      </section>
+        <section id="network-settings-wan" class="hidden settings-subsection">
+            <div class="network-settings-wrap">
+                <span>Mode</span>
+                <select id="network-settings-wan-mode" class="network-select">
+                    <option value="dhcp" data-l10n-id="network-settings-dhcp"></option>
+                    <option value="static" data-l10n-id="network-settings-static"></option>
+                    <option value="pppoe" data-l10n-id="network-settings-pppoe"></option>
+                </select>
+                <span id="network-settings-wan-ip-label" data-l10n-id="network-settings-ip-address"></span>
+                <input id="network-settings-wan-ip" class="network-text" type="text">
+                <span id="network-settings-wan-netmask-label" data-l10n-id="network-settings-network-mask"></span>
+                <input id="network-settings-wan-netmask" class="network-text" type="text">
+                <span id="network-settings-wan-gateway-label" data-l10n-id="network-settings-gateway"></span>
+                <input id="network-settings-wan-gateway" class="network-text" type="text">
+                <span id="network-settings-wan-username-label" data-l10n-id="network-settings-username"></span>
+                <input id="network-settings-wan-username" class="network-text" type="text">
+                <span id="network-settings-wan-password-label" data-l10n-id="network-settings-password"></span>
+                <input id="network-settings-wan-password" class="network-password" type="password">
+                <button id="network-settings-wan-done" class="network-button text-button"
+                        data-l10n-id="network-settings-done">
+                </button>
+            </div>
+        </section>
+        <section id="network-settings-lan" class="hidden settings-subsection">
+            <div class="network-settings-wrap">
+                <span data-l10n-id="network-settings-router-ip"></span>
+                <input id="network-settings-lan-ip" class="network-text" type="text">
+                <span data-l10n-id="network-settings-network-mask"></span>
+                <input id="network-settings-lan-netmask" class="network-text" type="text">
+                <span data-l10n-id="network-settings-dhcp-server"></span>
+                <input id="network-settings-lan-dhcp" class="network-checkbox" type="checkbox">
+                <label for="network-settings-lan-dhcp"></label>
+                <button id="network-settings-lan-done" class="network-button text-button"
+                        data-l10n-id="network-settings-done">
+                </button>
+            </div>
+        </section>
+        <section id="network-settings-wlan" class="hidden settings-subsection">
+            <div class="network-settings-wrap">
+                <span data-l10n-id="network-settings-enable-wifi"></span>
+                <input id="network-settings-wlan-enable" class="network-checkbox" type="checkbox">
+                <label for="network-settings-wlan-enable"></label>
+                <span data-l10n-id="network-settings-network-name"></span>
+                <input id="network-settings-wlan-ssid" class="network-text" type="text">
+                <span data-l10n-id="network-settings-password"></span>
+                <input id="network-settings-wlan-password" class="network-password" type="password">
+                <div id="network-settings-wlan-show-password-wrap">
+                    <input id="network-settings-wlan-show-password" class="network-checkbox" type="checkbox">
+                    <label for="network-settings-wlan-show-password"></label>
+                    <span data-l10n-id="network-settings-show-password"></span>
+                </div>
+                <button id="network-settings-wlan-done" class="network-button text-button"
+                        data-l10n-id="network-settings-done">
+                </button>
+            </div>
+        </section>
+    </section>
 
       <section id="user-settings" class="hidden settings-section">
         <section id="user-settings-main" class="hidden settings-subsection">
@@ -706,7 +789,7 @@
           <div class="rule-info">
             <h1>
               <span class="rule-name">Rule Name</span>
-              <img src="/optimized-images/customize-16.svg" alt="Customize Rule Name" class="rule-name-customize"/>
+              <img src="/images/customize-16.svg" alt="Customize Rule Name" class="rule-name-customize"/>
             </h1>
             <div id= "warning-message">
               <h2>warning: we found more than 1 composed rule,
@@ -716,7 +799,7 @@
             <button id="test-button" > TEST API </button>
           </div>
           <button id="delete-button">
-            <img src="/optimized-images/delete-16.svg" alt="Delete" width="40" height="40"/>
+            <img src="/images/delete-16.svg" alt="Delete" width="40" height="40"/>
           </button>
         </div>
      
@@ -743,30 +826,129 @@
        </div>
         
         <div id="rules-area"></div>
-     </div>
-     <nav class="container"  >
-      <a href="#"  id="save-button" class="buttons">Save</a>
-      <a href="#" id ="diagram-button" class="buttons">BPMN</a>
-      <a href="#"  id="verification-button" class="buttons">Verify</a>
-      <a href="#"  id="mcl-button" class="buttons">MCL</a>  
-      <a href="#"  id="deploy-button" class="buttons">Deploy</a>  
-      <button id="vscad-create-rule-button" class="icon-button buttons"></button>
+    </div>
+    <nav class="container">
+        <a href="#" id="save-button" class="buttons">Save</a>
+        <a href="#" id="diagram-button" class="buttons">BPMN</a>
+        <a href="#" id="verification-button" class="buttons">Verify</a>
+        <a href="#" id="mcl-button" class="buttons">MCL</a>
+        <a href="#" id="deploy-button" class="buttons">Deploy</a>
+        <a href="javascript:openModal()" id="reconf-button" class="buttons">Reconf</a>
+        <button id="vscad-create-rule-button" class="icon-button buttons"></button>
     </nav>
-    
-      
-    </section>
-     <!-- diagram screen -->
-     <section data-view="diagram" class="hidden" id="diagram-view" >
-      <div id="canvas"></div>
-      <div id="validation-dialog"> 
+</section>
+
+<script>
+  function openModal() {
+    var y = window.open('/reconfigure/1', '_blank', 'fullscreen=yes');
+    var timer = setInterval(function() {
+      if (y.closed) {
+        clearInterval(timer);
+        location.reload();
+      }
+    }, 100);
+  }
+
+</script>
+<!--Reconfigure Screen-->
+<section data-view="reconfigure" id="reconfigure-view" class="hidden">
+
+    <div class="title-bar-reconf">
+        <a href="javascript:window.close();" class="back-button icon-button"></a>
+        <div class="rule-info-reconf">
+            <h1>
+                <span class="reconf-rule-name">Rule Name</span>
+                <img src="/images/customize-16.svg" alt="Customize Rule Name" class="rule-name-reconf"/>
+            </h1>
+            <div id="warning-message-reconf">
+                <h2>warning: we found more than 1 composed rule,
+                    we are taking the biggest for execution</h2>
+            </div>
+            <!-- <p>Rule Description</p> -->
+            <button id="test-button"> TEST API</button>
+        </div>
+        <h1 class="banner-reconfigure">Reconfiguration screen</h1>
+        <button id="delete-button">
+            <img src="/images/delete-16.svg" alt="Delete" width="40" height="40"/>
+        </button>
+    </div>
+
+    <div id="area-wraper-reconfigure">
+        <div id="loader-holder-reconf">
+            <div class="loader-reconf"></div>
+        </div>
+
+        <div class="side-menu-reconfigure">
+            <div id="rules-side-menu-reconfigure"></div>
+            <div id="operators-side-menu-reconfigure">
+
+                <div class="operator-menu-item" id="part-after-reconf">
+                    <h3>Sequence</h3>
+                </div>
+
+                <div class="operator-menu-item" id="part-and-reconf">
+                    <h3>And</h3>
+                </div>
+
+                <div class="operator-menu-item" id="part-or-reconf">
+                    <h3>Or</h3>
+                </div>
+
+                <div class="operator-menu-item" id="part-other-reconf">
+                    <h3>Repeat</h3>
+                </div>
+            </div>
+
+            <div id="vscad-delete-area-reconf">
+                <div class="delete-container">
+                    <h2 class="delete-prompt">Drop rules here to remove them</h2>
+                </div>
+            </div>
+
+        </div>
+        <div id="rules-area-reconf"></div>
+    </div>
+    <nav class="container">
+        <a href="#" id="compare-reconf-button" class="buttons">Compare</a>
+        <a href="#" id="deploy-reconf-button" class="buttons">Deploy</a>
+        <button id="vscad-create-rule-button" class="icon-button buttons"></button>
+    </nav>
+</section>
+
+
+<!-- diagram screen -->
+<section data-view="diagram" class="hidden" id="diagram-view">
+    <div id="canvas"></div>
+
+    <div id="validation-dialog">
         <div id="noti-header">
-            <img src="./images/tick-mark.png" alt="confirmation">
-          <h1 id="tittle"></h1>
-        </div> 
-        <p id="noti-message"></p> 
-      </div>
-      <div id="mcl-dialog">
-        <h3 id="mcl-dialog-title">MCL Properties</h3> 
+            <img src="./images/tick-mark.png" alt="confirmation" id="this-image">
+            <h1 id="tittle"></h1>
+            <div class="resultCompare">
+                <table class="tableResult" id="reconf-result-tab">
+                    <tbody>
+                    <tr>
+                        <td id="seamless"></td>
+                        <!-- <th><h5 id="seamlessResult"></h5></th> -->
+                        <td id="seamlessResult"></td>
+                    </tr>
+                    <tr>
+                        <td id="conservative"></td>
+                        <td id="conservativeResult"></td>
+                    </tr>
+                    <tr>
+                        <td id="impactful"></td>
+                        <td id="impactfulResult"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <p id="noti-message"></p>
+    </div>
+
+    <div id="mcl-dialog">
+        <h3 id="mcl-dialog-title">MCL Properties</h3>
         <input type="text" id="mcl-formula" placeholder="[true*.on] false">
         <button id="mcl-check-button" class="buttons">Check</button>
       </div>
@@ -778,29 +960,25 @@
       <canvas id="stm-levels" class="hidden"></canvas>
     </div>
 
-    <!-- Menu -->
-    <div id="menu-scrim" class="hidden"></div>
-    <nav id="main-menu" class="hidden">
-      <img
-        id="menu-wordmark"
-        data-l10n-id="wordmark"
-        src="/images/webthings-gateway-wordmark.svg"
-      />
-      <ul>
-        <li>
-          <a
-            id="things-menu-item"
-            data-l10n-id="things-menu-item"
-            href="/things"
-            class="selected"
-          ></a>
-        </li>
+<!-- Speech button -->
+<div id="speech-wrapper" class="hidden">
+    <button id="speech-button" class="icon-button"></button>
+    <canvas id="stm-levels" class="hidden"></canvas>
+</div>
+
+<!-- Menu -->
+<div id="menu-scrim" class="hidden"></div>
+<nav id="main-menu" class="hidden">
+    <img id="menu-wordmark" data-l10n-id="wordmark" src="/images/webthings-gateway-wordmark.svg"/>
+    <ul>
+        <li><a id="assistant-menu-item" data-l10n-id="assistant-menu-item" href="/assistant" class="hidden"></a></li>
+        <li><a id="things-menu-item" data-l10n-id="things-menu-item" href="/things" class="selected"></a></li>
         <li><a id="rules-menu-item" data-l10n-id="rules-menu-item" href="/rules"></a></li>
         <li><a id="rules-manager-menu-item" href="/vscad-rulesManager/1">Advanced rules</a></li>
-        <li><a id="logs-menu-item" data-l10n-id="logs-menu-item" href="/logs"></a></li>
-        <li>
-          <a id="floorplan-menu-item" data-l10n-id="floorplan-menu-item" href="/floorplan"></a>
+        <!--<li><a id="rules-reconfigure-menu-item" href="/reconfigure/1">Reconfigure rule</a>-->
         </li>
+        <li><a id="logs-menu-item" data-l10n-id="logs-menu-item" href="/logs"></a></li>
+        <li><a id="floorplan-menu-item" data-l10n-id="floorplan-menu-item" href="/floorplan"></a></li>
         <li><a id="settings-menu-item" data-l10n-id="settings-menu-item" href="/settings"></a></li>
         <li>
           <form id="logout" class="log-out-form">

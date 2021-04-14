@@ -5,6 +5,7 @@ const VscadDraggable = require('./VscadDraggable');
  * `ruleArea` to change its role within `rule`
  * @constructor
  * @param {Element} ruleArea
+ * @param {Element} deleteArea
  * @param {Function} onPresentationChange
  * @param {Function} onRuleChange
  * @param {String} name
@@ -12,9 +13,10 @@ const VscadDraggable = require('./VscadDraggable');
  * @param {number} x
  * @param {number} y
  */
-function VscadRuleBlock(ruleArea, onRuleChange, name, icon) {
+function VscadRuleBlock(ruleArea, onRuleChange, name, icon, deleteArea) {
   this.role = '';
   this.rulePart = null;
+  this.deleteArea = deleteArea;
   this.onRuleChange = onRuleChange;
 
   this.elt = document.createElement('div');
@@ -75,8 +77,8 @@ VscadRuleBlock.prototype.onDown = function() {
     transform: this.elt.style.transform,
   };
 
-  const deleteArea = document.getElementById('vscad-delete-area');
-  deleteArea.classList.add('delete-active');
+  
+  this.deleteArea.classList.add('delete-active');
   this.elt.classList.add('dragging');
   this.ruleArea.classList.add('drag-location-hint');
   this.ruleArea.dragging = this;
@@ -92,8 +94,7 @@ VscadRuleBlock.prototype.getText = function(){
  * On mouse move during a drag
  */
 VscadRuleBlock.prototype.onMove = function(clientX, clientY, relX, relY) {
-  const deleteArea = document.getElementById('vscad-delete-area');
-  const deleteAreaWidth = deleteArea.getBoundingClientRect().width;
+  const deleteAreaWidth = this.deleteArea.getBoundingClientRect().width;
   if (clientX < deleteAreaWidth) {
     this.VscadRuleBlock.classList.remove('trigger');
   } else {
@@ -125,15 +126,15 @@ VscadRuleBlock.prototype.snapToGrid = function(relX, relY) {
  */
 VscadRuleBlock.prototype.onUp = function(clientX, clientY) {
   this.elt.classList.remove('dragging');
-  const deleteArea = document.getElementById('vscad-delete-area');
-  const deleteAreaWidth = deleteArea.getBoundingClientRect().width;
+  
+  const deleteAreaWidth = this.deleteArea.getBoundingClientRect().width;
   
   this.ruleArea.dragging = null;
   if (clientX < deleteAreaWidth) {
     this.remove();
     
   } 
-  deleteArea.classList.remove('delete-active');
+  this.deleteArea.classList.remove('delete-active');
 };
 
 /**

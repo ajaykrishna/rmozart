@@ -381,6 +381,7 @@ export class AddonManager extends EventEmitter {
    */
   getProperty(thingId: string, propertyName: string): Promise<Any> {
     const device = this.getDevice(thingId);
+
     if (device) {
       return device.getProperty(propertyName).then((value) => <Any>value);
     }
@@ -1088,7 +1089,7 @@ export class AddonManager extends EventEmitter {
           } else {
             resolve();
           }
-        }
+        },
       );
     });
 
