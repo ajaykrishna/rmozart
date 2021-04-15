@@ -48,6 +48,7 @@ import Things from './models/things';
 import TunnelService from './tunnel-service';
 import { WiFiSetupApp, isWiFiConfigured } from './wifi-setup';
 import { AddressInfo } from 'net';
+import VscadIndex from './vscad-rules-engine/VscadIndex';
 
 SegfaultHandler.registerHandler(path.join(UserProfile.logDir, 'crash.log'));
 
@@ -127,6 +128,7 @@ function startHttpsGateway(): Promise<https.Server | null> {
             AddonManager.loadAddons();
           });
         RulesController.configure();
+        VscadIndex.configure();
         console.log(
           'HTTPS server listening on port',
           (<AddressInfo>servers.https!.address()!).port
@@ -168,6 +170,7 @@ function startHttpGateway(): Promise<void> {
           AddonManager.loadAddons();
         });
       RulesController.configure();
+      VscadIndex.configure();
       console.log('HTTP server listening on port', (<AddressInfo>servers.http.address()!).port);
       resolve();
     });

@@ -46,11 +46,20 @@ class VscadEngine {
     // TODO  get the atual rules so we can activate the next
     if (!this.rules) {
       rulesPromise = Database.getRules().then(async (ruleDescs) => {
+        console.log("rule description " + ruleDescs);
         this.rules = {};
+        
         for (const ruleId in ruleDescs) {
           ruleDescs[ruleId].id = parseInt(ruleId);
           this.rules[ruleId] = Rule.fromDescription(ruleDescs[ruleId]);
         }
+
+        // for (let [key, value] of Object.entries(ruleDescs)) {
+        //   console.log("key: "+key + " , val: "+value);
+        //   this.rules[key] = Rule.fromDescription(value);
+        // }
+
+        console.log("after database: " + this.rules);
         return this.rules;
       });
     }
@@ -68,10 +77,13 @@ class VscadEngine {
    * @return {Promise<Rule>}
    */
   getRule(id: number) {
+    console.log("getrule: ");
+    console.log(this.rules);
     if (!(id in this.rules!)) {
       return Promise.reject(new Error(`Rule ${id} does not exist`));
     }
-    return Promise.resolve(this.rules![id]);
+    const rule = this.rules![id];
+    return Promise.resolve(rule);
   }
 
   /**
@@ -97,7 +109,7 @@ class VscadEngine {
     if (!(ruleId in this.rules!)) {
       return Promise.reject(new Error(`Rule ${ruleId} does not exist`));
     }
-    rule.setId(ruleId);
+    // rule.setId(ruleId);
     await Database.updateRule(ruleId, rule.toDescription());
     this.rules![ruleId] = rule;
   }

@@ -11,6 +11,8 @@ import APIError from '../rules-engine/APIError';
 import Database from './VscadDatabase';
 import VscadEngine from './VscadEngine';
 import Rule from './VscadComposedRule';
+// import masterEngine from '../vscad-rules-engine/VscadMasterEngine';
+const MasterEngine = require('../vscad-rules-engine/VscadMasterEngine').default;
 
 
 class Vscadindex {
@@ -117,9 +119,9 @@ class Vscadindex {
     await Database.open();
     await this.engine.getRules();
     try {
-      const masterEngine = require('./VscadMasterEngine').default;
+      // const masterEngine = require('./VscadMasterEngine').default;
       const rule = await this.engine.getRule(1);
-      masterEngine.execute(rule);
+      MasterEngine.execute(rule);
     } catch (e) {
       new APIError('Engine failed to get  composed rule you sould create', e).toString();
     }

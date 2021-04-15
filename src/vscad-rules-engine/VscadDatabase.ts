@@ -66,7 +66,7 @@ class VscadDatabase {
   getRules(): Promise<Record<number, RuleDescription>>  {
     const rules: Record<number, RuleDescription> = {};
 
-    return db.all('SELECT id, description FROM rules').then((rows) => {
+    return db.all('SELECT id, description FROM composedRules').then((rows) => {
       const updatePromises: any = [];
       for (const row of rows) {
         let desc = JSON.parse(<string>row.description);

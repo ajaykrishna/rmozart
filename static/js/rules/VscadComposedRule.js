@@ -61,6 +61,7 @@ ComposedRule.prototype.update = function() {
   //console.log("updating with body",desc);
 
   let request = null;
+  console.log("id type" + typeof this.id);
   if (typeof this.id !== 'undefined') {
     request = fetch(`/composed-rules/${encodeURIComponent(this.id)}`, fetchOptions);
   } else {

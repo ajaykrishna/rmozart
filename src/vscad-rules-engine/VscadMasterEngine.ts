@@ -8,7 +8,7 @@ import Engine from "../rules-engine/Engine";
 
 const fetch = require("node-fetch");
 
-export default class MasterEngine {
+ class MasterEngine {
 
   engine?: Engine;
   testPointers: any;
@@ -20,6 +20,7 @@ export default class MasterEngine {
 
     this.testPointers = [];
     this.cacheData = {};
+    this.engine = new Engine();
 
   }
 
@@ -140,7 +141,7 @@ export default class MasterEngine {
     var rule = await this.engine!.getRule(ruleId)
     rule.setEnabled(true);
     await this.engine!.updateRule(rule.getId(), rule);
-    rule.parent = this;
+    // rule.parent = this;
   }
 
   pointerToNextNode(pointer: any, directionflow?: any) {
@@ -167,7 +168,7 @@ export default class MasterEngine {
     return newPointer;
   }
 
-  async pointerActivate(pointer: any, index: any) {
+  async pointerActivate(pointer: any, index: number) {
     let testNodes: any;
     const node = pointer.node;
     var add = true;
@@ -241,8 +242,8 @@ export default class MasterEngine {
 
 }
 
-// const instance = new MasterEngine();
+const instance = new MasterEngine();
 //Object.freeze(instance);
 
-// export default MasterEngine;
+export default instance;
 

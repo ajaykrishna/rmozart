@@ -485,6 +485,8 @@ const VscadRulesScreen = {
           headers: API.headers(),
         }
       ).then((res) => {
+        console.log("return from show:");
+        console.log(res);
         return res.json();
       });
     }

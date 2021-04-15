@@ -45,25 +45,54 @@ class ComposedRule {
    * @param {Trigger} trigger
    * @param {Effect} effect
    */
-  constructor(enabled: boolean, rules: Rule[], expression: any) {
+  constructor( enabled: boolean, rules: Rule[], expression: any) {
     this.enabled = enabled;
     this.rules = rules;
     this.expression = expression;
   }
 
-  setId(id: number) {
+
+  setName(name: string): void {
+    this.name = name;
+  }
+
+  setId(id: number): void {
     this.id = id;
   }
 
-  setName(name: string) {
-    this.name = name;
+  setExpression(expression: any): void {
+    this.expression = expression;
+  }
+
+  setRules(rules: any): void  {
+      this.rules = rules;
+  }
+
+  setEnabled(enable: boolean): void {
+    this.enabled = enable;
+  }
+
+  getId(): number {
+    return this.id!;
+  }
+
+  getName(): string {
+    return this.name!;
+  }
+
+  getExpressions(): any {
+    return this.expression;
+  }
+
+  isEnabled(): boolean {
+    return this.enabled;
   }
 
 
   /**
    * @return {RuleDescription}
    */
-  toDescription() {
+  toDescription(): RuleDescription {
     const desc: RuleDescription = {
       enabled: this.enabled,
       rules: this.rules,
@@ -96,9 +125,12 @@ class ComposedRule {
  * @return {ComposedRule}
  */
   static fromDescription = function (desc: RuleDescription): ComposedRule {
+    // const id = desc.id;
     const expression = desc.expression
     const rules = desc.rules;
-    const composedRule = new ComposedRule(desc.enabled, rules, expression);
+    const enabled = desc.enabled;
+    // const name = desc.name;
+    const composedRule = new ComposedRule(enabled, rules, expression);
     if (desc.hasOwnProperty('id')) {
       composedRule.id = desc.id;
     }

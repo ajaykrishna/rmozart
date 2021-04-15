@@ -6,7 +6,8 @@
 
 import Database from './Database';
 import Rule from './Rule';
-import MasterEngineImport from '../vscad-rules-engine/VscadMasterEngine';
+//import MasterEngineImport from '../vscad-rules-engine/VscadMasterEngine';
+// const MasterEngine = require('../vscad-rules-engine/VscadMasterEngine').default;
 
 /**
  * An engine for running and managing list of rules
@@ -14,11 +15,11 @@ import MasterEngineImport from '../vscad-rules-engine/VscadMasterEngine';
 export default class Engine {
 
   private rules: Record<string, Rule> | null;
-  MasterEngine: MasterEngineImport;
+  // MasterEngine: any;
 
   constructor() {
     this.rules = null;
-    this.MasterEngine = new MasterEngineImport();
+    // this.MasterEngine = MasterEngine;
   }
 
   /**
@@ -26,7 +27,7 @@ export default class Engine {
    * @return {Promise<Array<Rule>>} rules
    */
   getRules(): Promise<Rule[]> {
-    this.MasterEngine = require('../vscad-rules-engine/VscadMasterEngine').default;
+    //this.MasterEngine = require('../vscad-rules-engine/VscadMasterEngine').default;
 
     let rulesPromise = Promise.resolve(this.rules);
 
@@ -36,9 +37,12 @@ export default class Engine {
         for (const ruleId in ruleDescs) {
           ruleDescs[ruleId].id = parseInt(ruleId);
           this.rules[ruleId] = Rule.fromDescription(ruleDescs[ruleId]);
-          this.rules[ruleId].parent = this.MasterEngine; // test
+          // this.rules[ruleId].parent = this.MasterEngine; // test
           await this.rules[ruleId].start();
         }
+
+        console.log("rules Engine.ts");
+        console.log(this.rules);
         return this.rules;
       });
     }
@@ -61,7 +65,7 @@ export default class Engine {
       return Promise.reject(new Error(`Rule ${id} does not exist`));
     }
     const rule = this.rules![id];
-    rule.parent = this.MasterEngine;
+    // rule.parent = this.MasterEngine;
     return Promise.resolve(rule);
   }
 

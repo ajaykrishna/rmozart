@@ -9,7 +9,7 @@ import APIError from '../rules-engine/APIError';
 import Database from '../rules-engine/Database';
 import Engine from '../rules-engine/Engine';
 import Rule from '../rules-engine/Rule';
-import MasterEngine from '../vscad-rules-engine/VscadMasterEngine';
+// import MasterEngine from '../vscad-rules-engine/VscadMasterEngine';
 
 export interface WithRule {
   rule: Rule;
@@ -72,11 +72,11 @@ class RulesController {
 
   async configure(): Promise<void> {
     await Database.open();
-    this.engine.MasterEngine = new MasterEngine();
+    // this.engine.MasterEngine = MasterEngine;
 
     await this.engine.getRules();
-    this.engine.MasterEngine.setEngine(this.engine);
-    this.engine.MasterEngine.init(this.engine);
+    // this.engine.MasterEngine.setEngine(this.engine);
+    // this.engine.MasterEngine.init(this.engine);
   }
 
   /**
