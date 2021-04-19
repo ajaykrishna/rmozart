@@ -46,7 +46,6 @@ class VscadEngine {
     // TODO  get the atual rules so we can activate the next
     if (!this.rules) {
       rulesPromise = Database.getRules().then(async (ruleDescs) => {
-        console.log("rule description " + ruleDescs);
         this.rules = {};
         
         for (const ruleId in ruleDescs) {
@@ -54,12 +53,6 @@ class VscadEngine {
           this.rules[ruleId] = Rule.fromDescription(ruleDescs[ruleId]);
         }
 
-        // for (let [key, value] of Object.entries(ruleDescs)) {
-        //   console.log("key: "+key + " , val: "+value);
-        //   this.rules[key] = Rule.fromDescription(value);
-        // }
-
-        console.log("after database: " + this.rules);
         return this.rules;
       });
     }
@@ -77,8 +70,6 @@ class VscadEngine {
    * @return {Promise<Rule>}
    */
   getRule(id: number) {
-    console.log("getrule: ");
-    console.log(this.rules);
     if (!(id in this.rules!)) {
       return Promise.reject(new Error(`Rule ${id} does not exist`));
     }
@@ -92,7 +83,6 @@ class VscadEngine {
    * @return {Promise<number>} rule id
    */
   async addRule(rule: Rule): Promise<number>  {
-    console.log(rule);
     const id = await Database.createRule(rule.toDescription());
     rule.setId(id);
     this.rules![id] = rule;
