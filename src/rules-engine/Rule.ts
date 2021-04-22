@@ -10,7 +10,6 @@ import * as Triggers from './triggers/index';
 import * as Events from './Events';
 import Trigger, { TriggerDescription } from './triggers/Trigger';
 import { State } from './State';
-// const MasterEngineImport = require('../vscad-rules-engine/VscadMasterEngine').default;
 
 const DEBUG = false || process.env.NODE_ENV === 'test';
 
@@ -20,7 +19,6 @@ export interface RuleDescription {
   effect: EffectDescription;
   id?: number;
   name?: string;
-  // parent: typeof MasterEngineImport;
 }
 
 export default class Rule {
@@ -34,8 +32,6 @@ export default class Rule {
 
   private name?: string;
 
-  // parent:  typeof MasterEngineImport;
-
   private _onTriggerStateChanged: (state: State) => void;
 
   /**
@@ -47,7 +43,6 @@ export default class Rule {
     this.enabled = enabled;
     this.trigger = trigger;
     this.effect = effect;
-    // this.parent = null;
 
     this._onTriggerStateChanged = this.onTriggerStateChanged.bind(this);
   }
@@ -132,7 +127,6 @@ export default class Rule {
       enabled: this.enabled,
       trigger: this.trigger.toDescription(),
       effect: this.effect.toDescription(),
-      // parent: this.parent
     };
 
     if (this.hasOwnProperty('id')) {

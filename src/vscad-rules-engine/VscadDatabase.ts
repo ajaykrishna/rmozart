@@ -8,13 +8,13 @@
 
 import { RunResult } from 'sqlite3';
 import db from '../db';
-// import * as DatabaseMigrate from '../rules-engine/DatabaseMigrate';
 import { RuleDescription } from './VscadComposedRule';
 
 class VscadDatabase {
   constructor() {
     db.open();
     this.open();
+    this.open2();
   }
 
   /**
@@ -27,36 +27,6 @@ class VscadDatabase {
   );`;
     return db.run(rulesTableSQL);
   }
-
-  // /**
-  //  * Get all rules
-  //  * @return {Promise<Map<number, RuleDescription>>} resolves to a map of rule id
-  //  * to rule
-  //  */
-  // getRules(): Promise<Record<number, RuleDescription>>  {
-  //   const rules: Record<number, RuleDescription> = {};
-
-  //   return new Promise((resolve, reject) => {
-  //     db.all(
-  //       'SELECT id, description FROM composedRules',
-  //       [],
-  //       (err: any, rows: any) => {
-  //         if (err) {
-  //           reject(err);
-  //           return;
-  //         }
-  //         const updatePromises: any[] = [];
-  //         for (const row of rows) {
-  //           let desc = JSON.parse(row.description);
-  //           rules[<number>row.id] = desc;
-  //         }
-  //         Promise.all(updatePromises).then(() => {
-  //           resolve(rules);
-  //         });
-  //       }
-  //     );
-  //   });
-  // };
 
   /**
    * Get all rules
@@ -80,23 +50,16 @@ class VscadDatabase {
     });
   }
 
-  getThings() {
-    return new Promise((resolve, reject) => {
-      db.all('SELECT id, description FROM things', [], (err: any, rows: any) => {
-        if (err) {
-          reject(err);
-          return;
-        }
-        const things: any[] = [];
-        const updatePromises: any[] = [];
-        for (const row of rows) {
-          let desc = JSON.parse(row.description);
-          things[row.id] = desc;
-        }
-        Promise.all(updatePromises).then(() => {
-          resolve(things);
-        });
-      });
+  getThings(): Promise<unknown[]>{
+    return db.all('SELECT id, description FROM things').then((rows) => {
+      const things = [];
+      for (const row of rows) {
+        const thing = JSON.parse(<string>row.description);
+        thing.id = row.id;
+        things.push(thing);
+      }
+
+      return things;
     });
   }
 
@@ -136,6 +99,47 @@ class VscadDatabase {
   deleteRule(id: number): Promise<RunResult> {
     return db.run('DELETE FROM composedRules WHERE id = ?', [id]);
   }
+
+  open2(): Promise<RunResult> {
+    const historyTable = 'CREATE TABLE IF NOT EXISTS composition_history (' +
+      'id_history INTEGER PRIMARY KEY,' +
+      'history TEXT,' +
+      'dateExecution TIMESTAMP NOT NULL' +
+      ');';
+    return db.run(historyTable);
+  };
+
+  /**
+   * Get all history rules
+   * @return {Promise<Mapw<number, >>}
+   */
+  getHistory(): Promise<unknown[]> {
+
+    return db.all('SELECT id_history, history, dateExecution FROM composition_history').then((rows) => {
+      const history: any = {};
+      const historydata = [];
+      for (const row of rows) {
+        history.id = row.id_history;
+        history.history = row.history;
+        history.date = row.dateExecution;
+        historydata.push(history);
+      }
+      
+      return historydata;
+    });
+
+  };
+
+  /**
+   * Create history
+   * @param {String} history
+   */
+  createHistory(history: string) : Promise<RunResult>{
+    return db.run(
+      'INSERT INTO composition_history (history, dateExecution) VALUES (?, ?)',
+      [history, Date()],
+    );
+  };
 }
 // module.exports = new VscadDatabase();
 export default new VscadDatabase();

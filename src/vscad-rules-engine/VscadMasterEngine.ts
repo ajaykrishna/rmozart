@@ -8,32 +8,27 @@ import Engine from "../rules-engine/Engine";
 
 const fetch = require("node-fetch");
 
- class MasterEngine {
+class MasterEngine {
 
   engine?: Engine;
-  testPointers: any;
+  testPointers: any[];
   cacheData: any;
-
-  testFlows: any;
+  testFlows: any[];
+  testNodes: any;
 
   constructor() {
 
     this.testPointers = [];
-    this.cacheData = {};
-    this.engine = new Engine();
+    this.testNodes = [];
+    this.cacheData = [];
+    this.testFlows = [];
 
   }
 
   setEngine(engine: Engine): void{
     this.engine = engine;
   }
-  
-  init(engine: Engine) {
-    this.engine!.getRule = engine.getRule.bind(engine);
-    this.engine!.updateRule = engine.updateRule.bind(engine);
-    this.engine!.getRules = engine.getRules.bind(engine);
 
-  }
   printPointers() {
     console.log("current state ASK", this.testPointers);
   }
@@ -82,9 +77,8 @@ const fetch = require("node-fetch");
   }
   initGraph(data: any) {
     console.log(data);
-    
+
     this.turnOffAllRules();
-    let testNodes: any = {};
 
     this.testPointers.splice(0, this.testPointers.length);
 
@@ -92,11 +86,11 @@ const fetch = require("node-fetch");
     if (nodes) {
       for (let i = 0; i < nodes.length; i++) {
         const node = nodes[i];
-        testNodes[node.id] = node;
+        this.testNodes[node.id] = node;
       }
       this.testFlows = data.flows;
 
-      this.testPointers[0] = { location: "init", node: testNodes['init'] }
+      this.testPointers[0] = { location: "init", node: this.testNodes['init'] }
       this.pointerActivate(this.pointerToNextNode(this.testPointers[0]), 0);
       console.log("graph started");
     }
@@ -147,8 +141,6 @@ const fetch = require("node-fetch");
   pointerToNextNode(pointer: any, directionflow?: any) {
 
     let newPointer: any = {}
-    let testFlows: any;
-    let testNodes: any;
 
     newPointer.origins = []
     if (pointer.origins)
@@ -157,19 +149,18 @@ const fetch = require("node-fetch");
       });
 
     if (directionflow) {
-      newPointer.location = testFlows[directionflow].target
+      newPointer.location = this.testFlows[directionflow].target
       newPointer.origins.push(pointer.location);
     }
     else {
-      newPointer.location = testFlows[pointer.node.outgoingFlows[0]].target
+      newPointer.location = this.testFlows[pointer.node.outgoingFlows[0]].target
     }
-    newPointer.node = testNodes[newPointer.location];
+    newPointer.node = this.testNodes[newPointer.location];
 
     return newPointer;
   }
 
   async pointerActivate(pointer: any, index: number) {
-    let testNodes: any;
     const node = pointer.node;
     var add = true;
     switch (node.type) {
@@ -177,7 +168,7 @@ const fetch = require("node-fetch");
         this.pointerActivate(this.pointerToNextNode(pointer), index)
         break;
       case 'FINAL':
-        this.testPointers[0] = { location: "init", node: testNodes['init'] }
+        this.testPointers[0] = { location: "init", node: this.testNodes['init'] }
         this.pointerActivate(this.pointerToNextNode(this.testPointers[0]), 0);
         console.log("Rule finished");
         add = false;

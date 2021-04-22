@@ -11,8 +11,7 @@ import APIError from '../rules-engine/APIError';
 import Database from './VscadDatabase';
 import VscadEngine from './VscadEngine';
 import Rule from './VscadComposedRule';
-// import masterEngine from '../vscad-rules-engine/VscadMasterEngine';
-const MasterEngine = require('../vscad-rules-engine/VscadMasterEngine').default;
+const MasterEngine = require('./VscadMasterEngine').default;
 
 
 class Vscadindex {
@@ -95,15 +94,13 @@ class Vscadindex {
     this.index.get('/deploy/:id', async  (req: any, res: any) => {
       try {
 
-        const masterEngine = require('./VscadMasterEngine').default;
         const id = parseInt(req.params.id);
         if (isNaN(id)) {
-          const masterEngine = require('./VscadMasterEngine').default;
-          masterEngine.printPointers();
+          MasterEngine.printPointers();
           res.send({});
         } else {
           const rule = await this.engine.getRule(id);
-          masterEngine.execute(rule);
+          MasterEngine.execute(rule);
           //res.send(rule.toDescription());
           res.send({ "msg": "si cambia" })
         }
@@ -113,13 +110,17 @@ class Vscadindex {
           new APIError('Engine failed', e).toString());
       }
     });
+
+    this.index.get('/history', async (_req: any, res: any) => {
+      const history = await this.engine.getHisotry();
+      res.send(history);
+    });
   }
 
   async configure(): Promise<void> {
     await Database.open();
     await this.engine.getRules();
     try {
-      // const masterEngine = require('./VscadMasterEngine').default;
       const rule = await this.engine.getRule(1);
       MasterEngine.execute(rule);
     } catch (e) {

@@ -6,8 +6,7 @@
 
 import Database from './Database';
 import Rule from './Rule';
-//import MasterEngineImport from '../vscad-rules-engine/VscadMasterEngine';
-// const MasterEngine = require('../vscad-rules-engine/VscadMasterEngine').default;
+import MasterEngineImport from '../vscad-rules-engine/VscadMasterEngine';
 
 /**
  * An engine for running and managing list of rules
@@ -15,11 +14,12 @@ import Rule from './Rule';
 export default class Engine {
 
   private rules: Record<string, Rule> | null;
-  // MasterEngine: any;
+  MasterEngine: typeof MasterEngineImport;
 
   constructor() {
     this.rules = null;
-    // this.MasterEngine = MasterEngine;
+    this.MasterEngine = MasterEngineImport;
+    this.MasterEngine.setEngine(this);
   }
 
   /**
@@ -27,10 +27,9 @@ export default class Engine {
    * @return {Promise<Array<Rule>>} rules
    */
   getRules(): Promise<Rule[]> {
-    //this.MasterEngine = require('../vscad-rules-engine/VscadMasterEngine').default;
-
+    
     let rulesPromise = Promise.resolve(this.rules);
-
+    
     if (!this.rules) {
       rulesPromise = Database.getRules().then(async (ruleDescs) => {
         this.rules = {};
@@ -41,8 +40,6 @@ export default class Engine {
           await this.rules[ruleId].start();
         }
 
-        console.log("rules Engine.ts");
-        console.log(this.rules);
         return this.rules;
       });
     }

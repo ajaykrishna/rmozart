@@ -24,18 +24,9 @@ class VscadEngine {
    * Get a list of all current rules
    * @return {Promise<Array<Rule>>} rules
    */
-  getThings() {
+  getThings(): Promise<unknown[]>{
     return Database.getThings();
   }
-  
-  // /**
-  //  * Get history from data base
-  //  * @return {Promise<*[]>}
-  //  */
-  // getHisotry() {
-  //   return Database.getHistory();
-  // }
-
   
   /**
    * Get a list of all current rules
@@ -118,14 +109,22 @@ class VscadEngine {
     });
   }
 
-  // /**
-  //  * Create history
-  //  * @param {String} composition
-  //  */
-  // async createHistory(composition) {
-  //   await Database.createHistory(composition);
-  //   return 'is working';
-  // }
+  /**
+   * Get history from data base
+   * @return {Promise<*[]>}
+   */
+  getHisotry() {
+    return Database.getHistory();
+  }
+
+  /**
+   * Create history
+   * @param {String} composition
+   */
+  async createHistory(composition: any) {
+    await Database.createHistory(composition);
+    return 'is working';
+  }
 
 }
 

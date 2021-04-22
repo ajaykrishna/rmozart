@@ -372,6 +372,8 @@ const VscadRulesScreen = {
             return res.json();
           })
           .then((data) => {
+            console.log("verification data");
+            console.log(data);
             this.showVerification(data);
             this.hiddeLoader();
           });
