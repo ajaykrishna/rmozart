@@ -10,6 +10,8 @@ import * as Triggers from './triggers/index';
 import * as Events from './Events';
 import Trigger, { TriggerDescription } from './triggers/Trigger';
 import { State } from './State';
+// import Vscadengine from '../vscad-rules-engine/VscadEngine';
+import MasterEngine from '../vscad-rules-engine/VscadMasterEngine';
 
 const DEBUG = false || process.env.NODE_ENV === 'test';
 
@@ -19,6 +21,7 @@ export interface RuleDescription {
   effect: EffectDescription;
   id?: number;
   name?: string;
+  // parent: typeof MasterEngine;
 }
 
 export default class Rule {
@@ -34,6 +37,8 @@ export default class Rule {
 
   private _onTriggerStateChanged: (state: State) => void;
 
+  // parent: typeof MasterEngine;
+
   /**
    * @param {boolean} enabled
    * @param {Trigger} trigger
@@ -45,6 +50,8 @@ export default class Rule {
     this.effect = effect;
 
     this._onTriggerStateChanged = this.onTriggerStateChanged.bind(this);
+
+    // this.parent = MasterEngine;
   }
 
   setId(id: number): void {
@@ -115,8 +122,40 @@ export default class Rule {
     if (DEBUG) {
       console.debug('Rule.onTriggerStateChanged', this.name, state);
     }
+    
+    if (!MasterEngine) {
+      console.log('no function');
+    }
 
     this.effect.setState(state);
+
+    // for MasterEngine liability
+    if (state.on) {
+      // MasterEngine.notify(this, state);
+      MasterEngine.notify(this.toDescription());
+    }
+
+    // for (const effect of this.effect) {
+    //   effect.on = false;
+    // }
+
+    // for history database
+
+    // const trace: any = {};
+    // trace.id = this.id;
+    // trace.name = this.name;
+    // trace.trigger = this.trigger;
+    // trace.effect = this.effect;
+    // trace.state = state;
+    
+
+    // console.log("rule.ts trace: ");
+    // console.log(trace);
+    // console.log("state: " );
+    // console.log(state);
+
+    // let engine = new Vscadengine();
+    // engine.createHistory(JSON.stringify(trace));
   }
 
   /**
@@ -127,6 +166,7 @@ export default class Rule {
       enabled: this.enabled,
       trigger: this.trigger.toDescription(),
       effect: this.effect.toDescription(),
+      // parent: this.parent
     };
 
     if (this.hasOwnProperty('id')) {

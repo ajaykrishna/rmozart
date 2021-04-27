@@ -121,7 +121,7 @@ class VscadEngine {
    * Create history
    * @param {String} composition
    */
-  async createHistory(composition: any) {
+  async createHistory(composition: string) {
     await Database.createHistory(composition);
     return 'is working';
   }

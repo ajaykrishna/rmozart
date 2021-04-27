@@ -5,6 +5,7 @@
  */
 
 import Engine from "../rules-engine/Engine";
+import { RuleDescription } from "../rules-engine/Rule";
 
 const fetch = require("node-fetch");
 
@@ -32,10 +33,14 @@ class MasterEngine {
   printPointers() {
     console.log("current state ASK", this.testPointers);
   }
-  async notify(rule: any) {
+
+  async notify(rule: RuleDescription) {
+    console.log("rule executed");
+    console.log(rule);
     var pointerIndex = this.getPointerOfRule(rule.id)
     if (pointerIndex != -1) {
       try {
+        console.log("turning of rule");
         await this.turnOffRule(rule.id)
         this.pointerActivate(this.pointerToNextNode(this.testPointers[pointerIndex]), pointerIndex)
       } catch (e) {
@@ -43,6 +48,7 @@ class MasterEngine {
       }
     }
   }
+
   execute(rule: any) {
 
     this.cacheData.rule = rule;
@@ -107,7 +113,9 @@ class MasterEngine {
     }
     return -1;
   }
+
   async turnOffRule(ruleId: any) {
+    console.log("funcion turnOffRule(): " + ruleId);
     // check the type of pointer to deactivate the 
 
     var rule = await this.engine!.getRule(ruleId);
@@ -164,6 +172,7 @@ class MasterEngine {
     const node = pointer.node;
     var add = true;
     switch (node.type) {
+      // 
       case 'INITIAL':
         this.pointerActivate(this.pointerToNextNode(pointer), index)
         break;

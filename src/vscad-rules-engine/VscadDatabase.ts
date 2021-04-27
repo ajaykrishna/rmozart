@@ -137,9 +137,11 @@ class VscadDatabase {
   createHistory(history: string) : Promise<RunResult>{
     return db.run(
       'INSERT INTO composition_history (history, dateExecution) VALUES (?, ?)',
-      [history, Date()],
+      history, new Date().getTime(),
     );
   };
+
+  
 }
 // module.exports = new VscadDatabase();
 export default new VscadDatabase();

@@ -18,3 +18,4 @@ npm-debug.log
 # Test artifacts
 /coverage/
 .vscode/*
+.vscode/launch.json
