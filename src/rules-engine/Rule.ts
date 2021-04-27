@@ -10,7 +10,7 @@ import * as Triggers from './triggers/index';
 import * as Events from './Events';
 import Trigger, { TriggerDescription } from './triggers/Trigger';
 import { State } from './State';
-// import Vscadengine from '../vscad-rules-engine/VscadEngine';
+import Vscadengine from '../vscad-rules-engine/VscadEngine';
 import MasterEngine from '../vscad-rules-engine/VscadMasterEngine';
 
 const DEBUG = false || process.env.NODE_ENV === 'test';
@@ -135,27 +135,27 @@ export default class Rule {
       MasterEngine.notify(this.toDescription());
     }
 
-    // for (const effect of this.effect) {
+    // for (const effect of this.effect.effects) {
     //   effect.on = false;
     // }
 
     // for history database
 
-    // const trace: any = {};
-    // trace.id = this.id;
-    // trace.name = this.name;
-    // trace.trigger = this.trigger;
-    // trace.effect = this.effect;
-    // trace.state = state;
+    const trace: any = {};
+    trace.id = this.id;
+    trace.name = this.name;
+    trace.trigger = this.trigger;
+    trace.effect = this.effect;
+    trace.state = state;
     
 
-    // console.log("rule.ts trace: ");
-    // console.log(trace);
-    // console.log("state: " );
-    // console.log(state);
+    console.log("rule.ts trace: ");
+    console.log(trace);
+    console.log("state: " );
+    console.log(state);
 
-    // let engine = new Vscadengine();
-    // engine.createHistory(JSON.stringify(trace));
+    let engine = new Vscadengine();
+    engine.createHistory(JSON.stringify(trace));
   }
 
   /**

@@ -172,7 +172,6 @@ class MasterEngine {
     const node = pointer.node;
     var add = true;
     switch (node.type) {
-      // 
       case 'INITIAL':
         this.pointerActivate(this.pointerToNextNode(pointer), index)
         break;
