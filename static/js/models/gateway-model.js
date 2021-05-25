@@ -7,8 +7,7 @@
  */
 'use strict';
 
-const API = require('../api');
-const Utils = require('../utils');
+const API = require('../api').default;
 const Constants = require('../constants');
 const Model = require('./model');
 const ReopeningWebSocket = require('./reopening-web-socket');
@@ -23,15 +22,13 @@ class GatewayModel extends Model {
     this.onMessage = this.onMessage.bind(this);
     this.queue = Promise.resolve(true);
     this.connectWebSocket();
-    this.refreshThings();
     return this;
   }
 
   addQueue(job) {
-    this.queue = this.queue.then(job)
-      .catch((e) => {
-        console.error(e);
-      });
+    this.queue = this.queue.then(job).catch((e) => {
+      console.error(e);
+    });
     return this.queue;
   }
 
@@ -52,12 +49,12 @@ class GatewayModel extends Model {
   }
 
   setThing(thingId, description) {
-    if (!this.thingModels.has(thingId)) {
+    if (this.thingModels.has(thingId)) {
+      const thingModel = this.thingModels.get(thingId);
+      thingModel.updateFromDescription(description);
+    } else {
       const thingModel = new ThingModel(description, this.ws);
-      thingModel.subscribe(
-        Constants.DELETE_THING,
-        this.handleRemove.bind(this)
-      );
+      thingModel.subscribe(Constants.DELETE_THING, this.handleRemove.bind(this));
       if (this.connectedThings.has(thingId)) {
         thingModel.onConnected(this.connectedThings.get(thingId));
       }
@@ -83,7 +80,6 @@ class GatewayModel extends Model {
       return this.thingModels.get(thingId);
     });
   }
-
 
   /**
    * Remove the thing.
@@ -124,7 +120,7 @@ class GatewayModel extends Model {
     });
   }
 
-  handleRemove(thingId) {
+  handleRemove(thingId, skipEvent = false) {
     if (this.thingModels.has(thingId)) {
       this.thingModels.get(thingId).cleanup();
       this.thingModels.delete(thingId);
@@ -132,51 +128,76 @@ class GatewayModel extends Model {
     if (this.things.has(thingId)) {
       this.things.delete(thingId);
     }
-    return this.handleEvent(Constants.DELETE_THINGS, this.things);
+
+    if (!skipEvent) {
+      return this.handleEvent(Constants.DELETE_THINGS, this.things);
+    }
   }
 
   connectWebSocket() {
     const thingsHref = `${window.location.origin}/things?jwt=${API.jwt}`;
     const wsHref = thingsHref.replace(/^http/, 'ws');
     this.ws = new ReopeningWebSocket(wsHref);
+    this.ws.addEventListener('open', this.refreshThings.bind(this));
     this.ws.addEventListener('message', this.onMessage);
   }
 
   onMessage(event) {
     const message = JSON.parse(event.data);
 
-    if (message.messageType !== 'connected') {
-      return;
+    switch (message.messageType) {
+      case 'connected':
+        this.connectedThings.set(message.id, message.data);
+        break;
+      case 'thingAdded':
+        this.refreshThings();
+        break;
+      case 'thingModified':
+        this.refreshThing(message.id);
+        break;
+      default:
+        break;
     }
-    this.connectedThings.set(Utils.descriptionIdToModelId(message.id),
-                             message.data);
   }
 
   refreshThings() {
     return this.addQueue(() => {
-      return API.getThings().then((things) => {
-        things.forEach((description) => {
-          const thingId = description.href.split('/').pop();
-          this.setThing(thingId, description);
+      return API.getThings()
+        .then((things) => {
+          const fetchedIds = new Set();
+          things.forEach((description) => {
+            const thingId = decodeURIComponent(description.href.split('/').pop());
+            fetchedIds.add(thingId);
+            this.setThing(thingId, description);
+          });
+
+          const removedIds = Array.from(this.thingModels.keys()).filter((id) => {
+            return !fetchedIds.has(id);
+          });
+
+          removedIds.forEach((thingId) => this.handleRemove(thingId, true));
+
+          return this.handleEvent(Constants.REFRESH_THINGS, this.things);
+        })
+        .catch((e) => {
+          console.error(`Get things failed ${e}`);
         });
-        return this.handleEvent(Constants.REFRESH_THINGS, this.things);
-      }).catch((e) => {
-        console.error(`Get things failed ${e}`);
-      });
     });
   }
 
   refreshThing(thingId) {
     return this.addQueue(() => {
-      return API.getThing(thingId).then((description) => {
-        if (!description) {
-          throw new Error(`Unavailable Thing Description: ${description}`);
-        }
-        this.setThing(thingId, description);
-        return this.handleEvent(Constants.REFRESH_THINGS, this.things);
-      }).catch((e) => {
-        console.error(`Get thing id:${thingId} failed ${e}`);
-      });
+      return API.getThing(thingId)
+        .then((description) => {
+          if (!description) {
+            throw new Error(`Unavailable Thing Description: ${description}`);
+          }
+          this.setThing(thingId, description);
+          return this.handleEvent(Constants.REFRESH_THINGS, this.things);
+        })
+        .catch((e) => {
+          console.error(`Get thing id:${thingId} failed ${e}`);
+        });
     });
   }
 }

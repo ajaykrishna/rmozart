@@ -37,22 +37,22 @@ template.innerHTML = `
 
     .webthing-lock-capability-icon.locked {
       background-color: #89b6d6;
-      background-image: url('/optimized-images/component-icons/lock-locked.svg');
+      background-image: url('/images/component-icons/lock-locked.svg');
     }
 
     .webthing-lock-capability-icon.unlocked {
       background-color: white;
-      background-image: url('/optimized-images/component-icons/lock-unlocked.svg');
+      background-image: url('/images/component-icons/lock-unlocked.svg');
     }
 
     .webthing-lock-capability-icon.unknown {
       background-color: white;
-      background-image: url('/optimized-images/component-icons/lock-unknown.svg');
+      background-image: url('/images/component-icons/lock-unknown.svg');
     }
 
     .webthing-lock-capability-icon.jammed {
       background-color: white;
-      background-image: url('/optimized-images/component-icons/lock-jammed.svg');
+      background-image: url('/images/component-icons/lock-jammed.svg');
     }
 
     .webthing-lock-capability-label {
@@ -84,10 +84,7 @@ class LockCapability extends BaseComponent {
   }
 
   connectedCallback() {
-    this.state =
-      typeof this.dataset.state !== 'undefined' ?
-        this.dataset.state :
-        'unknown';
+    this.state = typeof this.dataset.state !== 'undefined' ? this.dataset.state : 'unknown';
   }
 
   get state() {
@@ -105,7 +102,7 @@ class LockCapability extends BaseComponent {
     this._icon.classList.add(value);
 
     if (value === 'unknown') {
-      value = 'ellipses';
+      value = 'ellipsis';
     }
 
     this._label.innerText = fluent.getMessage(value);

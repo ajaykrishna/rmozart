@@ -57,10 +57,8 @@ class ColorProperty extends BaseComponent {
 `;
     super(template);
 
-    this._input = this.shadowRoot.querySelector(
-      '.webthing-color-property-color');
-    this._name = this.shadowRoot.querySelector(
-      '.webthing-color-property-name');
+    this._input = this.shadowRoot.querySelector('.webthing-color-property-color');
+    this._name = this.shadowRoot.querySelector('.webthing-color-property-name');
 
     this._onChange = this.__onChange.bind(this);
   }
@@ -69,9 +67,11 @@ class ColorProperty extends BaseComponent {
     this.name = this.dataset.name;
 
     this.readOnly =
-      typeof this.dataset.readOnly !== 'undefined' ?
-        this.dataset.readOnly === 'true' :
-        false;
+      typeof this.dataset.readOnly !== 'undefined' ? this.dataset.readOnly === 'true' : false;
+
+    // Work around weird Safari issue where the color input is initially
+    // rendered as a text input.
+    this._input.type = 'color';
 
     this._upgradeProperty('value');
 
@@ -117,12 +117,14 @@ class ColorProperty extends BaseComponent {
     e.preventDefault();
     this.value = e.target.value;
 
-    this.dispatchEvent(new CustomEvent('change', {
-      detail: {
-        value: this.value,
-      },
-      bubbles: true,
-    }));
+    this.dispatchEvent(
+      new CustomEvent('change', {
+        detail: {
+          value: this.value,
+        },
+        bubbles: true,
+      })
+    );
   }
 }
 

@@ -33,13 +33,13 @@ template.innerHTML = `
       background-repeat: no-repeat;
       transform: translate(0);
       background-color: #89b6d6;
-      background-image: url('/optimized-images/component-icons/leak-sensor-dry.svg');
+      background-image: url('/images/component-icons/leak-sensor-dry.svg');
       background-position: center 2rem;
     }
 
     .webthing-leak-sensor-capability-icon.leak {
       background-color: white;
-      background-image: url('/optimized-images/component-icons/leak-sensor-leak.svg');
+      background-image: url('/images/component-icons/leak-sensor-leak.svg');
     }
 
     .webthing-leak-sensor-capability-label {
@@ -71,8 +71,7 @@ class LeakSensorCapability extends BaseComponent {
   }
 
   connectedCallback() {
-    this.leak =
-      typeof this.dataset.leak !== 'undefined' ? this.dataset.leak : null;
+    this.leak = typeof this.dataset.leak !== 'undefined' ? this.dataset.leak : null;
   }
 
   get leak() {
@@ -84,7 +83,7 @@ class LeakSensorCapability extends BaseComponent {
 
     if (value === null) {
       this._icon.classList.remove('leak');
-      this._label.innerText = fluent.getMessage('ellipses');
+      this._label.innerText = fluent.getMessage('ellipsis');
     } else if (this._leak) {
       this._icon.classList.add('leak');
       this._label.innerText = fluent.getMessage('leak');
@@ -95,6 +94,5 @@ class LeakSensorCapability extends BaseComponent {
   }
 }
 
-window.customElements.define('webthing-leak-sensor-capability',
-                             LeakSensorCapability);
+window.customElements.define('webthing-leak-sensor-capability', LeakSensorCapability);
 module.exports = LeakSensorCapability;

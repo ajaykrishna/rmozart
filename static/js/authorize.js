@@ -1,4 +1,4 @@
-const API = require('./api');
+const API = require('./api').default;
 const fluent = require('./fluent');
 const Utils = require('./utils');
 
@@ -21,6 +21,41 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function init(scope) {
+  // promptMessage will be of the form:
+  //   "<<name>> would like to access your gateway to <<function>> devices."
+  // split that string on the <<name>> and <<function>> parts and insert the
+  // existing nodes in the right places.
+  const authorizeInfo = document.getElementById('authorize-info');
+  const authorizeName = document.getElementById('authorize-name');
+  const authorizeFunction = document.getElementById('authorize-function');
+  const promptMessage = fluent.getMessage('authorize-prompt');
+
+  let node1, node2;
+  if (promptMessage.indexOf('<<function>>') < promptMessage.indexOf('<<name>>')) {
+    authorizeInfo.insertBefore(authorizeFunction, authorizeName);
+    node1 = authorizeFunction;
+    node2 = authorizeName;
+  } else {
+    node1 = authorizeName;
+    node2 = authorizeFunction;
+  }
+
+  const promptParts = promptMessage.split(/<<\w+>>/g);
+  authorizeInfo.insertBefore(document.createTextNode(promptParts[0]), node1);
+  authorizeInfo.insertBefore(document.createTextNode(promptParts[1]), node2);
+  authorizeInfo.appendChild(document.createTextNode(promptParts[2]));
+
+  // sourceMessage will be of the form:
+  //   "from <<domain>>".
+  // split that string on the <<domain>> part and insert the existing domain
+  // node in the right place.
+  const authorizeSubInfo = document.getElementById('authorize-sub-info');
+  const authorizeDomain = document.getElementById('authorize-domain');
+  const sourceMessage = fluent.getMessage('authorize-source');
+  const sourceParts = sourceMessage.split('<<domain>>');
+  authorizeSubInfo.insertBefore(document.createTextNode(sourceParts[0]), authorizeDomain);
+  authorizeSubInfo.appendChild(document.createTextNode(sourceParts[1]));
+
   const readWrite = scope.indexOf(':readwrite') >= 0;
   const authorizeReadWrite = document.getElementById('authorize-readwrite');
   const authorizeRead = document.getElementById('authorize-read');
@@ -44,7 +79,7 @@ function init(scope) {
   API.getThings().then((things) => {
     let checkboxIndex = 0;
     for (const thing of things) {
-      const included = global || (scope.indexOf(thing.href) >= 0);
+      const included = global || scope.indexOf(thing.href) >= 0;
       const elt = document.createElement('li');
       elt.classList.add('authorize-thing');
       elt.dataset.href = Utils.escapeHtml(thing.href);
@@ -61,7 +96,6 @@ function init(scope) {
       authorizeThings.appendChild(elt);
     }
   });
-
 
   authorizeAllThings.addEventListener('change', () => {
     const authorizeThings = document.querySelectorAll('.authorize-thing');
@@ -95,9 +129,11 @@ function init(scope) {
       }
     }
 
-    authorizeScope.value = urls.map((url) => {
-      return `${url}:${readWrite}`;
-    }).join(' ');
+    authorizeScope.value = urls
+      .map((url) => {
+        return `${url}:${readWrite}`;
+      })
+      .join(' ');
   });
 
   authorizeButton.removeAttribute('disabled');

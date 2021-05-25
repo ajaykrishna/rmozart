@@ -7,23 +7,25 @@
  */
 'use strict';
 
-const API = require('./api');
+const API = require('./api').default;
 
 if (API.isLoggedIn()) {
-  API.verifyJWT().then((valid) => {
-    if (!valid) {
-      redirectUnauthed();
-    } else if (document.body) {
-      document.body.classList.remove('hidden');
-    } else {
-      document.addEventListener('DOMContentLoaded', () => {
+  API.verifyJWT()
+    .then((valid) => {
+      if (!valid) {
+        redirectUnauthed();
+      } else if (document.body) {
         document.body.classList.remove('hidden');
-      });
-    }
-  }).catch(() => {
-    document.body.classList.remove('hidden');
-    document.getElementById('connectivity-scrim').classList.remove('hidden');
-  });
+      } else {
+        document.addEventListener('DOMContentLoaded', () => {
+          document.body.classList.remove('hidden');
+        });
+      }
+    })
+    .catch(() => {
+      document.body.classList.remove('hidden');
+      document.getElementById('connectivity-scrim').classList.remove('hidden');
+    });
 } else {
   redirectUnauthed();
 }
@@ -32,13 +34,12 @@ function redirectUnauthed() {
   API.userCount().then((count) => {
     let url;
     if (count > 0) {
-      const redirectPath = window.location.pathname + window.location.search;
-      url = `/login/?url=${encodeURIComponent(redirectPath)}`;
+      url = `/login/`;
     } else {
       url = '/signup/';
     }
 
-    if (window.location.pathname !== url.split('?')[0]) {
+    if (window.location.pathname !== url) {
       window.location.replace(url);
     }
   });

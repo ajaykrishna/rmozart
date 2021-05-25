@@ -10,9 +10,10 @@
 
 'use strict';
 
-const API = require('../api');
+const API = require('../api').default;
 const fluent = require('../fluent');
 const Utils = require('../utils');
+const { getClassFromCapability } = require('../schema-impl/capability/capabilities');
 
 let idCounter = -1;
 const getNewWebThingId = () => {
@@ -33,26 +34,22 @@ class NewWebThing {
     this.container = document.getElementById('new-things');
     this.render();
     this.element = document.getElementById(
-      `new-web-thing-${Utils.escapeHtmlForIdClass(this.originalId)}`);
+      `new-web-thing-${Utils.escapeHtmlForIdClass(this.originalId)}`
+    );
     this.thingType = this.element.querySelector('.new-thing-type');
     this.customIcon = this.element.querySelector('.new-thing-custom-icon');
-    this.customIconInput =
-      this.element.querySelector('.new-thing-custom-icon-input');
-    this.customIconLabel =
-      this.element.querySelector('.new-thing-custom-icon-label');
+    this.customIconInput = this.element.querySelector('.new-thing-custom-icon-input');
+    this.customIconLabel = this.element.querySelector('.new-thing-custom-icon-label');
     this.label = this.element.querySelector('.new-web-thing-label');
     this.originLabel = this.element.querySelector('.new-web-thing-origin');
     this.urlInput = this.element.querySelector('.new-web-thing-url');
     this.titleInput = this.element.querySelector('.new-web-thing-title');
-    this.cancelButton =
-      this.element.querySelector('.new-web-thing-cancel-button');
-    this.submitButton =
-      this.element.querySelector('.new-web-thing-submit-button');
+    this.cancelButton = this.element.querySelector('.new-web-thing-cancel-button');
+    this.submitButton = this.element.querySelector('.new-web-thing-submit-button');
     this.saveButton = this.element.querySelector('.new-web-thing-save-button');
     this.element.addEventListener('click', this.handleClick.bind(this));
     this.thingType.addEventListener('change', this.handleTypeChange.bind(this));
-    this.customIconInput.addEventListener('change',
-                                          this.handleIconUpload.bind(this));
+    this.customIconInput.addEventListener('change', this.handleIconUpload.bind(this));
   }
 
   /**
@@ -105,77 +102,16 @@ class NewWebThing {
   }
 
   handleTypeChange() {
-    const capability =
-      this.thingType.options[this.thingType.selectedIndex].value;
+    const capability = this.thingType.options[this.thingType.selectedIndex].value;
 
     this.customIconLabel.classList.add('hidden');
     this.customIcon.classList.add('hidden');
 
-    let cls = '';
-    switch (capability) {
-      case 'OnOffSwitch':
-        cls = 'on-off-switch';
-        break;
-      case 'MultiLevelSwitch':
-        cls = 'multi-level-switch';
-        break;
-      case 'ColorControl':
-        cls = 'color-control';
-        break;
-      case 'ColorSensor':
-        cls = 'color-sensor';
-        break;
-      case 'EnergyMonitor':
-        cls = 'energy-monitor';
-        break;
-      case 'BinarySensor':
-        cls = 'binary-sensor';
-        break;
-      case 'MultiLevelSensor':
-        cls = 'multi-level-sensor';
-        break;
-      case 'SmartPlug':
-        cls = 'smart-plug';
-        break;
-      case 'Light':
-        cls = 'light';
-        break;
-      case 'DoorSensor':
-        cls = 'door-sensor';
-        break;
-      case 'MotionSensor':
-        cls = 'motion-sensor';
-        break;
-      case 'LeakSensor':
-        cls = 'leak-sensor';
-        break;
-      case 'PushButton':
-        cls = 'push-button';
-        break;
-      case 'VideoCamera':
-        cls = 'video-camera';
-        break;
-      case 'Camera':
-        cls = 'camera';
-        break;
-      case 'TemperatureSensor':
-        cls = 'temperature-sensor';
-        break;
-      case 'Alarm':
-        cls = 'alarm';
-        break;
-      case 'Thermostat':
-        cls = 'thermostat';
-        break;
-      case 'Lock':
-        cls = 'lock';
-        break;
-      case 'Custom':
-        this.customIconLabel.classList.remove('hidden');
-        this.customIcon.classList.remove('hidden');
-        break;
-      default:
-        break;
+    const cls = getClassFromCapability(capability);
+
+    if (capability == 'Custom') {
+      this.customIconLabel.classList.remove('hidden');
+      this.customIcon.classList.remove('hidden');
     }
 
     this.element.classList.remove(
@@ -191,13 +127,17 @@ class NewWebThing {
       'door-sensor',
       'motion-sensor',
       'leak-sensor',
+      'smoke-sensor',
       'push-button',
       'video-camera',
       'camera',
       'temperature-sensor',
       'alarm',
       'thermostat',
-      'lock'
+      'lock',
+      'humidity-sensor',
+      'air-quality-sensor',
+      'barometric-pressure-sensor'
     );
 
     if (cls) {
@@ -282,140 +222,82 @@ class NewWebThing {
       return;
     }
 
-    API.addWebThing(url).then((description) => {
-      // We don't support other gateways from this interface
-      if (Array.isArray(description)) {
-        this.label.innerText = fluent.getMessage('new-web-thing-multiple');
-        this.label.classList.add('error');
-        return;
-      }
-
-      let capabilities = [];
-      if (Array.isArray(description['@type']) &&
-          description['@type'].length > 0) {
-        capabilities = description['@type'];
-      } else if (description.type) {
-        capabilities = Utils.legacyTypeToCapabilities(description.type);
-      }
-
-      capabilities = Utils.sortCapabilities(capabilities);
-      capabilities.push('Custom');
-
-      this.customIconLabel.classList.add('hidden');
-
-      let cls = '';
-      for (const capability of capabilities) {
-        const option = document.createElement('option');
-        option.value = capability;
-        option.innerText = fluent.getMessageStrict(capability) || capability;
-        switch (capability) {
-          case 'OnOffSwitch':
-            cls = cls || 'on-off-switch';
-            break;
-          case 'MultiLevelSwitch':
-            cls = cls || 'multi-level-switch';
-            break;
-          case 'ColorControl':
-            cls = cls || 'color-control';
-            break;
-          case 'ColorSensor':
-            cls = cls || 'color-sensor';
-            break;
-          case 'EnergyMonitor':
-            cls = cls || 'energy-monitor';
-            break;
-          case 'BinarySensor':
-            cls = cls || 'binary-sensor';
-            break;
-          case 'MultiLevelSensor':
-            cls = cls || 'multi-level-sensor';
-            break;
-          case 'SmartPlug':
-            cls = cls || 'smart-plug';
-            break;
-          case 'Light':
-            cls = cls || 'light';
-            break;
-          case 'DoorSensor':
-            cls = cls || 'door-sensor';
-            break;
-          case 'MotionSensor':
-            cls = cls || 'motion-sensor';
-            break;
-          case 'LeakSensor':
-            cls = cls || 'leak-sensor';
-            break;
-          case 'PushButton':
-            cls = cls || 'push-button';
-            break;
-          case 'VideoCamera':
-            cls = cls || 'video-camera';
-            break;
-          case 'Camera':
-            cls = cls || 'camera';
-            break;
-          case 'TemperatureSensor':
-            cls = cls || 'temperature-sensor';
-            break;
-          case 'Alarm':
-            cls = cls || 'alarm';
-            break;
-          case 'Thermostat':
-            cls = cls || 'thermostat';
-            break;
-          case 'Lock':
-            cls = cls || 'lock';
-            break;
-          case 'Custom':
-            cls = cls || (capabilities.length > 1 ? '' : 'custom-thing');
-            break;
-          default:
-            cls = cls || (capabilities.length > 1 ? '' : 'custom-thing');
-            break;
+    API.addWebThing(url)
+      .then((description) => {
+        // We don't support other gateways from this interface
+        if (Array.isArray(description)) {
+          this.label.innerText = fluent.getMessage('new-web-thing-multiple');
+          this.label.classList.add('error');
+          return;
         }
 
-        if (this.thingType.options.length === 0) {
-          option.selected = true;
+        let capabilities = [];
+        if (Array.isArray(description['@type']) && description['@type'].length > 0) {
+          capabilities = description['@type'];
+        }
 
-          if (capability === 'Custom') {
-            this.customIconLabel.classList.remove('hidden');
+        capabilities = Utils.sortCapabilities(capabilities);
+        capabilities.push('Custom');
+
+        this.customIconLabel.classList.add('hidden');
+
+        let cls = '';
+        for (const capability of capabilities) {
+          const option = document.createElement('option');
+          option.value = capability;
+          option.innerText = fluent.getMessageStrict(capability) || capability;
+
+          if (!cls) {
+            cls = getClassFromCapability(capability);
+
+            if (!cls && capabilities.length == 1) {
+              cls = 'custom-thing';
+            }
           }
+
+          if (this.thingType.options.length === 0) {
+            option.selected = true;
+
+            if (capability === 'Custom') {
+              this.customIconLabel.classList.remove('hidden');
+            }
+          }
+
+          this.thingType.appendChild(option);
         }
 
-        this.thingType.appendChild(option);
-      }
+        this.description = description;
 
-      this.description = description;
+        // If an href was included, use that for the URL instead.
+        if (this.description.hasOwnProperty('href')) {
+          this.url = urlObj.origin + description.href;
+        }
 
-      // If an href was included, use that for the URL instead.
-      if (this.description.hasOwnProperty('href')) {
-        this.url = urlObj.origin + description.href;
-      }
+        // Generate an ID. This must generate IDs identical to thing-url-adapter.
+        this.id = this.url.replace(/[:/]/g, '-');
 
-      // Generate an ID. This must generate IDs identical to thing-url-adapter.
-      this.id = this.url.replace(/[:/]/g, '-');
+        this.element.classList.remove('web-thing');
+        this.label.classList.remove('error');
+        this.label.classList.add('hidden');
+        this.thingType.classList.remove('hidden');
+        this.titleInput.value = description.title;
+        this.originLabel.innerText = `${fluent.getMessage('new-web-thing-from')} ${urlObj.host}`;
+        this.urlInput.classList.add('hidden');
+        this.titleInput.classList.remove('hidden');
+        this.submitButton.classList.add('hidden');
+        this.saveButton.classList.remove('hidden');
+        this.originLabel.classList.remove('hidden');
 
-      this.element.classList.remove('web-thing');
-      this.label.classList.remove('error');
-      this.label.classList.add('hidden');
-      this.thingType.classList.remove('hidden');
-      this.titleInput.value = description.title;
-      this.originLabel.innerText = `${fluent.getMessage('new-web-thing-from')} ${urlObj.host}`;
-      this.urlInput.classList.add('hidden');
-      this.titleInput.classList.remove('hidden');
-      this.submitButton.classList.add('hidden');
-      this.saveButton.classList.remove('hidden');
-      this.originLabel.classList.remove('hidden');
-
-      cls = cls.trim();
-      if (cls) {
-        this.element.classList.add(cls);
-      }
-    }).catch((error) => {
-      this.label.innerText = error.message;
-      this.label.classList.add('error');
-      console.error('Failed to check web thing:', error.message);
-    });
+        cls = cls.trim() || 'custom-thing';
+        if (cls) {
+          this.element.classList.add(cls);
+        }
+      })
+      .catch((error) => {
+        this.label.innerText = error.message;
+        this.label.classList.add('error');
+        console.error('Failed to check web thing:', error.message);
+      });
   }
 
   save() {
@@ -431,33 +313,34 @@ class NewWebThing {
     thing.webthingUrl = this.url;
 
     if (this.thingType.options.length > 0) {
-      thing.selectedCapability =
-        this.thingType.options[this.thingType.selectedIndex].value;
+      thing.selectedCapability = this.thingType.options[this.thingType.selectedIndex].value;
     }
 
     if (thing.selectedCapability === 'Custom' && this.iconData) {
       thing.iconData = this.iconData;
     }
 
-    API.addThing(thing).then(() => {
-      this.saveButton.innerHTML = fluent.getMessage('new-thing-saved');
+    API.addThing(thing)
+      .then(() => {
+        this.saveButton.innerHTML = fluent.getMessage('new-thing-saved');
 
-      const cancelButton = document.getElementById('add-thing-cancel-button');
-      if (cancelButton) {
-        cancelButton.textContent = fluent.getMessage('new-thing-done');
-      }
-    }).catch((error) => {
-      console.error('Failed to save web thing:', error.message);
-      this.label.innerText = fluent.getMessage('failed-save');
-      this.label.classList.add('error');
-      this.label.classList.remove('hidden');
-      this.thingType.disabled = false;
-      this.titleInput.disabled = false;
-      this.saveButton.disabled = false;
-      this.customIconInput.disabled = false;
-      this.cancelButton.classList.remove('hidden');
-      this.reset();
-    });
+        const cancelButton = document.getElementById('add-thing-cancel-button');
+        if (cancelButton) {
+          cancelButton.textContent = fluent.getMessage('new-thing-done');
+        }
+      })
+      .catch((error) => {
+        console.error('Failed to save web thing:', error.message);
+        this.label.innerText = fluent.getMessage('failed-save');
+        this.label.classList.add('error');
+        this.label.classList.remove('hidden');
+        this.thingType.disabled = false;
+        this.titleInput.disabled = false;
+        this.saveButton.disabled = false;
+        this.customIconInput.disabled = false;
+        this.cancelButton.classList.remove('hidden');
+        this.reset();
+      });
   }
 
   reset() {
@@ -481,13 +364,17 @@ class NewWebThing {
       'door-sensor',
       'motion-sensor',
       'leak-sensor',
+      'smoke-sensor',
       'push-button',
       'video-camera',
       'camera',
       'temperature-sensor',
       'alarm',
       'thermostat',
-      'lock'
+      'lock',
+      'humidity-sensor',
+      'air-quality-sensor',
+      'barometric-pressure-sensor'
     );
     this.element.classList.add('web-thing');
     this.urlInput.classList.remove('hidden');

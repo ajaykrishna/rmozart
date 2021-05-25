@@ -3,11 +3,14 @@ const BlockConfigureDropdown = require('./BlockConfigureDropdown');
 const fluent = require('../fluent');
 
 class NotifierOutletBlock extends RulePartBlock {
-  constructor(ruleArea, onPresentationChange, onRuleUpdate, notifier, outlet,
-              values) {
-    super(ruleArea, onPresentationChange, onRuleUpdate,
-          `${outlet.name} ${fluent.getMessage('rule-notification')}`,
-          '/optimized-images/thing-icons/notification.svg');
+  constructor(ruleArea, onPresentationChange, onRuleUpdate, notifier, outlet, values) {
+    super(
+      ruleArea,
+      onPresentationChange,
+      onRuleUpdate,
+      `${outlet.name} ${fluent.getMessage('rule-notification')}`,
+      '/images/thing-icons/notification.svg'
+    );
 
     this.notifier = notifier;
     this.outlet = outlet;
@@ -21,9 +24,10 @@ class NotifierOutletBlock extends RulePartBlock {
       this.values = values;
     }
 
-    const configureContainer = this.elt.querySelector('.rule-part-info');
+    const blockContainer = this.elt.querySelector('.rule-part-block');
+    const infoContainer = this.elt.querySelector('.rule-part-info');
     this.updateValues = this.updateValues.bind(this);
-    this.dropdown = new BlockConfigureDropdown(this, configureContainer);
+    this.dropdown = new BlockConfigureDropdown(this, infoContainer);
     this.dropdown.addValue({
       id: 'title',
       title: fluent.getMessage('notification-title'),
@@ -48,7 +52,15 @@ class NotifierOutletBlock extends RulePartBlock {
       enum: this.levels,
       value: this.levels[this.values.level],
     });
+    blockContainer.addEventListener('click', this.onBlockClick.bind(this));
+    infoContainer.addEventListener('click', this.onBlockClick.bind(this));
     this.updateRulePart();
+  }
+
+  onBlockClick() {
+    if (!this.dropdown.elt.classList.contains('open')) {
+      this.dropdown.onCommit();
+    }
   }
 
   updateValues(values) {
@@ -59,14 +71,16 @@ class NotifierOutletBlock extends RulePartBlock {
   }
 
   updateRulePart() {
-    this.setRulePart({effect: {
-      type: 'NotifierOutletEffect',
-      notifier: this.notifier.id,
-      outlet: this.outlet.id,
-      title: this.values.title,
-      message: this.values.message,
-      level: this.values.level,
-    }});
+    this.setRulePart({
+      effect: {
+        type: 'NotifierOutletEffect',
+        notifier: this.notifier.id,
+        outlet: this.outlet.id,
+        title: this.values.title,
+        message: this.values.message,
+        level: this.values.level,
+      },
+    });
   }
 
   setRulePart(rulePart) {

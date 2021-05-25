@@ -84,7 +84,8 @@ class Action extends BaseComponent {
   </style>
   <div id="container-${BaseComponent.count}" class="webthing-action-container">
     <div id="contents-${BaseComponent.count}" class="webthing-action-contents">
-      <button id="button-${BaseComponent.count}" type="button" class="webthing-action-button"></button>
+      <button id="button-${BaseComponent.count}" type="button"
+              class="webthing-action-button"></button>
     </div>
   </div>
   <div id="name-${BaseComponent.count}" class="webthing-action-name"></div>
@@ -92,10 +93,8 @@ class Action extends BaseComponent {
     super(template);
     this.opts = opts || {};
 
-    this._button = this.shadowRoot.querySelector(
-      '.webthing-action-button');
-    this._name = this.shadowRoot.querySelector(
-      '.webthing-action-name');
+    this._button = this.shadowRoot.querySelector('.webthing-action-button');
+    this._name = this.shadowRoot.querySelector('.webthing-action-name');
     this._href = null;
 
     this._onClick = this.__onClick.bind(this);
@@ -144,9 +143,11 @@ class Action extends BaseComponent {
     } else {
       this.value = e.target.value;
 
-      this.dispatchEvent(new CustomEvent('click', {
-        bubbles: true,
-      }));
+      this.dispatchEvent(
+        new CustomEvent('click', {
+          bubbles: true,
+        })
+      );
     }
   }
 }

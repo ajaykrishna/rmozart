@@ -108,8 +108,7 @@ class BlockConfigureDropdown {
         if (valueInput) {
           value = parseFloat(valueInput.value);
         } else {
-          value =
-            parseFloat(valueSelect.options[valueSelect.selectedIndex].value);
+          value = parseFloat(valueSelect.options[valueSelect.selectedIndex].value);
         }
 
         if (schema.hasOwnProperty('multipleOf')) {
@@ -187,6 +186,7 @@ class BlockConfigureDropdown {
       node = node.parentNode;
     }
     this.elt.classList.remove('open');
+    document.activeElement.blur();
     this.onCommit();
   }
 

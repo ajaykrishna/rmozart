@@ -9,15 +9,15 @@
     <meta name="theme-color" content="#75AACF">
     <title data-l10n-id="local-token-title">Local Token Service - WebThings Gateway</title>
     <link rel="manifest" href="/app.webmanifest">
-    <link rel="icon" href="/optimized-images/icon.png" type="image/png" />
+    <link rel="icon" href="/images/icon.png" type="image/png" />
 
-    <link rel="stylesheet" type="text/css" href="/css/lib/highlight-9.12.0.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/lib/highlight.css">
     <link rel="stylesheet" type="text/css" href="/css/app.css" />
     <link rel="stylesheet" type="text/css" href="/css/thing.css" />
     <link rel="stylesheet" type="text/css" href="/css/local-token-service.css" />
   </head>
   <body class="hidden">
-    <img id="wordmark" src="../optimized-images/wordmark.svg" data-l10n-id="wordmark"/>
+    <img id="wordmark" src="/images/webthings-gateway-lockup.svg" data-l10n-id="wordmark"/>
 
     <!-- OAuth Authorization -->
     <section class="selected">
@@ -27,13 +27,21 @@
       </div>
 
       <div class="main-container">
-        <span data-l10n-id="local-token-your-token"></span> <a href="https://jwt.io/" data-l10n-id="local-token-jwt"></a>:
+        <span data-l10n-id="local-token-your-token">
+          <a href="https://jwt.io/" data-l10n-name="local-token-jwt"></a>
+        </span>
         <br/>
         <br/>
         <code id="token">{{token}}</code>
         <br/>
-        <span data-l10n-id="local-token-use-it"></span> <a
-        href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Authorization" data-l10n-id="local-token-bearer-type"></a>.
+        <button id="copy-token-button" class="text-button" data-l10n-id="local-token-copy-token"></button>
+        <br/>
+        <br/>
+        <span data-l10n-id="local-token-use-it">
+          <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Authorization"
+             data-l10n-name="local-token-bearer-type">
+          </a>
+        </span>
         <br/>
         <br/>
         <div class="code-example">

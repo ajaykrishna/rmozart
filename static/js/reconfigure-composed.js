@@ -3,7 +3,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.*
  */
-const API = require('./api');
+const API = require('./api').default;
 const Gateway = require('./rules/Gateway');
 const page = require('page');
 const json_Model = require('./models/json-model');
@@ -351,7 +351,7 @@ const ReconfigureScreen = {
   readRules: function() {
     const createRuleButton = document.createElement('div');
     createRuleButton.innerHTML = ` <div class="rule-part-block trigger">
-  <img  src="/optimized-images/add.svg">
+  <img  src="/images/add.svg">
   </div>
   <div class="rule-info">
       <h3>NEW RULE</h3>

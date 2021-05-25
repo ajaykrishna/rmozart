@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Performs an upgrade given the urls to the content-addressed archives. Expects
-# to be run in the ~/mozilla-iot directory
+# to be run in the ~/webthings directory
 
 gateway_archive_url=$1
 node_modules_archive_url=$2
@@ -11,14 +11,19 @@ if [ -z $gateway_archive_url ] || [ -z $node_modules_archive_url ]; then
   exit 1
 fi
 
+# Bail out
 die() {
-  sudo systemctl start mozilla-iot-gateway.service
+  if [ -f /etc/systemd/system/webthings-gateway.service ]; then
+    sudo systemctl start webthings-gateway.service
+  else
+    sudo systemctl start mozilla-iot-gateway.service
+  fi
   rm -f gateway-*.tar.gz
   rm -f node_modules-*.tar.gz
   exit -1
 }
 
-
+# Extract an archive
 extractCAArchive() {
   file=$1
   target=$2
@@ -41,26 +46,43 @@ extractCAArchive() {
   rm $archive_name
 }
 
+# Download the gateway and node_modules archives
 wget $gateway_archive_url
 wget $node_modules_archive_url
 
+# Extract the gateway and node_modules
 extractCAArchive gateway-*.tar.gz /tmp
 extractCAArchive node_modules-*.tar.gz /tmp/gateway
 
+# Run the pre-upgrade script
 pushd /tmp/gateway
 ./tools/pre-upgrade.sh
 popd
 
-# bring down the gateway very late in the process since it'll probably be fine
-sudo systemctl stop mozilla-iot-gateway.service
+# Bring down the gateway very late in the process since it'll probably be fine
+sudo systemctl stop webthings-gateway.service || true
+sudo systemctl stop mozilla-iot-gateway.service || true
 
-rm -fr gateway_old
+# Back up the current gateway
+rm -rf gateway_old
 mv gateway gateway_old
 touch gateway_old/package.json
 mv /tmp/gateway gateway
 
+# Back up the user profile
+if [ -d "$HOME/.webthings" ]; then
+  rm -rf "$HOME/.webthings.old" "$HOME/.mozilla-iot.old"
+  cp -a "$HOME/.webthings" "$HOME/.webthings.old"
+elif [ -d "$HOME/.mozilla-iot" ]; then
+  rm -rf "$HOME/.webthings.old" "$HOME/.mozilla-iot.old"
+  cp -a "$HOME/.mozilla-iot" "$HOME/.mozilla-iot.old"
+  mv "$HOME/.mozilla-iot" "$HOME/.webthings"
+fi
+
+# Run the post-upgrade script
 pushd gateway
 ./tools/post-upgrade.sh
 popd
 
-sudo systemctl start mozilla-iot-gateway.service
+# Start the gateway back up
+sudo systemctl start webthings-gateway.service

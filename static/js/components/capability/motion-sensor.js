@@ -33,13 +33,13 @@ template.innerHTML = `
       background-repeat: no-repeat;
       transform: translate(0);
       background-color: #89b6d6;
-      background-image: url('/optimized-images/component-icons/motion-sensor-no-motion.svg');
+      background-image: url('/images/component-icons/motion-sensor-no-motion.svg');
       background-position: center 2rem;
     }
 
     .webthing-motion-sensor-capability-icon.motion {
       background-color: white;
-      background-image: url('/optimized-images/component-icons/motion-sensor-motion.svg');
+      background-image: url('/images/component-icons/motion-sensor-motion.svg');
     }
 
     .webthing-motion-sensor-capability-label {
@@ -71,8 +71,7 @@ class MotionSensorCapability extends BaseComponent {
   }
 
   connectedCallback() {
-    this.motion =
-      typeof this.dataset.motion !== 'undefined' ? this.dataset.motion : null;
+    this.motion = typeof this.dataset.motion !== 'undefined' ? this.dataset.motion : null;
   }
 
   get motion() {
@@ -84,7 +83,7 @@ class MotionSensorCapability extends BaseComponent {
 
     if (value === null) {
       this._icon.classList.remove('motion');
-      this._label.innerText = fluent.getMessage('ellipses');
+      this._label.innerText = fluent.getMessage('ellipsis');
     } else if (this._motion) {
       this._icon.classList.add('motion');
       this._label.innerText = fluent.getMessage('motion');
@@ -95,6 +94,5 @@ class MotionSensorCapability extends BaseComponent {
   }
 }
 
-window.customElements.define('webthing-motion-sensor-capability',
-                             MotionSensorCapability);
+window.customElements.define('webthing-motion-sensor-capability', MotionSensorCapability);
 module.exports = MotionSensorCapability;

@@ -33,13 +33,13 @@ template.innerHTML = `
       background-repeat: no-repeat;
       transform: translate(0);
       background-color: #89b6d6;
-      background-image: url('/optimized-images/component-icons/push-button-not-pushed.svg');
+      background-image: url('/images/component-icons/push-button-not-pushed.svg');
       background-position: center 2rem;
     }
 
     .webthing-push-button-capability-icon.pushed {
       background-color: white;
-      background-image: url('/optimized-images/component-icons/push-button-pushed.svg');
+      background-image: url('/images/component-icons/push-button-pushed.svg');
     }
 
     .webthing-push-button-capability-label {
@@ -73,8 +73,7 @@ class PushButtonCapability extends BaseComponent {
   }
 
   connectedCallback() {
-    this.pushed =
-      typeof this.dataset.pushed !== 'undefined' ? this.dataset.pushed : null;
+    this.pushed = typeof this.dataset.pushed !== 'undefined' ? this.dataset.pushed : null;
   }
 
   get pushed() {
@@ -86,7 +85,7 @@ class PushButtonCapability extends BaseComponent {
 
     if (value === null) {
       this._icon.classList.remove('pushed');
-      this._label.innerText = fluent.getMessage('ellipses');
+      this._label.innerText = fluent.getMessage('ellipsis');
     } else if (this._pushed) {
       this._icon.classList.add('pushed');
       this._label.innerText = fluent.getMessage('pushed');
@@ -156,6 +155,5 @@ class PushButtonCapability extends BaseComponent {
   }
 }
 
-window.customElements.define('webthing-push-button-capability',
-                             PushButtonCapability);
+window.customElements.define('webthing-push-button-capability', PushButtonCapability);
 module.exports = PushButtonCapability;

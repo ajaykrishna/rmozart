@@ -10,7 +10,7 @@
 
 'use strict';
 
-const API = require('../api');
+const API = require('../api').default;
 const Units = require('../units');
 const Utils = require('../utils');
 
@@ -39,17 +39,16 @@ class ActionInputForm {
     const inputs = [];
     let requiredFields = [];
     if (this.schema.type === 'object') {
-      if (this.schema.hasOwnProperty('required') &&
-          Array.isArray(this.schema.required)) {
+      if (this.schema.hasOwnProperty('required') && Array.isArray(this.schema.required)) {
         requiredFields = this.schema.required;
       }
 
       const props = Array.from(Object.keys(this.schema.properties)).sort();
       for (const name of props) {
-        inputs.push(Object.assign({}, this.schema.properties[name], {name}));
+        inputs.push(Object.assign({}, this.schema.properties[name], { name }));
       }
     } else {
-      inputs.push(Object.assign({}, this.schema, {name: '__default__'}));
+      inputs.push(Object.assign({}, this.schema, { name: '__default__' }));
       requiredFields.push('__default__');
     }
 
@@ -70,17 +69,15 @@ class ActionInputForm {
 
       let unit = '<span class="action-input-unit">';
       if (input.hasOwnProperty('unit')) {
-        unit += Utils.escapeHtml(
-          Units.nameToAbbreviation(Units.convert(0, input.unit).unit)
-        );
+        unit += Utils.escapeHtml(Units.nameToAbbreviation(Units.convert(0, input.unit).unit));
       }
       unit += '</span>';
 
       // list item
-      if (Array.isArray(input.enum) &&
-          (input.type === 'number' ||
-           input.type === 'integer' ||
-           input.type === 'string')) {
+      if (
+        Array.isArray(input.enum) &&
+        (input.type === 'number' || input.type === 'integer' || input.type === 'string')
+      ) {
         const selects = input.enum.map((value) => {
           value = Units.convert(value, input.unit).value;
           return `<option value="${Utils.escapeHtml(value)}">
@@ -122,10 +119,14 @@ class ActionInputForm {
           if (input.hasOwnProperty('maximum')) {
             max = `max="${Units.convert(input.maximum, input.unit)}"`;
           }
+          let value = '';
+          if (input.hasOwnProperty('default')) {
+            value = `value="${input.default}"`;
+          }
 
           const numberClass = min && max ? '' : 'hide-number-spinner';
 
-          form += `<input type="number" name="${name}" step="${step}" ${min}
+          form += `<input type="number" name="${name}" ${value} step="${step}" ${min}
                           ${max} class="action-input-number ${numberClass}"
                           ${required}>${unit}`;
           break;
@@ -191,11 +192,7 @@ class ActionInputForm {
       }
 
       // convert value back
-      value = Units.convert(
-        value,
-        Units.convert(0, schema.unit).unit,
-        schema.unit
-      ).value;
+      value = Units.convert(value, Units.convert(0, schema.unit).unit, schema.unit).value;
 
       // Adjust the value to match limits
       value = Utils.adjustInputValue(value, schema);
@@ -228,15 +225,11 @@ class ActionInputForm {
       if (el.name === '__default__') {
         schema = this.schema;
       } else {
-        schema = this.schema.properties[el.name];
+        schema = this.schema.properties[this.inputs[el.name]];
       }
 
       // convert value back
-      value = Units.convert(
-        value,
-        Units.convert(0, schema.unit).unit,
-        schema.unit
-      ).value;
+      value = Units.convert(value, Units.convert(0, schema.unit).unit, schema.unit).value;
 
       // Adjust the value to match limits
       value = Utils.adjustInputValue(value, schema);
@@ -251,16 +244,18 @@ class ActionInputForm {
 
     let body;
     if (input) {
-      body = {[this.name]: {input}};
+      body = { [this.name]: { input } };
     } else {
-      body = {[this.name]: {input: {}}};
+      body = { [this.name]: { input: {} } };
     }
 
-    API.postJson(this.href, body).then(() => {
-      window.history.back();
-    }).catch((e) => {
-      console.error(`Error performing action "${this.name}": ${e}`);
-    });
+    API.postJson(this.href, body)
+      .then(() => {
+        window.history.back();
+      })
+      .catch((e) => {
+        console.error(`Error performing action "${this.name}": ${e}`);
+      });
   }
 }
 

@@ -11,46 +11,22 @@
 'use strict';
 
 const page = require('page');
-const Alarm = require('../schema-impl/capability/alarm');
-const API = require('../api');
+const API = require('../api').default;
 const App = require('../app');
-const BinarySensor = require('../schema-impl/capability/binary-sensor');
-const Camera = require('../schema-impl/capability/camera');
-const ColorControl = require('../schema-impl/capability/color-control');
-const ColorSensor = require('../schema-impl/capability/color-sensor');
 const Constants = require('../constants');
-const DoorSensor = require('../schema-impl/capability/door-sensor');
-const EnergyMonitor = require('../schema-impl/capability/energy-monitor');
-const LeakSensor = require('../schema-impl/capability/leak-sensor');
-const Light = require('../schema-impl/capability/light');
-const Lock = require('../schema-impl/capability/lock');
-const MotionSensor = require('../schema-impl/capability/motion-sensor');
-const MultiLevelSensor =
-  require('../schema-impl/capability/multi-level-sensor');
-const MultiLevelSwitch =
-  require('../schema-impl/capability/multi-level-switch');
-const OnOffSwitch = require('../schema-impl/capability/on-off-switch');
-const PushButton = require('../schema-impl/capability/push-button');
-const SmartPlug = require('../schema-impl/capability/smart-plug');
-const TemperatureSensor =
-  require('../schema-impl/capability/temperature-sensor');
-const Thermostat = require('../schema-impl/capability/thermostat');
-const Thing = require('../schema-impl/capability/thing');
-const VideoCamera = require('../schema-impl/capability/video-camera');
+const { createThingFromCapability } = require('../schema-impl/capability/capabilities');
 
-// eslint-disable-next-line no-unused-vars
 const FloorplanScreen = {
-
-  ORIGIN_X: 6,    // X co-ordinate to start placing un-positioned things from.
-  ORIGIN_Y: 7,    // Y co-ordinate to start placing un-positioned things from.
-  MAX_X: 100,     // Max X range.
-  MAX_Y: 100,     // Max Y range.
-  THING_GAP: 11,  // Gap between unpositioned things along x axis.
+  ORIGIN_X: 6, // X co-ordinate to start placing un-positioned things from.
+  ORIGIN_Y: 7, // Y co-ordinate to start placing un-positioned things from.
+  MAX_X: 100, // Max X range.
+  MAX_Y: 100, // Max Y range.
+  THING_GAP: 11, // Gap between unpositioned things along x axis.
 
   /**
-  * Initialise Floorplan Screen.
-  */
-  init: function() {
+   * Initialise Floorplan Screen.
+   */
+  init: function () {
     // A list of Things on the floorplan
     this.things = [];
 
@@ -74,6 +50,9 @@ const FloorplanScreen = {
     this.interactTimeout = null;
     this.onPointerDown = this.onPointerDown.bind(this);
     this.onPointerUp = this.onPointerUp.bind(this);
+    this.selectThing = this.selectThing.bind(this);
+    this.moveThing = this.moveThing.bind(this);
+    this.deselectThing = this.deselectThing.bind(this);
 
     this.editButton.addEventListener('click', this.edit.bind(this));
     this.doneButton.addEventListener('click', this.done.bind(this));
@@ -85,7 +64,11 @@ const FloorplanScreen = {
     this.things = [];
   },
 
-  refreshThings: function(things) {
+  refreshThings: function (things) {
+    if (this.view.classList.contains('edit')) {
+      return;
+    }
+
     let thing;
     while (typeof (thing = this.things.pop()) !== 'undefined') {
       this.removeInteract(thing);
@@ -115,101 +98,12 @@ const FloorplanScreen = {
         }
 
         const format = Constants.ThingFormat.LINK_ICON;
-        let thing;
-        if (description.selectedCapability) {
-          switch (description.selectedCapability) {
-            case 'OnOffSwitch':
-              thing = new OnOffSwitch(thingModel, description, format);
-              break;
-            case 'MultiLevelSwitch':
-              thing = new MultiLevelSwitch(thingModel, description, format);
-              break;
-            case 'ColorControl':
-              thing = new ColorControl(thingModel, description, format);
-              break;
-            case 'ColorSensor':
-              thing = new ColorSensor(thingModel, description, format);
-              break;
-            case 'EnergyMonitor':
-              thing = new EnergyMonitor(thingModel, description, format);
-              break;
-            case 'BinarySensor':
-              thing = new BinarySensor(thingModel, description, format);
-              break;
-            case 'MultiLevelSensor':
-              thing = new MultiLevelSensor(thingModel, description, format);
-              break;
-            case 'SmartPlug':
-              thing = new SmartPlug(thingModel, description, format);
-              break;
-            case 'Light':
-              thing = new Light(thingModel, description, format);
-              break;
-            case 'DoorSensor':
-              thing = new DoorSensor(thingModel, description, format);
-              break;
-            case 'MotionSensor':
-              thing = new MotionSensor(thingModel, description, format);
-              break;
-            case 'LeakSensor':
-              thing = new LeakSensor(thingModel, description, format);
-              break;
-            case 'PushButton':
-              thing = new PushButton(thingModel, description, format);
-              break;
-            case 'VideoCamera':
-              thing = new VideoCamera(thingModel, description, format);
-              break;
-            case 'Camera':
-              thing = new Camera(thingModel, description, format);
-              break;
-            case 'TemperatureSensor':
-              thing = new TemperatureSensor(thingModel, description, format);
-              break;
-            case 'Alarm':
-              thing = new Alarm(thingModel, description, format);
-              break;
-            case 'Thermostat':
-              thing = new Thermostat(thingModel, description, format);
-              break;
-            case 'Lock':
-              thing = new Lock(thingModel, description, format);
-              break;
-            default:
-              thing = new Thing(thingModel, description, format);
-              break;
-          }
-        } else {
-          switch (description.type) {
-            case 'onOffSwitch':
-              thing = new OnOffSwitch(thingModel, description, format);
-              break;
-            case 'onOffLight':
-            case 'onOffColorLight':
-            case 'dimmableLight':
-            case 'dimmableColorLight':
-              thing = new Light(thingModel, description, format);
-              break;
-            case 'binarySensor':
-              thing =
-                new BinarySensor(thingModel, description, format);
-              break;
-            case 'multiLevelSensor':
-              thing =
-                new MultiLevelSensor(thingModel, description, format);
-              break;
-            case 'multiLevelSwitch':
-              thing =
-                new MultiLevelSwitch(thingModel, description, format);
-              break;
-            case 'smartPlug':
-              thing = new SmartPlug(thingModel, description, format);
-              break;
-            default:
-              thing = new Thing(thingModel, description, format);
-              break;
-          }
-        }
+        const thing = createThingFromCapability(
+          description.selectedCapability,
+          thingModel,
+          description,
+          format
+        );
         thing.element.dataset.index = this.things.length;
         this.addInteract(thing);
         this.things.push(thing);
@@ -219,7 +113,7 @@ const FloorplanScreen = {
     });
   },
 
-  addInteract: function(thing) {
+  addInteract: function (thing) {
     thing.element.addEventListener('click', this.blackHole);
     thing.element.addEventListener('mousedown', this.onPointerDown);
     thing.element.addEventListener('mouseup', this.onPointerUp);
@@ -227,7 +121,7 @@ const FloorplanScreen = {
     thing.element.addEventListener('touchend', this.onPointerUp);
   },
 
-  removeInteract: function(thing) {
+  removeInteract: function (thing) {
     thing.element.removeEventListener('click', this.blackHole);
     thing.element.removeEventListener('mousedown', this.onPointerDown);
     thing.element.removeEventListener('mouseup', this.onPointerUp);
@@ -235,32 +129,23 @@ const FloorplanScreen = {
     thing.element.removeEventListener('touchend', this.onPointerUp);
   },
 
-  show: function() {
+  show: function () {
     window.addEventListener('resize', this.onResize);
-    document.getElementById('speech-wrapper').classList.remove('assistant');
     this.backButton.classList.add('hidden');
     this.menuButton.classList.remove('hidden');
     App.gatewayModel.subscribe(Constants.DELETE_THINGS, this.refreshThings);
-    App.gatewayModel.subscribe(
-      Constants.REFRESH_THINGS,
-      this.refreshThings,
-      true);
+    App.gatewayModel.subscribe(Constants.REFRESH_THINGS, this.refreshThings, true);
   },
 
   /**
    * Put floorplan in edit mode.
    */
-  edit: function() {
+  edit: function () {
     this.view.classList.add('edit');
     this.editButton.classList.add('hidden');
     this.doneButton.classList.remove('hidden');
     this.uploadForm.classList.remove('hidden');
     this.thingsElement.classList.add('editing');
-
-    // Bind to this before adding listener to make it easier to remove.
-    this.selectThing = this.selectThing.bind(this);
-    this.moveThing = this.moveThing.bind(this);
-    this.deselectThing = this.deselectThing.bind(this);
 
     // Disable hyperlinks for things
     this.things.forEach((thing) => {
@@ -281,7 +166,7 @@ const FloorplanScreen = {
   /**
    * Exit edit mode.
    */
-  done: function() {
+  done: function () {
     this.view.classList.remove('edit');
     this.doneButton.classList.add('hidden');
     this.editButton.classList.remove('hidden');
@@ -305,7 +190,7 @@ const FloorplanScreen = {
   /**
    * Request a file from the user.
    */
-  requestFile: function() {
+  requestFile: function () {
     this.fileInput.click();
   },
 
@@ -314,26 +199,27 @@ const FloorplanScreen = {
    *
    * @param {Event} e A change event on the file input.
    */
-  upload: function(e) {
+  upload: function (e) {
     this.uploadButton.classList.add('loading');
 
-    API.uploadFloorplan(e.target.files[0]).then(() => {
-      this.uploadButton.classList.remove('loading');
+    API.uploadFloorplan(e.target.files[0])
+      .then(() => {
+        this.uploadButton.classList.remove('loading');
 
-      API.loadImage('/uploads/floorplan.svg').then((data) => {
-        this.floorplan.style.backgroundImage =
-          `url(${URL.createObjectURL(data)})`;
+        API.loadImage('/uploads/floorplan.svg').then((data) => {
+          this.floorplan.style.backgroundImage = `url(${URL.createObjectURL(data)})`;
+        });
+      })
+      .catch((error) => {
+        this.uploadButton.classList.remove('loading');
+        console.error(`Failed to upload floorplan ${error}`);
       });
-    }).catch((error) => {
-      this.uploadButton.classList.remove('loading');
-      console.error(`Failed to upload floorplan ${error}`);
-    });
   },
 
   /**
    * On resize schedule an update of vmin
    */
-  onResize: function() {
+  onResize: function () {
     if (!this.view.classList.contains('selected')) {
       window.removeEventListener('resize', this.onResize);
       return;
@@ -347,15 +233,16 @@ const FloorplanScreen = {
   /**
    * Update our manually calculated vmin unit
    */
-  updateVmin: function() {
+  updateVmin: function () {
     this.updateVminRequest = null;
     const newVmin = Math.min(window.innerWidth, window.innerHeight) / 100;
     this.vmin = newVmin;
     this.things.forEach((thing) => {
       const elt = thing.element;
-      elt.style.transform =
-        this.makeTransform(parseFloat(elt.dataset.x),
-                           parseFloat(elt.dataset.y));
+      elt.style.transform = this.makeTransform(
+        parseFloat(elt.dataset.x),
+        parseFloat(elt.dataset.y)
+      );
     });
   },
 
@@ -365,7 +252,7 @@ const FloorplanScreen = {
    * @return {{x: number, y: number}} point in vmin units from top left of
    *                                  thingsElement
    */
-  screenToRelVmin: function(screenPoint) {
+  screenToRelVmin: function (screenPoint) {
     const thingsRect = this.thingsElement.getBoundingClientRect();
     const dx = (screenPoint.x - thingsRect.left) / this.vmin;
     const dy = (screenPoint.y - thingsRect.right) / this.vmin;
@@ -380,7 +267,7 @@ const FloorplanScreen = {
    *
    * @param {Event} e mousedown or touchstart event.
    */
-  selectThing: function(e) {
+  selectThing: function (e) {
     // Prevent interaction with HTML5 drag and drop
     e.preventDefault();
 
@@ -390,27 +277,35 @@ const FloorplanScreen = {
       y: e.clientY || e.touches[0].clientY,
     };
     const point = this.screenToRelVmin(screenPoint);
-    this.pointerOffsetX =
-      point.x - parseFloat(this.selectedThing.dataset.x);
-    this.pointerOffsetY =
-      point.y - parseFloat(this.selectedThing.dataset.y);
+    this.pointerOffsetX = point.x - parseFloat(this.selectedThing.dataset.x);
+    this.pointerOffsetY = point.y - parseFloat(this.selectedThing.dataset.y);
     this.selectedThing.style.cursor = 'grabbing';
   },
 
   /**
    * Deselect Thing.
    */
-  deselectThing: function() {
+  deselectThing: function () {
     if (!this.selectedThing) {
       return;
     }
     const thing = this.selectedThing;
     const x = parseFloat(thing.dataset.x);
     const y = parseFloat(thing.dataset.y);
-    const thingUrl = decodeURI(thing.dataset.href);
+    const thingUrl = decodeURIComponent(thing.dataset.href);
+    const thingId = thingUrl.split('/').pop();
     thing.style.cursor = '';
 
-    API.setThingFloorplanPosition(thingUrl.split('/').slice(-1)[0], x, y)
+    API.setThingFloorplanPosition(thingId, x, y)
+      .then(() => {
+        return App.gatewayModel.getThing(thingId);
+      })
+      .then((t) => {
+        if (t) {
+          t.floorplanX = x;
+          t.floorplanY = y;
+        }
+      })
       .catch((e) => {
         console.error(`Error trying to move thing ${thingUrl} ${e}`);
       });
@@ -426,7 +321,7 @@ const FloorplanScreen = {
    *
    * @param {Event} e mousemove or touchmove event.
    */
-  moveThing: function(e) {
+  moveThing: function (e) {
     if (!this.selectedThing) {
       return;
     }
@@ -456,14 +351,14 @@ const FloorplanScreen = {
    * @param {number} y
    * @return {String}
    */
-  makeTransform: function(x, y) {
-    const scaleFactor = 10 * this.vmin / 128;
+  makeTransform: function (x, y) {
+    const scaleFactor = (10 * this.vmin) / 128;
     const translate = `translate(${x}vmin,${y}vmin)`;
     const scale = `scale(${scaleFactor})`;
     return `${translate} translate(-50%, -50%) ${scale}`;
   },
 
-  onPointerDown: function(event) {
+  onPointerDown: function (event) {
     if (this.thingsElement.classList.contains('editing')) {
       return;
     }
@@ -477,13 +372,13 @@ const FloorplanScreen = {
     this.selectedThing = event.currentTarget;
     this.interactTimeout = setTimeout(() => {
       if (this.selectedThing) {
-        page(`${this.selectedThing.dataset.href}?referrer=%2ffloorplan`);
+        page(`${this.selectedThing.dataset.href}?referrer=%2Ffloorplan`);
       }
       this.interactTimeout = null;
     }, 750);
   },
 
-  onPointerUp: function(event) {
+  onPointerUp: function (event) {
     if (this.thingsElement.classList.contains('editing')) {
       return;
     }

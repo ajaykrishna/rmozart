@@ -2,15 +2,13 @@
   "version": "0.2.0",
   "configurations": [
     {
-        "name": "Launch via NPM",
-        "type": "node",
-        "request": "launch",
-        "cwd": "${workspaceRoot}",
-        "runtimeExecutable": "npm",
-        "runtimeArgs": [
-            "run-script", "debug-ide"
-        ],
-        "port": 5858
+      "name": "Launch via NPM",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceRoot}",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run-script", "esau-debug"],
+      "port": 5858
     }
   ]
 }

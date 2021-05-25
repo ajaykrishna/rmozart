@@ -23,69 +23,48 @@ function capabilityHasIcon(capability) {
 function capabilityToIcon(capability) {
   switch (capability) {
     case 'OnOffSwitch':
-      return '/optimized-images/thing-icons/on_off_switch.svg';
+      return '/images/thing-icons/on_off_switch.svg';
     case 'MultiLevelSwitch':
-      return '/optimized-images/thing-icons/multi_level_switch.svg';
+      return '/images/thing-icons/multi_level_switch.svg';
     case 'ColorControl':
     case 'ColorSensor':
-      return '/optimized-images/thing-icons/color_control.svg';
+      return '/images/thing-icons/color_control.svg';
     case 'EnergyMonitor':
-      return '/optimized-images/thing-icons/energy_monitor.svg';
+      return '/images/thing-icons/energy_monitor.svg';
     case 'BinarySensor':
-      return '/optimized-images/thing-icons/binary_sensor.svg';
+      return '/images/thing-icons/binary_sensor.svg';
+    case 'AirQualitySensor':
+    case 'BarometricPressureSensor':
+    case 'HumiditySensor':
     case 'MultiLevelSensor':
-      return '/optimized-images/thing-icons/multi_level_sensor.svg';
+      return '/images/thing-icons/multi_level_sensor.svg';
     case 'SmartPlug':
-      return '/optimized-images/thing-icons/smart_plug.svg';
+      return '/images/thing-icons/smart_plug.svg';
     case 'Light':
-      return '/optimized-images/thing-icons/light.svg';
+      return '/images/thing-icons/light.svg';
     case 'DoorSensor':
-      return '/optimized-images/thing-icons/door_sensor.svg';
+      return '/images/thing-icons/door_sensor.svg';
     case 'MotionSensor':
-      return '/optimized-images/thing-icons/motion_sensor.svg';
+      return '/images/thing-icons/motion_sensor.svg';
     case 'LeakSensor':
-      return '/optimized-images/thing-icons/leak_sensor.svg';
+      return '/images/thing-icons/leak_sensor.svg';
+    case 'SmokeSensor':
+      return '/images/thing-icons/smoke_sensor.svg';
     case 'PushButton':
-      return '/optimized-images/thing-icons/push_button.svg';
+      return '/images/thing-icons/push_button.svg';
     case 'VideoCamera':
-      return '/optimized-images/thing-icons/video_camera.svg';
+      return '/images/thing-icons/video_camera.svg';
     case 'Camera':
-      return '/optimized-images/thing-icons/camera.svg';
+      return '/images/thing-icons/camera.svg';
     case 'TemperatureSensor':
-      return '/optimized-images/thing-icons/temperature_sensor.svg';
+      return '/images/thing-icons/temperature_sensor.svg';
     case 'Alarm':
-      return '/optimized-images/thing-icons/alarm.svg';
+      return '/images/thing-icons/alarm.svg';
     case 'Thermostat':
-      return '/optimized-images/thing-icons/thermostat.svg';
+      return '/images/thing-icons/thermostat.svg';
     case 'Lock':
-      return '/optimized-images/thing-icons/lock.svg';
+      return '/images/thing-icons/lock.svg';
     case 'Custom':
-    default:
-      return defaultIcon();
-  }
-}
-
-function typeHasIcon(type) {
-  return typeToIcon(type) !== defaultIcon();
-}
-
-function typeToIcon(type) {
-  switch (type) {
-    case 'onOffSwitch':
-      return '/optimized-images/thing-icons/on_off_switch.svg';
-    case 'binarySensor':
-      return '/optimized-images/thing-icons/binary_sensor.svg';
-    case 'multiLevelSensor':
-      return '/optimized-images/thing-icons/multi_level_sensor.svg';
-    case 'onOffLight':
-    case 'onOffColorLight':
-    case 'dimmableLight':
-    case 'dimmableColorLight':
-      return '/optimized-images/thing-icons/light.svg';
-    case 'multiLevelSwitch':
-      return '/optimized-images/thing-icons/multi_level_switch.svg';
-    case 'smartPlug':
-      return '/optimized-images/thing-icons/smart_plug.svg';
     default:
       return defaultIcon();
   }
@@ -94,6 +73,5 @@ function typeToIcon(type) {
 module.exports = {
   capabilityHasIcon,
   capabilityToIcon,
-  typeHasIcon,
-  typeToIcon,
+  defaultIcon,
 };

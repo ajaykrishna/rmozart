@@ -8,38 +8,43 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-'use strict';
-
-import * as express from 'express';
-
-const PromiseRouter = require('express-promise-router');
+import express from 'express';
 import OAuthClients from '../models/oauthclients';
-import {ClientRegistry} from '../oauth-types';
+import { ClientRegistry } from '../oauth-types';
+import { WithJWT } from '../jwt-middleware';
 
-const OAuthClientsController = PromiseRouter();
+function build(): express.Router {
+  const controller = express.Router();
 
-/**
- * Get the currently authorized clients
- */
-OAuthClientsController.get('/', async (request: express.Request, response: express.Response) => {
-  let user = (request as any).jwt.user;
-  let clients = await OAuthClients.getAuthorized(user);
+  /**
+   * Get the currently authorized clients
+   */
+  controller.get('/', async (req: express.Request, response: express.Response) => {
+    const request = <express.Request & WithJWT>req;
+    const user = request.jwt.getUser();
+    const clients = await OAuthClients.getAuthorized(user);
 
-  response.json(clients.map((client: ClientRegistry) => {
-    return client.getDescription();
-  }));
-});
+    response.json(
+      clients.map((client: ClientRegistry) => {
+        return client.getDescription();
+      })
+    );
+  });
 
-OAuthClientsController.delete('/:clientId', async (request: express.Request, response: express.Response) => {
-  let clientId = request.params.clientId;
-  if (!OAuthClients.get(clientId, undefined)) {
-    response.status(404).send('Client not found');
-    return;
-  }
-  let user = (request as any).jwt.user;
+  controller.delete('/:clientId', async (req: express.Request, response: express.Response) => {
+    const request = <express.Request & WithJWT>req;
+    const clientId = request.params.clientId;
+    if (!OAuthClients.get(clientId)) {
+      response.status(404).send('Client not found');
+      return;
+    }
+    const user = request.jwt.getUser();
 
-  await OAuthClients.revokeClientAuthorization(user, clientId);
-  response.sendStatus(204);
-});
+    await OAuthClients.revokeClientAuthorization(user, clientId);
+    response.sendStatus(204);
+  });
 
-export default OAuthClientsController;
+  return controller;
+}
+
+export default build;

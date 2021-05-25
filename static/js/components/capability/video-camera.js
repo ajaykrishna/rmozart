@@ -33,7 +33,7 @@ template.innerHTML = `
       background-repeat: no-repeat;
       transform: translate(0);
       background-color: #89b6d6;
-      background-image: url('/optimized-images/component-icons/video-camera.svg');
+      background-image: url('/images/component-icons/video-camera.svg');
       background-position: center;
     }
   </style>
@@ -46,6 +46,5 @@ class VideoCameraCapability extends BaseComponent {
   }
 }
 
-window.customElements.define('webthing-video-camera-capability',
-                             VideoCameraCapability);
+window.customElements.define('webthing-video-camera-capability', VideoCameraCapability);
 module.exports = VideoCameraCapability;

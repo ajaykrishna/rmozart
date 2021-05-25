@@ -87,7 +87,7 @@ top: 9.6rem;
   top: 2.5%;
 }
 .container-reconf #rule-area-modal {
-  background: url('../optimized-images/background.png');
+  background: url('../images/background.png');
   flex: 1;
   width: 45%;
   height: 94%;
@@ -168,7 +168,7 @@ top: 9.6rem;
 }
 #rules-area-reconf{
   position: relative;
-  background: url('../optimized-images/background.png');
+  background: url('../images/background.png');
   flex: 1;
   overflow: auto;
 }

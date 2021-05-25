@@ -4,7 +4,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.*
  */
 
-const API = require('../api');
+const API = require('../api').default;
 
 /* {
   "id": 1,
@@ -61,6 +61,7 @@ ComposedRule.prototype.update = function() {
   //console.log("updating with body",desc);
 
   let request = null;
+  console.log("id type" + typeof this.id);
   if (typeof this.id !== 'undefined') {
     request = fetch(`/composed-rules/${encodeURIComponent(this.id)}`, fetchOptions);
   } else {

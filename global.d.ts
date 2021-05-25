@@ -1,8 +1,7 @@
 /**
  * Best effort declaration files.
  */
-declare namespace ANSN1 {
-
+declare namespace ASN1 {
   type EncoderInputTypes = string | number | boolean | number[] | string[] | Buffer;
 
   type EncoderInput = {
@@ -11,7 +10,7 @@ declare namespace ANSN1 {
 
   type PemParams = {
     label: string;
-  }
+  };
 
   class Builder {
     seq(): this;
@@ -29,12 +28,20 @@ declare namespace ANSN1 {
     encode(input: EncoderInput, type: 'pem', params: PemParams): string;
   }
 
-  export function define(
-    subject: string,
-    fn: (this: Builder) => void,
-  ): Encoder;
+  export function define(subject: string, fn: (this: Builder) => void): Encoder;
 }
 
 declare module 'asn1.js' {
-  export = ANSN1;
+  export = ASN1;
+}
+
+declare module 'promisepipe' {
+  export default function (input: NodeJS.ReadableStream, outout: NodeJS.WritableStream): void;
+}
+
+declare namespace WebdriverIO {
+  interface Browser {
+    getUrl(): Promise<string>;
+    deleteSession(): Promise<void>;
+  }
 }

@@ -9,9 +9,9 @@
  */
 'use strict';
 
-const SchemaForm = require('../schema-form/schema-form');
+const SchemaForm = require('../schema-form/schema-form').default;
 const page = require('page');
-const API = require('../api');
+const API = require('../api').default;
 const fluent = require('../fluent');
 
 class AddonConfig {
@@ -38,19 +38,15 @@ class AddonConfig {
     if (errors.length > 0) {
       this.scrollToTop();
     } else {
-      this.configForm.submitButton.innerText =
-        fluent.getMessage('addon-config-applying');
+      this.configForm.submitButton.innerText = fluent.getMessage('addon-config-applying');
       API.setAddonConfig(this.id, formData)
         .then(() => {
           page('/settings/addons');
         })
         .catch((err) => {
-          console.error(
-            `Failed to set config for add-on: ${this.name}\n${err}`
-          );
+          console.error(`Failed to set config for add-on: ${this.name}\n${err}`);
           this.configForm.errorField.render([err]);
-          this.configForm.submitButton.innerText =
-            fluent.getMessage('addon-config-apply');
+          this.configForm.submitButton.innerText = fluent.getMessage('addon-config-apply');
         });
     }
   }
@@ -62,14 +58,14 @@ class AddonConfig {
     const icon = this.container.querySelector('.section-title-icon');
     switch (this.primaryType) {
       case 'adapter':
-        icon.src = '/optimized-images/adapters-icon.png';
+        icon.src = '/images/adapters-icon.png';
         break;
       case 'notifier':
-        icon.src = '/optimized-images/thing-icons/notification.svg';
+        icon.src = '/images/thing-icons/notification.svg';
         break;
       case 'extension':
       default:
-        icon.src = '/optimized-images/add-on.svg';
+        icon.src = '/images/add-on.svg';
         break;
     }
 
@@ -81,7 +77,8 @@ class AddonConfig {
           this.name,
           config,
           this.handleApply.bind(this),
-          {submitText: fluent.getMessage('addon-config-apply')});
+          { submitText: fluent.getMessage('addon-config-apply') }
+        );
         this.container.appendChild(this.configForm.render());
       })
       .catch((err) => {

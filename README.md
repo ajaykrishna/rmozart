@@ -2,7 +2,33 @@
 ## Powered by Mozilla WebThings Gateway
 ## [https://ajaykrishna.github.io/rmozart](https://ajaykrishna.github.io/rmozart)
 
+[![Build Status](https://github.com/WebThingsIO/gateway/workflows/Build/badge.svg)](https://github.com/WebThingsIO/gateway/actions?query=workflow%3ABuild)
+[![codecov](https://codecov.io/gh/WebThingsIO/gateway/branch/master/graph/badge.svg)](https://codecov.io/gh/WebThingsIO/gateway)
+[![dependencies](https://david-dm.org/WebThingsIO/gateway.svg)](https://david-dm.org/WebThingsIO/gateway)
+[![devDependencies](https://david-dm.org/WebThingsIO/gateway/dev-status.svg)](https://david-dm.org/WebThingsIO/gateway?type=dev)
 [![license](https://img.shields.io/badge/license-MPL--2.0-blue.svg)](LICENSE)
+
+Web of Things gateway.
+
+## Installation
+
+- If you have a Rasberry Pi, the easiest way to use the gateway is to [download and flash](http://webthings.io/gateway/) a pre-built software image to an SD card.
+- If you prefer to use Docker, we have a prebuilt Docker image available [here](https://hub.docker.com/r/webthingsio/gateway), for both ARM and amd64. You can also build your own image from this repository.
+- On Fedora, Debian, Raspberry Pi OS, or Ubuntu, you can install the relevant .rpm or .deb package from the [releases page](https://github.com/WebThingsIO/gateway/releases).
+- On Arch Linux, you can install the [webthings-gateway AUR package](https://aur.archlinux.org/packages/webthings-gateway/). The PKGBUILD for this package can also be seen [here](https://github.com/WebThingsIO/gateway-aur).
+- Otherwise, you can build it from source yourself (see below).
+
+## Documentation
+
+- [Getting Started Guide](https://webthings.io/docs/gateway-getting-started-guide.html)
+- [User Guide](https://webthings.io/docs/gateway-user-guide.html)
+- [Wiki](https://github.com/WebThingsIO/wiki/wiki)
+- [Various other docs](https://webthings.io/docs/)
+
+## Community
+
+- [Discourse](https://discourse.mozilla.org/c/iot)
+- [Matrix](https://matrix.to/#/#iot:mozilla.org) (`#iot:mozilla.org`)
 
 ## Prerequisites for Building
 
@@ -10,7 +36,7 @@
 
 (If you're just installing on your PC, you can skip this step).
 
-If you're installing on a Raspberry Pi then you may need to set up the OS on the Raspberry Pi first. [See here](https://github.com/mozilla-iot/wiki/wiki/Setting-up-Raspberry-Pi) for instructions.
+If you're installing on a Raspberry Pi then you may need to set up the OS on the Raspberry Pi first. [See here](https://github.com/WebThingsIO/wiki/wiki/Setting-up-Raspberry-Pi) for instructions.
 
 ### Important!
 
@@ -26,52 +52,77 @@ The reconfiguration analysis can be performed outside of R-Mozart, on a terminal
 Details about Maude and its standalone installation can be found on the Maude Website: [http://maude.cs.illinois.edu/w/index.php/The_Maude_System](http://maude.cs.illinois.edu/w/index.php/The_Maude_System)
 
 ### Update Package Cache (Linux only)
+### Install Dependencies
 
-Under Ubuntu/Debian Linux:
+#### Ubuntu/Debian Linux
+
 ```
 $ sudo apt update
+$ sudo apt install \
+    autoconf \
+    build-essential \
+    curl \
+    git \
+    libbluetooth-dev \
+    libboost-python-dev \
+    libboost-thread-dev \
+    libffi-dev \
+    libglib2.0-dev \
+    libpng-dev \
+    libudev-dev \
+    libusb-1.0-0-dev \
+    pkg-config \
+    python-pip \
+    python3-pip
+$ sudo -H python2 -m pip install six
+$ sudo -H python3 -m pip install git+https://github.com/WebThingsIO/gateway-addon-python#egg=gateway_addon
 ```
 
-Under Fedora Linux:
+#### Fedora Linux
+
 ```
 $ sudo dnf --refresh upgrade
+$ sudo dnf group install "C Development Tools and Libraries"
+$ sudo dnf install \
+    autoconf \
+    bluez-libs-devel \
+    boost-devel \
+    boost-python2-devel \
+    boost-python3-devel \
+    curl \
+    git \
+    glib2-devel \
+    libffi-devel \
+    libpng-devel \
+    libudev-devel \
+    libusb1-devel \
+    pkgconfig \
+    python2-pip \
+    python3-pip
+$ sudo -H python2 -m pip install six
+$ sudo -H python3 -m pip install git+https://github.com/WebThingsIO/gateway-addon-python#egg=gateway_addon
 ```
 
-### Install pkg-config
+#### macOS
 
-Under Ubuntu/Debian Linux:
 ```
-$ sudo apt install pkg-config
-```
-
-Under Fedora Linux:
-```
-$ sudo dnf install pkgconfig
-```
-
-Under macOS:
-```
-$ brew install pkg-config
+$ brew update
+$ brew install \
+    autoconf \
+    libffi \
+    pkg-config
+$ sudo -H python2 -m pip install six
+$ sudo -H python3 -m pip install git+https://github.com/WebThingsIO/gateway-addon-python#egg=gateway_addon
 ```
 
-### Install curl (needed to install nvm)
+### Install Node.js
 
-Under Ubuntu/Debian Linux:
-```
-$ sudo apt install curl
-```
-
-Under Fedora Linux:
-```
-$ sudo dnf install curl
-```
-
-### Install nvm (Recommended)
+#### nvm (Recommended)
 
 nvm allows you to easily install different versions of node. To install nvm:
 
 ```
-$ curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.34.0/install.sh | bash
+$ curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.37.2/install.sh | bash
 ```
 
 Reinitialize your terminal session.
@@ -80,7 +131,7 @@ Reinitialize your terminal session.
 $ . ~/.bashrc
 ```
 
-### Install node (if you didn't use nvm)
+#### Manual
 
 (If you already installed node via nvm you can skip this step)
 
@@ -95,280 +146,102 @@ $ sudo setcap cap_net_raw+eip $(eval readlink -f `which node`)
 $ sudo setcap cap_net_raw+eip $(eval readlink -f `which python3`)
 ```
 
-### Install Bluetooth and BT Low Energy support libraries (Linux only)
-
-The following are required in order to install the Python modules that support Bluetooth
-
-Under Ubuntu/Debian Linux:
-```
-$ sudo apt install libboost-python-dev libboost-thread-dev libbluetooth-dev libglib2.0-dev
-```
-
-Under Fedora Linux:
-```
-$ sudo dnf install boost-python2-devel boost-python3-devel boost-devel bluez-libs-devel glib2-devel
-```
-
-### Install libusb and libudev (Linux only)
-
-Under Ubuntu/Debian Linux:
-```
-$ sudo apt install libusb-1.0-0-dev libudev-dev
-```
-
-Under Fedora Linux:
-```
-$ sudo dnf install libudev-devel libusb1-devel
-```
-
-### Install autoconf
-
-Under Ubuntu/Debian Linux:
-```
-$ sudo apt install autoconf
-```
-
-Under Fedora Linux:
-```
-$ sudo dnf install autoconf
-```
-
-Under macOS:
-```
-$ brew install autoconf
-```
-
-### Install libpng (Linux only)
-
-Under x86-64 or x86 Ubuntu/Debian Linux:
-```
-$ sudo apt install libpng16-16
-```
-
-Under ARM Ubuntu/Debian Linux:
-```
-$ sudo apt install libpng-dev
-```
-
-Under Fedora Linux:
-```
-$ sudo dnf install libpng-devel
-```
-
-### Install libffi
-
-Under Ubuntu/Debian Linux:
-```
-$ sudo apt install libffi-dev
-```
-
-Under Fedora Linux:
-```
-$ sudo dnf install libffi-devel
-```
-
-Under macOS:
-```
-$ brew install libffi
-```
-
-### Install git
-
-You'll need git to checkout the repositories.
-
-Under Ubuntu/Debian Linux:
-```
-$ sudo apt install git
-```
-
-Under Fedora Linux:
-```
-$ sudo dnf install git
-```
-
-### Install gcc
-
-Under Ubuntu/Debian Linux:
-```
-$ sudo apt install build-essential
-```
-
-Under Fedora Linux:
-```
-$ sudo dnf group install "C Development Tools and Libraries"
-```
-
-### Install nanomsg
-
-#### Linux
-
-Under Ubuntu/Debian Linux:
-```
-$ sudo apt install libnanomsg4 libnanomsg-dev
-```
-Note: you may need to use libnanomsg5 instead of libnanomsg4 (under Debian buster, for example)
-
-#### Windows
-
-* Follow the directions from [nanomsg](https://github.com/nanomsg/nanomsg) to install in the same bitness as your Python 3.X.
-* If you want to build for 64-bit, you need to execute cmake with `-DCMAKE_GENERATOR_PLATFORM=x64`.
-* Add `C:\path\to\nanomsg\bin` to `PATH`.
-
-#### MacOS
-
-Under macOS:
-```
-$ brew install nanomsg
-```
-
-
-
-### Install OpenSSL (Windows only)
-
-The Gateway depends on [`ursa`](https://github.com/JoshKaufman/ursa), which requires OpenSSL.
-
-Install [OpenSSL](http://slproweb.com/products/Win32OpenSSL.html) =< 1.0.2 (normal, not light) in the same bitness as your Node.js.
-
-[See here](https://github.com/JoshKaufman/ursa#windows-install).
-
-### Install Python 2.7 (Windows only)
-
-PageKite works with Python 2.7.
-
-Install Python 2.7 from [here](https://www.python.org/downloads/windows/).
-
-Enable "register extensions" on installing package, or associate file extension `.py` with python.
-
-### Install Python 3.X (Optional, Windows only)
-
-This is required in order to use Python 3 add-ons, e.g. [tplink-adapter](https://github.com/mozilla-iot/tplink-adapter/).
-
-* Install Python 3.4+ from [here](https://www.python.org/downloads/windows/).
-  * Enable "Install launcher for all users" and "Add Python 3.X to PATH" on installing.
-  * Enable `python3` command using the following.
-```
-mklink "C:\path\to\python3\python3.exe" "C:\path\to\python3\python.exe"
-```
-* Install nnpy
-```
-git clone https://github.com/nanomsg/nnpy.git
-cd nnpy
-```
-Add a file: site.cfg
-```
-[DEFAULT]
-include_dirs = C:\path\to\nanomsg\include\nanomsg
-library_dirs = C:\path\to\nanomsg\lib
-host_library = C:\path\to\nanomsg\bin\nanomsg.dll
-```
-
-### Install Python Add-on Bindings (Optional)
-
-This is required in order to use Python 3 add-ons, e.g. [tplink-adapter](https://github.com/mozilla-iot/tplink-adapter/).
-
-Execute the following command. On Linux, use sudo. On Windows, run as administrator.
-
-```
-python3 -m pip install git+https://github.com/mozilla-iot/gateway-addon-python#egg=gateway_addon
-```
-
-**Note:** 2018-04-12: `pip3` has an [issue](https://github.com/pypa/pip/issues/4251) with some languages.
-
 ## Download and Build Gateway
 
-* Clone the GitHub repository (or fork it first):
+- Clone the GitHub repository (or fork it first):
 
-    ```
-    $ git clone https://github.com/ajaykrishna/rmozart.git
-    ```
+  ```
+  $ git clone https://github.com/WebThingsIO/gateway.git
+  ```
 
-* Change into the gateway directory:
+- Change into the gateway directory:
 
-    ```
-    $ cd gateway
-    ```
+  ```
+  $ cd gateway
+  ```
 
-* If you have chosen to install nvm above, install and use an LTS version of node and then set the default version. The **`.nvmrc`** file will be used by nvm to determine which version of node to install.
+- If you have chosen to install nvm above, install and use an LTS version of node and then set the default version. The **`.nvmrc`** file will be used by nvm to determine which version of node to install.
 
-    ```
-    $ nvm install
-    $ nvm use
-    $ nvm alias default $(node -v)
-    ```
+  ```
+  $ nvm install
+  $ nvm use
+  $ nvm alias default $(node -v)
+  ```
 
-* Verify that node and npm have been installed:
+- Verify that node and npm have been installed:
 
-    ```
-    $ node --version
-    v8.15.1
-    $ npm --version
-    6.4.1
-    ```
+  ```
+  $ node --version
+  v12.19.0
+  $ npm --version
+  6.14.8
+  ```
 
-    Note: these versions might differ from the LTS version installed locally.
+  Note: these versions might differ from the LTS version installed locally.
 
-* Install dependencies:
+- Install dependencies:
 
-    ```
-    $ npm install
-    ```
+  ```
+  $ npm ci
+  ```
 
-* Add Firewall exceptions (Fedora Linux Only)
+- Add Firewall exceptions (Fedora Linux Only)
 
-    ```
-    $ sudo firewall-cmd --zone=public --add-port=4443/tcp --permanent
-    $ sudo firewall-cmd --zone=public --add-port=8080/tcp --permanent
-    $ sudo firewall-cmd --zone=public --add-port=5353/udp --permanent
-    ```
+  ```
+  $ sudo firewall-cmd --zone=public --add-port=4443/tcp --permanent
+  $ sudo firewall-cmd --zone=public --add-port=8080/tcp --permanent
+  $ sudo firewall-cmd --zone=public --add-port=5353/udp --permanent
+  ```
 
+- Set up domain:
 
-* Set up domain:
-    * If you plan to use Mozilla's provided tunneling service to set up a `*.mozilla-iot.org` domain:
-        * Start the web server:
+  - If you plan to use the provided tunneling service to set up a `_.webthings.io` domain:
 
-            ```
-            $ npm start
-            ```
-        * Start web server and verification components    
-             ```
-            $ npm run vscad   
-            ```
+    - Start the web server:
 
-        * Load `http://localhost:8080` in your web browser (or use the server's IP address if loading remotely). Then follow the instructions on the web page to set up domain and register. Once this is done you can load
-`https://localhost:4443` in your web browser (or use the server's IP address if loading remotely).
-    * If you plan to use your own SSL certificate:
-        * The HTTPS server looks for `privatekey.pem` and `certificate.pem` in the `ssl` sub-directory of the `userProfile` directory specified in your config. You can use a real certificate or generate a self-signed one by following the steps below.
+      ```
+      $ npm start
+      ```
 
-            ```
-            $ MOZIOT_HOME="${MOZIOT_HOME:=${HOME}/.mozilla-iot}"
-            $ SSL_DIR="${MOZIOT_HOME}/ssl"
-            $ [ ! -d "${SSL_DIR}" ] && mkdir -p "${SSL_DIR}"
-            $ openssl genrsa -out "${SSL_DIR}/privatekey.pem" 2048
-            $ openssl req -new -sha256 -key "${SSL_DIR}/privatekey.pem" -out "${SSL_DIR}/csr.pem"
-            $ openssl x509 -req -in "${SSL_DIR}/csr.pem" -signkey "${SSL_DIR}/privatekey.pem" -out "${SSL_DIR}/certificate.pem"
-            ```
+    - Load http://localhost:8080 in your web browser (or use the server's IP address if loading remotely). Then follow the instructions on the web page to set up domain and register. Once this is done you can load https://localhost:4443 in your web browser (or use the server's IP address if loading remotely).
 
-        * Start the web server:
+  - If you plan to use your own SSL certificate:
 
-            ```
-            $ npm start
-            ```
-           
-        * Start web server and verification components    
-             ```
-            $ npm run vscad   
-            ```
+    - The HTTPS server looks for `privatekey.pem` and `certificate.pem` in the `ssl` sub-directory of the `userProfile` directory specified in your config. You can use a real certificate or generate a self-signed one by following the steps below.
 
-        * Load `https://localhost:4443` in your web browser (or use the server's IP address if loading remotely). Since you're using a self-signed certificate, you'll need to add a security exception in the browser.
+      ```
+      $ WEBTHINGS_HOME="${WEBTHINGS_HOME:=${HOME}/.webthings}"
+      $ SSL_DIR="${WEBTHINGS_HOME}/ssl"
+      $ [ ! -d "${SSL_DIR}" ] && mkdir -p "${SSL_DIR}"
+      $ openssl genrsa -out "${SSL_DIR}/privatekey.pem" 2048
+      $ openssl req -new -sha256 -key "${SSL_DIR}/privatekey.pem" -out "${SSL_DIR}/csr.pem"
+      $ openssl x509 -req -in "${SSL_DIR}/csr.pem" -signkey "${SSL_DIR}/privatekey.pem" -out "${SSL_DIR}/certificate.pem"
+      ```
+
+    - Start the web server:
+
+      ```
+      $ npm start
+      ```
+
+    - Load https://localhost:4443 in your web browser (or use the server's IP address if loading remotely). Since you're using a self-signed certificate, you'll need to add a security exception in the browser.
 
 ## Browser Support
 
-The Gateway only supports the following browsers, due to its use of the [`Fetch API`](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch) and [`WebSocket API`](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API):
-* Firefox 52+
-* Chrome 43+
-* Edge 14+
-* Safari 10.1+
-* Opera 29+
+The Gateway requires a browser that supports:
+- [Fetch](https://caniuse.com/fetch)
+- [Web Sockets](https://caniuse.com/websockets)
+- [ECMAScript 2015 (ES6)](https://caniuse.com/es6)
+- [CustomEvent](https://caniuse.com/customevent)
+- [Custom Elements (V1)](https://caniuse.com/custom-elementsv1)
+- [Shadow DOM (V1)](https://caniuse.com/shadowdomv1)
+
+Currently, that translates roughly to:
+- Firefox 63+
+- Chrome 54+
+- Edge 79+
+- Safari 10.1+
+- Opera 41+
 
 ## Debugging
 
@@ -376,71 +249,66 @@ If you are using VS Code, simply use the "launch" target. It will build the gate
 
 If you are not using VS Code, run `npm run debug` and it will build the gateway and launch it with `--inspect`.
 
-## Install additional dependencies for Test (Debian)
+## Testing
 
-These steps are required on Debian (where python points to python 2.7)
-```
-$ sudo apt install python-pip python3-pip firefox openjdk-8-jre
-$ sudo python3 -m pip install git+https://github.com/mycroftai/adapt#egg=adapt-parser
-```
+### Install Additional Dependencies
 
-## Running Tests
+In order to run the browser tests, you'll need to install [Google Chrome](https://www.google.com/chrome/index.html) and a JDK (e.g. OpenJDK).
+
+### Running Tests
+
 To run the linter and all tests:
+
 ```
-$ npm test
+$ npm run test
 ```
 
 To run a single test:
-```
-$ jest src/test/{test-name}.js
-```
-(assumes you have the `jest` command on your `PATH`, otherwise use `./node_modules/jest/bin/jest.js`)
 
-To compare UI with parent branch:
 ```
-$ npm run screenshots
-$ npm test
+$ npm run jest build/test/{test-name}.js
 ```
-(if you have the screenshots in the folder `./browser-test-screenshots`, `npm test` should compare UI with screenshots stored)
 
 ## Source Code Structure
 
-* **`config/`** - Gateway configuration files
-* **`image/`** - Tools for building the Raspberry Pi image
-* **`src/`**
-  * **`addons-test/`** - Add-ons used strictly for testing
-  * **`controllers/`** - App URL routes and their logic
-  * **`models/`** - Data model and business logic
-  * **`platforms/`** - Platform-specific functionality
-  * **`plugin/`** - Utility classes and methods used by add-ons
-  * **`rules-engine/`** - The rules engine
-  * **`test/`** - Integration tests
-  * **`views/`** - HTML views
-  * **`addon-loader.js`** - Script used for starting up Node-based add-ons
-  * **`addon-manager.js`** - Manages add-ons (e.g. Zigbee, Z-Wave)
-  * **`app.js`** - The main back end
-  * **`app-instance.js`** - Application wrapper for integration tests
-  * **`certificate-manager.js`** - Certificate registration and renewal, via Let's Encrypt
-  * **`command-utils.js`** - Utilities used by commands parser
-  * **`constants.js`** - System-wide constants
-  * **`db.js`** - Manages the SQLite3 database
-  * **`deferred.js`** - Wraps up a promise in a slightly more convenient manner for passing around, or saving
-  * **`dynamic-require.js`** - Small utility to require code from file system, rather than webpacked bundle
-  * **`ec-crypto.js`** - Elliptic curve helpers for the ES256 curve
-  * **`jwt-middleware.js`** - Express middleware for determining authentication status
-  * **`log-timestamps.js`** - Utilities for adding timestamps to console logging functions
-  * **`mdns-server.js`** - mDNS server
-  * **`oauth-types.js`** - OAuth types
-  * **`passwords.js`** - Password utilities
-  * **`platform.js`** - Platform-specific utilities
-  * **`push-service.js`** - Push notification service
-  * **`router.js`** - Routes app URLs to controllers
-  * **`router-setup.js`** - Initial router setup code for OpenWrt
-  * **`sleep.js`** - Small utility to implement a promise-based sleep
-  * **`ssltunnel.js`** - Utilities to determine state of tunnel and manage the PageKite process
-  * **`user-profile.js`** - Manages persistent user data
-  * **`utils.js`** - Various utility functions
-  * **`wifi-setup.js`** - Initial Wi-Fi setup code for Raspbian
-* **`static/`** - Static CSS, JavaScript & image resources for web app front end
-* **`tools/`** - Helpful utilities (not part of the build)
-* **`package.json`** - npm module manifest
+- **`config/`** - Gateway configuration files
+- **`deb/`** - Tools for building .deb packages
+- **`docker/`** and **`Dockerfile`** - Tools for building Docker image
+- **`image/`** - Tools for building the Raspberry Pi image
+- **`rpm/`** - Tools for building .rpm packages
+- **`src/`**
+  - **`addons-test/`** - Add-ons used strictly for testing
+  - **`controllers/`** - App URL routes and their logic
+  - **`iso-639/`** - Small utility for interacting with ISO-639 data, i.e. locale names
+  - **`models/`** - Data model and business logic
+  - **`platforms/`** - Platform-specific functionality
+  - **`plugin/`** - Utility classes and methods used by add-ons
+  - **`rules-engine/`** - The rules engine
+  - **`test/`** - Integration and unit tests
+  - **`views/`** - Handlebars templates
+  - **`addon-loader.ts`** - Script used for starting up Node-based add-ons
+  - **`addon-manager.ts`** - Manages add-ons (e.g. Zigbee, Z-Wave)
+  - **`addon-utils.ts`** - Utilities for add-ons, e.g. for reading the manifests
+  - **`app.ts`** - The main back end
+  - **`certificate-manager.ts`** - Certificate registration and renewal, via Let's Encrypt
+  - **`constants.ts`** - System-wide constants
+  - **`db.ts`** - Manages the SQLite3 database
+  - **`deferred.ts`** - Wraps up a promise in a slightly more convenient manner for passing around, or saving
+  - **`ec-crypto.ts`** - Elliptic curve helpers for the ES256 curve
+  - **`errors.ts`** - Common error classes
+  - **`jwt-middleware.ts`** - Express middleware for determining authentication status
+  - **`log-timestamps.ts`** - Utilities for adding timestamps to console logging functions
+  - **`migrate.ts`** - User profile migration
+  - **`oauth-types.ts`** - OAuth types
+  - **`passwords.ts`** - Password utilities
+  - **`platform.ts`** - Platform-specific utilities
+  - **`push-service.ts`** - Push notification service
+  - **`router.ts`** - Routes app URLs to controllers
+  - **`sleep.ts`** - Small utility to implement a promise-based sleep
+  - **`tunnel-service.ts`** - Utilities to determine state of tunnel and manage the PageKite process
+  - **`user-profile.ts`** - Manages persistent user data
+  - **`utils.ts`** - Various utility functions
+  - **`wifi-setup.ts`** - Initial Wi-Fi setup code for Raspberry Pi OS
+- **`static/`** - Static CSS, JavaScript & image resources for web app front end
+- **`tools/`** - Helpful utilities (not part of the build)
+- **`package.json`** - npm module manifest

@@ -1,0 +1,46 @@
+basepath = "."
+
+locales = [
+  "bn",
+  "cs",
+  "cy",
+  "da",
+  "de",
+  "el",
+  "en-CA",
+  "en-GB",
+  "es-AR",
+  "es-ES",
+  "fi",
+  "fr",
+  "fy-NL",
+  "gl",
+  "hu",
+  "ia",
+  "id",
+  "it",
+  "ja",
+  "kab",
+  "nl",
+  "nn-NO",
+  "pl",
+  "pt-BR",
+  "pt-PT",
+  "ro",
+  "ru",
+  "sk",
+  "sr",
+  "sv-SE",
+  "ta",
+  "uk",
+  "zh-CN",
+  "zh-TW",
+]
+
+branches = [
+  "master",
+]
+
+[[paths]]
+  reference = "static/fluent/en-US/main.ftl"
+  l10n = "static/fluent/{locale}/main.ftl"

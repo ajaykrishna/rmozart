@@ -7,7 +7,7 @@
  */
 'use strict';
 
-const API = require('../api');
+const API = require('../api').default;
 const App = require('../app');
 const Model = require('./model');
 const Constants = require('../constants');
@@ -15,17 +15,26 @@ const Constants = require('../constants');
 class ThingModel extends Model {
   constructor(description, ws) {
     super();
-    this.title = description.title;
-    this.type = description.type;
-    this.descrId = description.id;
     this.properties = {};
     this.events = [];
     this.connected = false;
 
+    this.updateFromDescription(description);
+
+    this.initWebSocket(ws);
+
+    this.updateEvents();
+
+    return this;
+  }
+
+  updateFromDescription(description) {
+    this.title = description.title;
+
     // Parse base URL of Thing
     if (description.href) {
       this.href = new URL(description.href, App.ORIGIN);
-      this.id = this.href.pathname.split('/').pop();
+      this.id = decodeURIComponent(this.href.pathname.split('/').pop());
     }
 
     // Parse events URL
@@ -59,13 +68,6 @@ class ThingModel extends Model {
         this.eventDescriptions[eventName] = event;
       }
     }
-
-    this.initWebSocket(ws);
-
-    this.updateEvents();
-    this.updateProperties();
-
-    return this;
   }
 
   /**
@@ -134,6 +136,10 @@ class ThingModel extends Model {
             this.cleanup();
           }
           break;
+        case 'thingRemoved':
+          this.handleEvent(Constants.DELETE_THING, this.id);
+          this.cleanup();
+          break;
       }
     };
 
@@ -196,12 +202,14 @@ class ThingModel extends Model {
       }
     }
 
-    return API.putJson(href, payload).then((json) => {
-      this.onPropertyStatus(json);
-    }).catch((error) => {
-      console.error(error);
-      throw new Error(`Error trying to set ${name}`);
-    });
+    return API.putJson(href, payload)
+      .then((json) => {
+        this.onPropertyStatus(json);
+      })
+      .catch((error) => {
+        console.error(error);
+        throw new Error(`Error trying to set ${name}`);
+      });
   }
 
   /**
@@ -229,11 +237,13 @@ class ThingModel extends Model {
       getPropertiesPromise = API.getJson(this.propertiesHref);
     }
 
-    getPropertiesPromise.then((properties) => {
-      this.onPropertyStatus(properties);
-    }).catch((error) => {
-      console.error(`Error fetching ${this.title} status: ${error}`);
-    });
+    getPropertiesPromise
+      .then((properties) => {
+        this.onPropertyStatus(properties);
+      })
+      .catch((error) => {
+        console.error(`Error fetching ${this.title} status: ${error}`);
+      });
   }
 
   /**
@@ -266,11 +276,13 @@ class ThingModel extends Model {
       return;
     }
 
-    return API.getJson(this.eventsHref).then((events) => {
-      this.events = events;
-    }).catch((e) => {
-      console.error(`Error fetching events: ${e}`);
-    });
+    return API.getJson(this.eventsHref)
+      .then((events) => {
+        this.events = events;
+      })
+      .catch((e) => {
+        console.error(`Error fetching events: ${e}`);
+      });
   }
 
   /**
@@ -284,7 +296,7 @@ class ThingModel extends Model {
         continue;
       }
       events[event] = data[event];
-      this.events.push({[event]: data[event]});
+      this.events.push({ [event]: data[event] });
     }
     return this.handleEvent(Constants.EVENT_OCCURRED, events);
   }
@@ -296,6 +308,11 @@ class ThingModel extends Model {
    */
   onConnected(connected) {
     this.connected = connected;
+
+    if (connected) {
+      this.updateProperties();
+    }
+
     return this.handleEvent(Constants.CONNECTED, connected);
   }
 }

@@ -40,15 +40,19 @@ body {
   color: #fff;
 }
 
+#skip-subdomain-anchor:hover {
+  text-decoration: underline;
+}
+
 #create-domain-button {
   display: inline-block;
   margin: 1rem auto;
 }
 
 #create-domain-button:disabled,
-#create-domain-button:disabled:hover,
-#create-domain-button:hover:active {
-  background-color: #658196;
+#create-domain-button:disabled:hover {
+  background-color: #597285;
+  opacity: 0.5;
 }
 
 #label-subdomain {
@@ -84,7 +88,10 @@ p {
   padding-bottom: 0.6rem;
 }
 
-input[type="text"], input[type="email"] {
+input:not([type]),
+input[type=''],
+input[type='text'],
+input[type='email'] {
   height: 2.3rem;
   background-color: #d2d9de;
   border: none;
@@ -102,63 +109,73 @@ button {
   color: #fff;
 }
 
-button:hover:enabled, button:active:enabled {
-  background-color: #658196;
-}
-
 button::-moz-focus-inner {
   border: 0;
 }
 
+button:hover:enabled,
+button:active:enabled {
+  background-color: #658196;
+}
+
+#agree-group,
 #opt-in-group {
-  padding-top: 2rem;
-  display: table;
+  padding-top: 0;
+  display: grid;
+  grid-template-columns: 8rem auto;
   width: 100%;
 }
 
+#agree,
 #opt-in {
   position: absolute;
   left: -1000em;
 }
 
-#opt-in + label:before {
-  content: "";
-  display: table-cell;
+#agree + label::before,
+#opt-in + label::before {
+  display: inline-block;
+  content: '';
   vertical-align: middle;
   width: 3rem;
   height: 3rem;
   margin: 0.1rem 0;
-  background: url("../optimized-images/checkbox-sprite.png") no-repeat 0 0;
+  background: url('/images/checkbox-sprite.png') no-repeat 0 0;
   background-size: 3rem auto;
 }
 
-#opt-in:checked + label:before {
+#agree:checked + label::before,
+#opt-in:checked + label::before {
   background-position: 0 -3rem;
 }
 
-#opt-in:disabled + label:before {
+#agree:disabled + label::before,
+#opt-in:disabled + label::before {
   background-position: 0 -6rem;
 }
 
-#opt-in:checked:disabled + label:before {
+#agree:checked:disabled + label::before,
+#opt-in:checked:disabled + label::before {
   background-position: 0 -9rem;
 }
 
+#agree-group > label,
 #opt-in-group > label {
-  margin: 2rem;
+  margin: 1.5rem;
 }
 
+#agree-info,
 #opt-in-info {
   text-align: left;
   display: table-cell;
   font-size: 1.4rem;
   vertical-align: middle;
-  padding-left: 2rem;
+  padding-top: 1.5rem;
 }
 
-#opt-in-info > a:link,
-#opt-in-info > a:visited,
-#opt-in-info > a:hover,
-#opt-in-info > a:active {
+#agree-info > span > a:link,
+#agree-info > span > a:visited,
+#agree-info > span > a:hover,
+#agree-info > span > a:active {
   color: white;
 }

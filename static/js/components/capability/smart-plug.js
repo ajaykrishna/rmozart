@@ -33,13 +33,13 @@ template.innerHTML = `
       background-repeat: no-repeat;
       transform: translate(0);
       background-color: #89b6d6;
-      background-image: url('/optimized-images/component-icons/smart-plug-off.svg');
+      background-image: url('/images/component-icons/smart-plug-off.svg');
       background-position: center 2rem;
     }
 
     .webthing-smart-plug-capability-icon.on {
       background-color: white;
-      background-image: url('/optimized-images/component-icons/smart-plug-on.svg');
+      background-image: url('/images/component-icons/smart-plug-on.svg');
     }
 
     .webthing-smart-plug-capability-label {
@@ -74,12 +74,9 @@ class SmartPlugCapability extends BaseComponent {
 
   connectedCallback() {
     this._havePower =
-      typeof this.dataset.havePower !== 'undefined' ?
-        this.dataset.havePower === 'true' :
-        false;
+      typeof this.dataset.havePower !== 'undefined' ? this.dataset.havePower === 'true' : false;
     this.on = typeof this.dataset.on !== 'undefined' ? this.dataset.on : null;
-    this.power =
-      typeof this.dataset.power !== 'undefined' ? this.dataset.power : false;
+    this.power = typeof this.dataset.power !== 'undefined' ? this.dataset.power : false;
     this._icon.addEventListener('click', this._onClick);
   }
 
@@ -96,7 +93,7 @@ class SmartPlugCapability extends BaseComponent {
 
     if (value === null) {
       this._icon.classList.remove('on');
-      this._label.innerText = fluent.getMessage('ellipses');
+      this._label.innerText = fluent.getMessage('ellipsis');
     } else if (this._on) {
       this._icon.classList.add('on');
       if (this._havePower) {
@@ -126,12 +123,13 @@ class SmartPlugCapability extends BaseComponent {
     e.preventDefault();
     e.stopPropagation();
 
-    this.dispatchEvent(new CustomEvent('click', {
-      bubbles: true,
-    }));
+    this.dispatchEvent(
+      new CustomEvent('click', {
+        bubbles: true,
+      })
+    );
   }
 }
 
-window.customElements.define('webthing-smart-plug-capability',
-                             SmartPlugCapability);
+window.customElements.define('webthing-smart-plug-capability', SmartPlugCapability);
 module.exports = SmartPlugCapability;
