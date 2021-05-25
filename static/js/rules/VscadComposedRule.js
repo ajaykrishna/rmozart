@@ -43,7 +43,7 @@ function ComposedRule(gateway, desc, onUpdate) {
  * Validate and save the rule
  * @return {Promise}
  */
-ComposedRule.prototype.update = function() {
+ComposedRule.prototype.update = function () {
   if (this.onUpdate) {
     this.onUpdate();
   }
@@ -61,33 +61,46 @@ ComposedRule.prototype.update = function() {
   //console.log("updating with body",desc);
 
   let request = null;
-  console.log("id type" + typeof this.id);
+  console.log('id type' + typeof this.id);
   if (typeof this.id !== 'undefined') {
     request = fetch(`/composed-rules/${encodeURIComponent(this.id)}`, fetchOptions);
   } else {
     fetchOptions.method = 'POST';
-    request = fetch('/composed-rules/', fetchOptions).then((res) => {
-      return res.json();
-    }).then((rule) => {
-      this.id = rule.id;
-    });
+    request = fetch('/composed-rules/', fetchOptions)
+      .then((res) => {
+        return res.json();
+      })
+      .then((rule) => {
+        this.id = rule.id;
+      });
   }
   return request;
 };
-ComposedRule.prototype.getRulesFromExpression = function(){
-var output ={}
-const results  = this.expression.match(/\d+/g)
-if(results)
-  results.forEach(function(e){
-      output[e]=true
-  })
+ComposedRule.prototype.getRulesFromExpression = function () {
+  var output = {};
+  const results = this.expression.match(/\d+/g);
+  if (results)
+    results.forEach(function (e) {
+      output[e] = true;
+    });
   return Object.keys(output);
-}
+};
+
+ComposedRule.prototype.getRulesFromExpression2 = function () {
+  var output = {};
+  const results = this.expression2.match(/\d+/g);
+  if (results)
+    results.forEach(function (e) {
+      output[e] = true;
+    });
+  return Object.keys(output);
+};
+
 /**
  * Delete the rule
  * @return {Promise}
  */
-ComposedRule.prototype.delete = function() {
+ComposedRule.prototype.delete = function () {
   const fetchOptions = {
     headers: API.headers(),
     method: 'DELETE',
@@ -103,33 +116,56 @@ ComposedRule.prototype.delete = function() {
  * Convert this rule into a serialized description
  * @return {RuleDescription?} description or null if not a valid rule
  */
-ComposedRule.prototype.toDescription = function() {
+ComposedRule.prototype.toDescription = function () {
   return {
-    enabled : true,
-    id : this.id,
-    name :  this.name,
-    rules :  this.rules,
-    expression: this.expression
-  } ;
+    enabled: true,
+    id: this.id,
+    name: this.name,
+    rules: this.rules,
+    expression: this.expression,
+  };
 };
-ComposedRule.prototype.getBpmnDescription = function(fetchedRules) {
+ComposedRule.prototype.toDescription2 = function () {
+  return {
+    enabled: true,
+    id: this.id,
+    name: this.name,
+    rules: this.rules,
+    expression: this.expression2,
+  };
+};
+ComposedRule.prototype.getBpmnDescription = function (fetchedRules) {
   var description = this.toDescription();
-  var rulesMap = {}
-  fetchedRules.forEach(rule=>{
-    if(description.rules.indexOf(""+rule.id) !== -1){
+  var rulesMap = {};
+  fetchedRules.forEach((rule) => {
+    if (description.rules.indexOf('' + rule.id) !== -1) {
       rulesMap[rule.name] = rule.id;
     }
-  })
-  description.mapedRules = rulesMap ;
-  console.log(description);
+  });
+  description.mapedRules = rulesMap;
+  // console.log(description);
 
-  return  description;
+  return description;
+};
+
+ComposedRule.prototype.getBpmnDescription2 = function (fetchedRules) {
+  var description = this.toDescription2();
+  var rulesMap = {};
+  fetchedRules.forEach((rule) => {
+    if (description.rules.indexOf('' + rule.id) !== -1) {
+      rulesMap[rule.name] = rule.id;
+    }
+  });
+  description.mapedRules = rulesMap;
+  // console.log(description);
+
+  return description;
 };
 /**
  * Set the  rules used in the composed rule, updating the server model if valid
  * @return {Promise}
  */
-ComposedRule.prototype.setRules = function(rules) {
+ComposedRule.prototype.setRules = function (rules) {
   this.rules = rules;
   return this.update();
 };
@@ -137,15 +173,15 @@ ComposedRule.prototype.setRules = function(rules) {
  * Set the expression of the  composed Rule, updating the server model if valid
  * @return {Promise}
  */
-ComposedRule.prototype.setExpression = function(expression) {
+ComposedRule.prototype.setExpression = function (expression) {
   this.expression = expression;
   return this.update();
 };
-ComposedRule.prototype.setExpression2 = function(expression) {
+ComposedRule.prototype.setExpression2 = function (expression) {
   this.expression = expression;
 };
-ComposedRule.prototype.getExpression = function() {
+ComposedRule.prototype.getExpression = function () {
   return this.expression;
-}
+};
 
 module.exports = ComposedRule;

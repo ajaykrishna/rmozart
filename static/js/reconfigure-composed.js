@@ -13,11 +13,15 @@ const VscadRuleCardItem = require('./rules/VscadRuleCardItem');
 const VscadConnectorBlock = require('./rules/VscadConnectorBlock');
 const VscadRulePropertyBlock = require('./rules/VscadRulePropertyBlock');
 
-'use-strict';
+('use-strict');
 
 const ReconfigureScreen = {
+  init: function () {
+    // analyse components
+    // this.reconfAnalyseModal = document.getElementById('analyse-modal-view');
+    this.analyseButton = document.getElementById('analyse-reconf-button');
+    this.diagramLoaded = false;
 
-  init: function() {
     this.rulesList = document.getElementById('rules-side-menu-reconfigure');
     this.ruleArea = document.getElementById('rules-area-reconf');
     this.ruleLeft = document.getElementById('rule-area-modal');
@@ -37,14 +41,33 @@ const ReconfigureScreen = {
     this.ruleNameCustomize = this.view.querySelector('.rule-name-reconf');
     this.ruleName = this.view.querySelector('.reconf-rule-name');
 
+    // Analyse button
+    this.analyseButton.addEventListener('click', () => {
+      console.log(this.cRule);
+      //handle css active visuals
+      modal.handleAnalyseCSSVisuals();
+      // handle diagrams visuals
+      this.requestAnalyseCompareDiagram();
+      // handle data from table
+      modal.handleAnalyseTable(this.cRule);
+    });
+
     this.connectors.after = document.getElementById('part-after-reconf');
-    this.connectors.after.addEventListener('mousedown', (event) => this.onconnectorBlockDown(event, 'THEN'));
+    this.connectors.after.addEventListener('mousedown', (event) =>
+      this.onconnectorBlockDown(event, 'THEN')
+    );
     this.connectors.and = document.getElementById('part-and-reconf');
-    this.connectors.and.addEventListener('mousedown', (event) => this.onconnectorBlockDown(event, 'AND'));
+    this.connectors.and.addEventListener('mousedown', (event) =>
+      this.onconnectorBlockDown(event, 'AND')
+    );
     this.connectors.or = document.getElementById('part-or-reconf');
-    this.connectors.or.addEventListener('mousedown', (event) => this.onconnectorBlockDown(event, 'OR'));
+    this.connectors.or.addEventListener('mousedown', (event) =>
+      this.onconnectorBlockDown(event, 'OR')
+    );
     this.connectors.group = document.getElementById('part-other-reconf');
-    this.connectors.group.addEventListener('mousedown', (event) => this.onconnectorBlockDown(event, 'group'));
+    this.connectors.group.addEventListener('mousedown', (event) =>
+      this.onconnectorBlockDown(event, 'group')
+    );
     this.nextId = 0;
 
     const selectRuleName = () => {
@@ -54,6 +77,7 @@ const ReconfigureScreen = {
       selection.removeAllRanges();
       selection.addRange(range);
     };
+
     this.compareButton.addEventListener('click', () => {
       this.requestUpdate();
     });
@@ -85,11 +109,67 @@ const ReconfigureScreen = {
       this.onPresentationChange();
     });
   },
-  requestUpdate: async function() {
 
+  requestAnalyseCompareDiagram: function () {
+    // console.log('cRule', this.cRule);
+
+    // specs of expression for workflow server
+    let bodyExpression1 = JSON.stringify(this.cRule.getBpmnDescription(this.fetchedRules));
+    let bodyExpression2 = JSON.stringify(this.cRule.getBpmnDescription2(this.fetchedRules));
+
+    let resultExpressionPromise1;
+    let resultExpressionPromise2;
+
+    const fetchOptions = {
+      method: 'POST',
+      cache: 'no-cache',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/xml',
+      },
+      redirect: 'follow',
+      referrer: 'no-referrer',
+      // body dinamically setted
+    };
+    // 10.138.2.9:8080
+
+    this.showLoader();
+
+    // adding body for expression 1
+    fetchOptions.body = bodyExpression1;
+    resultExpressionPromise1 = fetch('http://localhost:9001/workflow', fetchOptions);
+
+    // adding body for expression 2
+    fetchOptions.body = bodyExpression2;
+    resultExpressionPromise2 = fetch('http://localhost:9001/workflow', fetchOptions);
+
+    // when finishing calling http(s) url
+    Promise.all([resultExpressionPromise1, resultExpressionPromise2])
+      .then((responses) => {
+        return Promise.all(
+          responses.map((res) => {
+            return res.text();
+          })
+        );
+      })
+      .then((texts) => {
+        // after calling the workflow API
+        this.hiddeLoader();
+        // console.log(...texts);
+        modal.showAnaylyseCompareDiagram(texts);
+      })
+      .catch((reason) => {
+        // if any error
+        console.log('error ', reason);
+      });
+  },
+
+  requestUpdate: async function () {
     // Getting the history
     let history = new Promise((resolve) => {
-      fetch('http://localhost:8080/composed-rules/history', {headers: API.headers()}).then((response) => {
+      fetch('http://localhost:8080/composed-rules/history', {
+        headers: API.headers(),
+      }).then((response) => {
         resolve(response.json());
         return response.json();
       });
@@ -97,7 +177,6 @@ const ReconfigureScreen = {
     await history.then((data) => {
       history = data;
     });
-
 
     let json1 = this.getOldStates();
     await json1.then((data) => {
@@ -108,7 +187,6 @@ const ReconfigureScreen = {
     await json2.then((data) => {
       json2 = data;
     });
-
 
     // Send final JSON
     const datosJson = {};
@@ -128,14 +206,17 @@ const ReconfigureScreen = {
       body: JSON.stringify(datosJson),
     };
 
-    fetch('http://127.0.0.1:9001/compare', fetchedJson).then((res) => {
-      return res.json();
-    }).then((response) => {
-      this.hiddeLoader();
-      modal.showVerification(response, true);
-    });
+    fetch('http://127.0.0.1:9001/compare', fetchedJson)
+      .then((res) => {
+        return res.json();
+      })
+      .then((response) => {
+        this.hiddeLoader();
+        modal.showVerification(response, true);
+      });
   },
-  setProperties: async function(json1) {
+
+  setProperties: async function (json1) {
     var index = [];
     let json2 = this.getCurrentlyStates();
     await json2.then((data) => {
@@ -174,7 +255,7 @@ const ReconfigureScreen = {
         }
       }*/
   },
-  showNotification: function(data) {
+  showNotification: function (data) {
     const alertDialog = document.getElementById('validation-dialog-reconf');
     alertDialog.style.display = 'block';
     if (data.status) {
@@ -188,15 +269,15 @@ const ReconfigureScreen = {
     }
     alertDialog.querySelector('#noti-message-reconf').textContent = data.response;
   },
-  showLoader: function() {
+  showLoader: function () {
     this.loaders++;
     this.loader.style.display = 'block';
   },
-  hiddeLoader: function() {
+  hiddeLoader: function () {
     this.loaders--;
     this.loader.style.display = 'none';
   },
-  getOldStates: async function() {
+  getOldStates: async function () {
     return new Promise((resolve) => {
       const rules = [];
       const formatJson = {};
@@ -205,56 +286,58 @@ const ReconfigureScreen = {
       const expression = this.cRule.expression2;
       const data = this.cRule.toDescription();
 
-
       // Get id's of the currrently composition
-      fetch('/rules', {headers: API.headers()}).then((res) => {
-        return res.json();
-      }).then((fetchedRules) => {
-        for (const ruleDesc of fetchedRules) {
-          if (data.rules.includes(String(ruleDesc.id))) {
-            rules.push(ruleDesc);
-            cant += 1;
+      fetch('/rules', { headers: API.headers() })
+        .then((res) => {
+          return res.json();
+        })
+        .then((fetchedRules) => {
+          for (const ruleDesc of fetchedRules) {
+            if (data.rules.includes(String(ruleDesc.id))) {
+              rules.push(ruleDesc);
+              cant += 1;
+            }
           }
-        }
-      }).finally(async () => {
-        formatJson.Rules = [];
-        formatJson.Exp = expression;
-        formatJson.Rule = [];
+        })
+        .finally(async () => {
+          formatJson.Rules = [];
+          formatJson.Exp = expression;
+          formatJson.Rule = [];
 
-        for (let index = 0; index < cant; index++) {
-          formatJson.Rules.push(rules[index].name);
-          var id = rules[index].id;
-          formatJson.Rule[id] = {};
-          formatJson.Rule[id].triggers = {};
-          formatJson.Rule[id].triggers.operator = rules[index].trigger.op;
-          formatJson.Rule[id].effects = {};
-          formatJson.Rule[id].triggers.objets = [];
-          formatJson.Rule[id].effects.objets = [];
-          for (const data of rules[index].trigger.triggers) {
-            await API.getJson(`/things/${data.property.thing}/properties`).then((data2) => {
-              // console.log('trigger', String(data.property.thing), data2);
-              const info = {};
-              info.objetId = data.property.thing;
-              info.state = data2;
-              formatJson.Rule[id].triggers.objets.push(info);
-            });
+          for (let index = 0; index < cant; index++) {
+            formatJson.Rules.push(rules[index].name);
+            var id = rules[index].id;
+            formatJson.Rule[id] = {};
+            formatJson.Rule[id].triggers = {};
+            formatJson.Rule[id].triggers.operator = rules[index].trigger.op;
+            formatJson.Rule[id].effects = {};
+            formatJson.Rule[id].triggers.objets = [];
+            formatJson.Rule[id].effects.objets = [];
+            for (const data of rules[index].trigger.triggers) {
+              await API.getJson(`/things/${data.property.thing}/properties`).then((data2) => {
+                // console.log('trigger', String(data.property.thing), data2);
+                const info = {};
+                info.objetId = data.property.thing;
+                info.state = data2;
+                formatJson.Rule[id].triggers.objets.push(info);
+              });
+            }
+            for (const data of rules[index].effect.effects) {
+              await API.getJson(`/things/${data.property.thing}/properties`).then((data2) => {
+                // console.log('effect', String(data.property.thing), data2);
+                const info2 = {};
+                info2.objetId = data.property.thing;
+                info2.state = data2;
+                formatJson.Rule[id].effects.objets.push(info2);
+              });
+            }
           }
-          for (const data of rules[index].effect.effects) {
-            await API.getJson(`/things/${data.property.thing}/properties`).then((data2) => {
-              // console.log('effect', String(data.property.thing), data2);
-              const info2 = {};
-              info2.objetId = data.property.thing;
-              info2.state = data2;
-              formatJson.Rule[id].effects.objets.push(info2);
-            });
-          }
-        }
-        resolve(formatJson);
-        // console.log('This is the old Json ', JSON.stringify(formatJson));
-      });
+          resolve(formatJson);
+          // console.log('This is the old Json ', JSON.stringify(formatJson));
+        });
     });
   },
-  getCurrentlyStates: function() {
+  getCurrentlyStates: function () {
     return new Promise((resolve) => {
       let rules = [];
       const formatJson = {};
@@ -262,49 +345,52 @@ const ReconfigureScreen = {
       const ids = this.cRule.getRulesFromExpression();
       const expression = this.cRule.getExpression();
       rules = [];
-      fetch('/rules', {headers: API.headers()}).then((res) => {
-        return res.json();
-      }).then((fetchedRules) => {
-        for (const ruleDesc of fetchedRules) {
-          if (ids.includes(String(ruleDesc.id))) {
-            rules.push(ruleDesc);
-            cant += 1;
+      fetch('/rules', { headers: API.headers() })
+        .then((res) => {
+          return res.json();
+        })
+        .then((fetchedRules) => {
+          for (const ruleDesc of fetchedRules) {
+            if (ids.includes(String(ruleDesc.id))) {
+              rules.push(ruleDesc);
+              cant += 1;
+            }
           }
-        }
-      }).finally(async () => {
-        formatJson.Rules = [];
-        formatJson.Exp = expression;
-        formatJson.Rule = {};
+        })
+        .finally(async () => {
+          formatJson.Rules = [];
+          formatJson.Exp = expression;
+          formatJson.Rule = {};
 
-        for (let index = 0; index < cant; index++) {
-          formatJson.Rules.push(rules[index].name);
-          const id = rules[index].id;
-          formatJson.Rule[id] = {};
-          formatJson.Rule[id].triggers = {};
-          formatJson.Rule[id].triggers.operator = rules[index].trigger.op;
-          formatJson.Rule[id].effects = {};
-          formatJson.Rule[id].triggers.objets = [];
-          formatJson.Rule[id].effects.objets = [];
-          for (const data of rules[index].trigger.triggers) {
-            // console.log('trigger', String(data.property.thing), data2);
-            const info = {};
-            info.objetId = data.property.thing;
-            formatJson.Rule[id].triggers.objets.push(info);
-          }
+          for (let index = 0; index < cant; index++) {
+            formatJson.Rules.push(rules[index].name);
+            const id = rules[index].id;
+            formatJson.Rule[id] = {};
+            formatJson.Rule[id].triggers = {};
+            formatJson.Rule[id].triggers.operator = rules[index].trigger.op;
+            formatJson.Rule[id].effects = {};
+            formatJson.Rule[id].triggers.objets = [];
+            formatJson.Rule[id].effects.objets = [];
+            for (const data of rules[index].trigger.triggers) {
+              // console.log('trigger', String(data.property.thing), data2);
+              const info = {};
+              info.objetId = data.property.thing;
+              formatJson.Rule[id].triggers.objets.push(info);
+            }
 
-          for (const data of rules[index].effect.effects) {
-            // console.log('effect', String(data.property.thing), data2);
-            const info2 = {};
-            info2.objetId = data.property.thing;
-            formatJson.Rule[id].effects.objets.push(info2);
+            for (const data of rules[index].effect.effects) {
+              // console.log('effect', String(data.property.thing), data2);
+              const info2 = {};
+              info2.objetId = data.property.thing;
+              formatJson.Rule[id].effects.objets.push(info2);
+            }
           }
-        }
-        resolve(formatJson);
-        // console.log('This is the new Json ', JSON.stringify(formatJson));
-      });
+          resolve(formatJson);
+          // console.log('This is the new Json ', JSON.stringify(formatJson));
+        });
     });
   },
-  show: function(composedId) {
+  show: function (composedId) {
     this.gateway.readThings().then(() => {
       return this.readRules();
     });
@@ -318,13 +404,14 @@ const ReconfigureScreen = {
     }
     rulePromise.then((ruleDesc) => {
       if (this.ComposedRuleBlocks.length <= 0) {
+        // declaration of current rule
         this.cRule = new VscadComposedRule(this.gateway, ruleDesc);
         this.cRule.update();
         this.prepareVisual(this.cRule.toDescription(), this.gateway, this.fetchedRules);
       }
     });
   },
-  saveRule: function() {
+  saveRule: function () {
     let longest = '';
     let foundRules = 0;
     for (let i = this.ComposedRuleBlocks.length - 1; i >= 0; i--) {
@@ -338,24 +425,25 @@ const ReconfigureScreen = {
         this.ComposedRuleBlocks.splice(i, 1);
       }
     }
-    document.getElementById('warning-message-reconf').style.display = (foundRules > 1) ? 'block' : 'none';
+    document.getElementById('warning-message-reconf').style.display =
+      foundRules > 1 ? 'block' : 'none';
     this.cRule.setExpression2(longest);
   },
-  saveDb: function() {
+  saveDb: function () {
     this.cRule.setExpression(this.cRule.expression);
     this.cRule.setRules(this.cRule.getRulesFromExpression());
   },
   /**
    * @return {Promise<Array<RuleDescription>>}
    */
-  readRules: function() {
+  readRules: function () {
     const createRuleButton = document.createElement('div');
     createRuleButton.innerHTML = ` <div class="rule-part-block trigger">
-  <img  src="/images/add.svg">
-  </div>
-  <div class="rule-info">
-      <h3>NEW RULE</h3>
-  </div>`;
+      <img  src="/images/add.svg">
+      </div>
+      <div class="rule-info">
+          <h3>NEW RULE</h3>
+      </div>`;
     createRuleButton.setAttribute('id', 'create-rule-shortcut');
     createRuleButton.setAttribute('class', 'rule');
 
@@ -363,26 +451,29 @@ const ReconfigureScreen = {
       page('/rules/quickNew');
     });
     this.showLoader();
-    fetch('/rules', {headers: API.headers()}).then((res) => {
-      return res.json();
-    }).then((fetchedRules) => {
-      this.rulesList.querySelectorAll('.rule').forEach((elt) => {
-        elt.parentNode.removeChild(elt);
-      });
-      this.rulesList.appendChild(createRuleButton);
-      for (const ruleDesc of fetchedRules) {
-        this.addVscadRuleCardItem(ruleDesc);
-      }
-      this.fetchedRules = fetchedRules;
+    fetch('/rules', { headers: API.headers() })
+      .then((res) => {
+        return res.json();
+      })
+      .then((fetchedRules) => {
+        this.rulesList.querySelectorAll('.rule').forEach((elt) => {
+          elt.parentNode.removeChild(elt);
+        });
+        this.rulesList.appendChild(createRuleButton);
+        for (const ruleDesc of fetchedRules) {
+          this.addVscadRuleCardItem(ruleDesc);
+        }
+        this.fetchedRules = fetchedRules;
 
-      if (this.ComposedRuleBlocks.length <= 0) {
-        this.prepareVisual(this.cRule.toDescription(), this.gateway, this.fetchedRules);
-      }
-    }).finally(() => {
-      this.hiddeLoader();
-    });
+        if (this.ComposedRuleBlocks.length <= 0) {
+          this.prepareVisual(this.cRule.toDescription(), this.gateway, this.fetchedRules);
+        }
+      })
+      .finally(() => {
+        this.hiddeLoader();
+      });
   },
-  prepareVisual: function(desc, gateway, fetchedRules) {
+  prepareVisual: function (desc, gateway, fetchedRules) {
     if (desc.expression && gateway && fetchedRules) {
       const usedRules = {};
       // get all the used rules
@@ -399,7 +490,7 @@ const ReconfigureScreen = {
       this.ruleName.textContent = desc.name;
     }
   },
-  getBlockOf: function(parts, usedRules) {
+  getBlockOf: function (parts, usedRules) {
     let i = 0;
     const block = new VscadConnectorBlock(this.ruleArea, this.saveRule, this.deleteArea);
 
@@ -437,7 +528,12 @@ const ReconfigureScreen = {
         }
       } else {
         const ruleDesc = usedRules[part];
-        const newBlock = new VscadRulePropertyBlock(this.ruleArea, ruleDesc, this.saveRule, this.deleteArea);
+        const newBlock = new VscadRulePropertyBlock(
+          this.ruleArea,
+          ruleDesc,
+          this.saveRule,
+          this.deleteArea
+        );
         newBlock.text = ruleDesc.id;
         block.addAsChild(newBlock);
       }
@@ -450,7 +546,7 @@ const ReconfigureScreen = {
    * Add a rule, filling it with the data from a RuleDescription
    * @param {RuleDescription} desc
    */
-  addVscadRuleCardItem: function(desc) {
+  addVscadRuleCardItem: function (desc) {
     const ruleElt = document.createElement('div');
     ruleElt.classList.add('rule');
     try {
@@ -466,7 +562,7 @@ const ReconfigureScreen = {
     this.nextId += 1;
     this.rulesList.appendChild(ruleElt);
   },
-  onconnectorBlockDown: function(event, type) {
+  onconnectorBlockDown: function (event, type) {
     const deviceRect = event.target.getBoundingClientRect();
     const x = deviceRect.left;
     const y = deviceRect.top;
@@ -475,11 +571,16 @@ const ReconfigureScreen = {
     newBlock.vscadDraggable.onDown(event);
     this.ComposedRuleBlocks.push(newBlock);
   },
-  onDeviceBlockDown: function(event, desc, gateway) {
+  onDeviceBlockDown: function (event, desc, gateway) {
     const deviceRect = event.target.getBoundingClientRect();
     const x = deviceRect.left;
     const y = deviceRect.top;
-    const newBlock = new VscadRulePropertyBlock(this.ruleArea, desc, this.saveRule, this.deleteArea);
+    const newBlock = new VscadRulePropertyBlock(
+      this.ruleArea,
+      desc,
+      this.saveRule,
+      this.deleteArea
+    );
     newBlock.text = desc.id;
     newBlock.snapToGrid(x, y);
     newBlock.vscadDraggable.onDown(event);

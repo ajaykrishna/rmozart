@@ -17,15 +17,6 @@ const VscadConnectorBlock = require('./rules/VscadConnectorBlock');
 // eslint-disable-next-line no-unused-vars
 const VscadRulesScreen = {
   init: function () {
-    // reconfigure analyse components
-    this.analyseView = document.getElementById('analyse-view');
-    this.diagram = document.getElementById('analyse-canvas-1');
-    this.diagram2 = document.getElementById('analyse-canvas-2');
-    this.anaylseCompareDiagramLoaded = false;
-    this.tableOriginal = document.getElementById('analyse-table-original-body');
-    this.tableReconfig = document.getElementById('analyse-table-reconfig-body');
-
-    //
     this.rulesList = document.getElementById('rules-side-menu');
     this.ruleArea = document.getElementById('rules-area');
     this.loader = document.getElementById('loader-holder');
@@ -34,7 +25,6 @@ const VscadRulesScreen = {
     this.updateButon = document.getElementById('update-button');
     this.reconfButton = document.getElementById('reconf-button');
     this.testButton = document.getElementById('test-button');
-    //modal
     this.diagramView = document.getElementById('diagram-view');
 
     this.diagramButton = document.getElementById('diagram-button');
@@ -86,17 +76,10 @@ const VscadRulesScreen = {
       selection.addRange(range);
     };
     this.diagramView.addEventListener('click', () => {
-      // hide modal
       this.diagramView.classList.remove('selected');
       this.diagramView.style.display = 'none';
-
-      // hide Reconfigure:analyse css visuals
-      this.hideAnalyseCSSvisuals();
-      // hide Reconfigure:compare css visuals
       this.hiddeVerification();
-      // hide ComposedRules:BPMN css visuals
       this.hiddeDiagram();
-      // hide ComposedRules:verify css visuals
       this.hideMclDialog();
     });
     this.mclDialog.addEventListener('click', (event) => {
@@ -147,7 +130,6 @@ const VscadRulesScreen = {
       this.onPresentationChange();
     });
   },
-
   showLoader() {
     this.loaders++;
     this.loader.style.display = 'block';
@@ -232,12 +214,12 @@ const VscadRulesScreen = {
     const alertDialog = document.getElementById('validation-dialog');
     alertDialog.style.display = 'none';
   },
-
   hiddeDiagram() {
     const diagram = document.getElementById('canvas');
+    const diagram2 = document.getElementById('canvas-2');
     diagram.style.display = 'none';
+    diagram2.style.display = 'none';
   },
-
   showDiagram: function (bpmnXML) {
     const diagram = document.getElementById('canvas');
     diagram.style.display = 'flex';
@@ -266,160 +248,51 @@ const VscadRulesScreen = {
     this.diagramLoaded = true;
   },
 
-  /* < Reconfigure analyse functions */
-  handleAnalyseCSSVisuals: function () {
-    // display modal: true
+  compareDiagram: function (bpmnXMLs) {
+    const diagram1 = document.getElementById('canvas');
+    const diagram2 = document.getElementById('canvas-2');
+    diagram1.style.display = 'flex';
+    diagram2.style.display = 'flex';
     this.diagramView.classList.add('selected');
     this.diagramView.style.display = 'flex';
-
-    // display reconfigure section
-    this.analyseView.style.display = 'block';
-
-    //hide other components if needed
     this.hiddeVerification();
     this.hideMclDialog();
-  },
-
-  hideAnalyseCSSvisuals() {
-    this.analyseView.style.display = 'none';
-  },
-
-  showAnaylyseCompareDiagram: function (bpmnXMLs) {
-    if (this.anaylseCompareDiagram) {
-      this.bpmnViewerAnalyse.clear();
-      this.bpmnViewerAnalyse2.clear();
+    if (this.diagramLoaded) {
+      this.bpmnViewer.clear();
+      this.bpmnViewer2.clear();
     } else {
-      this.bpmnViewerAnalyse = new BpmnJS({
-        container: this.diagram,
+      this.bpmnViewer = new BpmnJS({
+        container: '#canvas',
       });
 
-      this.bpmnViewerAnalyse2 = new BpmnJS({
-        container: this.diagram2,
+      this.bpmnViewer2 = new BpmnJS({
+        container: '#canvas-2',
       });
     }
     // import diagram
-    this.bpmnViewerAnalyse.importXML(bpmnXMLs[0], (err) => {
+    this.bpmnViewer.importXML(bpmnXML, (err) => {
       if (err) {
         return console.error('could not import BPMN 2.0 diagram', err);
       }
       // access viewer components
-      const canvas = this.bpmnViewerAnalyse.get('canvas');
+      const canvas = this.bpmnViewer.get('canvas');
       // zoom to fit full viewport
       canvas.zoom('fit-viewport');
     });
 
     // import second diagram
-    this.bpmnViewerAnalyse2.importXML(bpmnXMLs[1], (err) => {
+    this.bpmnViewer2.importXML(bpmnXML, (err) => {
       if (err) {
         return console.error('could not import BPMN 2.0 diagram', err);
       }
       // access viewer components
-      const canvas = this.bpmnViewerAnalyse2.get('canvas');
+      const canvas = this.bpmnViewer2.get('canvas-2');
       // zoom to fit full viewport
       canvas.zoom('fit-viewport');
     });
 
-    this.anaylseCompareDiagram = true;
+    this.diagramLoaded = true;
   },
-
-  handleAnalyseTable: function (composedRule) {
-    // remove rows in case of any excedent rows
-    while (this.tableOriginal.firstChild)
-      this.tableOriginal.removeChild(this.tableOriginal.firstChild);
-    while (this.tableReconfig.firstChild)
-      this.tableReconfig.removeChild(this.tableReconfig.firstChild);
-
-    let exp1 = composedRule.expression;
-    let exp2 = composedRule.expression2;
-
-    let arrExp1 = composedRule.getRulesFromExpression();
-    let arrExp2 = composedRule.getRulesFromExpression2();
-
-    // let jsonRulesObjects = this.getJsonRules();
-
-    this.createRowsForTable(this.tableOriginal, arrExp1);
-    this.createRowsForTable(this.tableReconfig, arrExp2);
-  },
-
-  createRowsForTable(parentNode, childsArray) {
-    childsArray.forEach((element, index) => {
-      // creates a row only if character belongs to rules and not to BPMN specs
-      if (!isNaN(parseInt(element))) {
-        // buff td element for cost
-        let cost = this.getAnalyseNodeInputCost();
-        let tr = document.createElement('tr');
-        let td = document.createElement('td');
-        // creates a text from the id of the Composed Rule definition
-
-        // get event & action from a rule
-        let ruleDescription = this.getJsonSpecificRule(element);
-
-        let textCell = document.createTextNode(this.getEventName(ruleDescription));
-        td.appendChild(textCell);
-        tr.appendChild(td); // 1st column added
-
-        tr.append(cost.cloneNode(true)); // 2nd column cost added
-
-        td = document.createElement('td');
-        textCell = document.createTextNode(this.getActionName(ruleDescription));
-        td.append(textCell);
-        tr.append(td); // 3rd column added
-
-        tr.append(cost.cloneNode(true)); // 4th column added
-
-        // adding row into <tbody>
-        parentNode.appendChild(tr);
-      }
-    });
-  },
-
-  getJsonRules() {
-    return fetch('/rules', { headers: API.headers() })
-      .then((response) => {
-        return response.json();
-      })
-      .then((json) => {
-        console.log('supuesta rule');
-        console.log(json);
-        return json;
-      })
-      .catch((err) => {
-        console.log('error: ', err);
-      });
-  },
-
-  getJsonSpecificRule(ruleId) {
-    return fetch('/rules/' + ruleId, { headers: API.headers() })
-      .then((response) => {
-        return response.json();
-      })
-      .then((json) => {
-        console.log('supuesta rule');
-        console.log(json);
-        return json;
-      })
-      .catch((err) => {
-        console.log('error: ', err);
-      });
-  },
-
-  getAnalyseNodeInputCost() {
-    let node = document.createElement('input');
-    node.type = 'text';
-    node.value = 0;
-
-    return node;
-  },
-
-  getEventName(ruleId) {
-    return 'regla 1';
-  },
-
-  getActionName(ruleId) {
-    return 'regla 2';
-  },
-
-  /* </ Reconfigure analyse functions */
 
   hideMclDialog() {
     this.mclDialog.style.display = 'none';
