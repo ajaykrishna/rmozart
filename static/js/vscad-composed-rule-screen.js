@@ -329,15 +329,22 @@ const VscadRulesScreen = {
     while (this.tableReconfig.firstChild)
       this.tableReconfig.removeChild(this.tableReconfig.firstChild);
 
+    // get rules from the composed rule expression
     let arrExp1 = composedRule.getRulesFromExpression();
     let arrExp2 = composedRule.getRulesFromExpression2();
 
     // let jsonRulesObjects = this.getJsonRules();
 
+    // creates rows for every table
     this.createRowsForTable(this.tableOriginal, arrExp1);
     this.createRowsForTable(this.tableReconfig, arrExp2);
   },
 
+  /**
+   *
+   * @param {<tbody>} parentNode tbody of table
+   * @param {int array} childsArray array of id's of composed rule
+   */
   async createRowsForTable(parentNode, childsArray) {
     childsArray.forEach(async (element, index) => {
       // creates a row only if character belongs to rules and not to BPMN specs
@@ -353,21 +360,26 @@ const VscadRulesScreen = {
         let ruleDescription = await response.json(); */
         let ruleDescription = await this.getJsonSpecificRule(element);
 
-        console.log('rule description', ruleDescription);
+        // console.log('rule description', ruleDescription);
 
         let eventIDs = ruleDescription.trigger.triggers;
         let actionIDs = ruleDescription.effect.effects;
 
-        let textCell = document.createTextNode(this.getThingName(eventIDs));
-        // let textCell = await document.createTextNode(this.getThingNameFromID(eventID));
+        let textCell = document.createTextNode(await this.getThingName(eventIDs));
+        // creates a cell with all actions for each event
+        // let textCell = await this.createCellTextForActions(eventIDs);
+
         td.appendChild(textCell);
         tr.appendChild(td); // 1st column added
 
         tr.append(cost.cloneNode(true)); // 2nd column cost added
 
         td = document.createElement('td');
-        textCell = document.createTextNode(this.getThingName(actionIDs));
-        // textCell = await document.createTextNode(this.getThingNameFromID(actionID));
+
+        // actions for each event
+        textCell = document.createTextNode(await this.getThingName(actionIDs));
+        // textCell = await document.createTextNode(await this.getThingNameFromID(actionID));
+
         td.append(textCell);
         tr.append(td); // 3rd column added
 
@@ -385,8 +397,6 @@ const VscadRulesScreen = {
         return response.json();
       })
       .then((json) => {
-        console.log('supuesta rule');
-        console.log(json);
         return json;
       })
       .catch((err) => {
@@ -400,8 +410,6 @@ const VscadRulesScreen = {
         return response.json();
       })
       .then((json) => {
-        console.log('supuesta rule');
-        console.log(json);
         return json;
       })
       .catch((err) => {
@@ -417,29 +425,86 @@ const VscadRulesScreen = {
     return node;
   },
 
-  getThingNameFromID(thingIDs) {
-    thingIDs.forEach((element) => {
-      console.log('thing id: ' + element.property.thing);
+  async createCellTextForActions(thingsIDs) {
+    // get names from Id of thing
+    let thingTitles = await this.getThingNameFromID(thingsIDs);
+    let acumulator = '';
+
+    thingTitles.forEach((element) => {
+      console.log('element: ', element);
+      acumulator += element + '<br>';
     });
-    return fetch('/things/' + thingID + 'properties', { headers: API.headers() })
-      .then((response) => {
-        return response.json();
+
+    // console.log('acumulator: ', acumulator);
+
+    let cellText = document.createTextNode(acumulator);
+
+    return cellText;
+  },
+
+  getThingNameFromID(thingIDs) {
+    let things = [];
+    thingIDs.forEach(async (element) => {
+      fetch('/things/' + element.property.thing, {
+        headers: API.headers(),
       })
-      .then((json) => {
-        console.log('supuesta <thing>');
-        console.log(json);
-        return json;
-      })
-      .catch((err) => {
-        console.log('error: ', err);
-      });
+        .then((response) => {
+          return response.json();
+        })
+        .then((json) => {
+          things.push(json.title);
+        })
+        .catch((err) => {
+          console.log('error: ', err);
+        });
+    });
+
+    return things;
   },
 
   getThingName(thingIDs) {
-    thingIDs.forEach((element) => {
-      console.log('thing id: ' + element.property.thing);
-    });
+    // console.log(this.getThingNameFromID(thingIDs));
+
+    // console.log(
+    //   thingIDs.map((element) => {
+    //     return element.property.thing;
+    //   })
+    // );
+
+    this.getResponsesFromAsyncCalls(
+      thingIDs.map((element) => {
+        return element.property.thing;
+      }),
+      '/things',
+      'json',
+      API.headers()
+    );
+
     return thingIDs[0].property.thing;
+  },
+
+  getResponsesFromAsyncCalls(arrCalls, parentNode, typeofresponse, headers) {
+    let promises = arrCalls.map((element) => {
+      return fetch(parentNode + '/' + element, { headers });
+    });
+
+    return Promise.all(promises)
+      .then((responses) => {
+        return Promise.all(
+          responses.map((res) => {
+            return res.text();
+          })
+        );
+      })
+
+      .then((texts) => {
+        // console.log(...texts);
+        console.log(texts);
+        console.log({ texts });
+        console.log(texts[0]);
+        return texts;
+      })
+      .catch(console.log('no se pudo'));
   },
 
   /* </ Reconfigure analyse functions */
