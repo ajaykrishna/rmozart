@@ -48,7 +48,7 @@ const ReconfigureScreen = {
       modal.handleAnalyseCSSVisuals();
       // handle diagrams visuals
       this.requestAnalyseCompareDiagram();
-      // handle data from table
+      // handle data for table
       modal.handleAnalyseTable(this.cRule);
     });
 

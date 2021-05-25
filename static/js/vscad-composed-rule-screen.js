@@ -329,9 +329,6 @@ const VscadRulesScreen = {
     while (this.tableReconfig.firstChild)
       this.tableReconfig.removeChild(this.tableReconfig.firstChild);
 
-    let exp1 = composedRule.expression;
-    let exp2 = composedRule.expression2;
-
     let arrExp1 = composedRule.getRulesFromExpression();
     let arrExp2 = composedRule.getRulesFromExpression2();
 
@@ -341,8 +338,8 @@ const VscadRulesScreen = {
     this.createRowsForTable(this.tableReconfig, arrExp2);
   },
 
-  createRowsForTable(parentNode, childsArray) {
-    childsArray.forEach((element, index) => {
+  async createRowsForTable(parentNode, childsArray) {
+    childsArray.forEach(async (element, index) => {
       // creates a row only if character belongs to rules and not to BPMN specs
       if (!isNaN(parseInt(element))) {
         // buff td element for cost
@@ -352,16 +349,25 @@ const VscadRulesScreen = {
         // creates a text from the id of the Composed Rule definition
 
         // get event & action from a rule
-        let ruleDescription = this.getJsonSpecificRule(element);
+        /* let response = await this.getJsonSpecificRule(element);
+        let ruleDescription = await response.json(); */
+        let ruleDescription = await this.getJsonSpecificRule(element);
 
-        let textCell = document.createTextNode(this.getEventName(ruleDescription));
+        console.log('rule description', ruleDescription);
+
+        let eventIDs = ruleDescription.trigger.triggers;
+        let actionIDs = ruleDescription.effect.effects;
+
+        let textCell = document.createTextNode(this.getThingName(eventIDs));
+        // let textCell = await document.createTextNode(this.getThingNameFromID(eventID));
         td.appendChild(textCell);
         tr.appendChild(td); // 1st column added
 
         tr.append(cost.cloneNode(true)); // 2nd column cost added
 
         td = document.createElement('td');
-        textCell = document.createTextNode(this.getActionName(ruleDescription));
+        textCell = document.createTextNode(this.getThingName(actionIDs));
+        // textCell = await document.createTextNode(this.getThingNameFromID(actionID));
         td.append(textCell);
         tr.append(td); // 3rd column added
 
@@ -411,12 +417,29 @@ const VscadRulesScreen = {
     return node;
   },
 
-  getEventName(ruleId) {
-    return 'regla 1';
+  getThingNameFromID(thingIDs) {
+    thingIDs.forEach((element) => {
+      console.log('thing id: ' + element.property.thing);
+    });
+    return fetch('/things/' + thingID + 'properties', { headers: API.headers() })
+      .then((response) => {
+        return response.json();
+      })
+      .then((json) => {
+        console.log('supuesta <thing>');
+        console.log(json);
+        return json;
+      })
+      .catch((err) => {
+        console.log('error: ', err);
+      });
   },
 
-  getActionName(ruleId) {
-    return 'regla 2';
+  getThingName(thingIDs) {
+    thingIDs.forEach((element) => {
+      console.log('thing id: ' + element.property.thing);
+    });
+    return thingIDs[0].property.thing;
   },
 
   /* </ Reconfigure analyse functions */
