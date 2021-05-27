@@ -24,6 +24,8 @@ const VscadRulesScreen = {
     this.anaylseCompareDiagramLoaded = false;
     this.tableOriginal = document.getElementById('analyse-table-original-body');
     this.tableReconfig = document.getElementById('analyse-table-reconfig-body');
+    this.arrComposedRules = null;
+    this.arrReconfigureRules = null;
 
     //
     this.rulesList = document.getElementById('rules-side-menu');
@@ -267,6 +269,28 @@ const VscadRulesScreen = {
   },
 
   /* < Reconfigure analyse functions */
+
+  async getResponsesFromAsyncCalls(arrCalls, parentNode, typeofresponse, headers) {
+    let promises = arrCalls.map((element) => {
+      return fetch(parentNode + '/' + element, { headers });
+    });
+
+    return await Promise.all(promises)
+      .then((responses) => {
+        return Promise.all(
+          responses.map((res) => {
+            return res.text();
+          })
+        );
+      })
+      .then((texts) => {
+        // console.log({ texts });
+        // console.log(texts[0]);
+        return texts;
+      });
+    // .catch(console.log('no se pudo'));
+  },
+
   handleAnalyseCSSVisuals: function () {
     // display modal: true
     this.diagramView.classList.add('selected');
@@ -322,7 +346,7 @@ const VscadRulesScreen = {
     this.anaylseCompareDiagram = true;
   },
 
-  handleAnalyseTable: function (composedRule) {
+  handleAnalyseTable: async function (composedRule) {
     // remove rows in case of any excedent rows
     while (this.tableOriginal.firstChild)
       this.tableOriginal.removeChild(this.tableOriginal.firstChild);
@@ -333,75 +357,110 @@ const VscadRulesScreen = {
     let arrExp1 = composedRule.getRulesFromExpression();
     let arrExp2 = composedRule.getRulesFromExpression2();
 
-    // let jsonRulesObjects = this.getJsonRules();
+    // gets and stores object definition of rules
+    this.arrComposedRules = await this.getObjectComposition(arrExp1);
+    this.arrReconfigureRules = await this.getObjectComposition(arrExp2);
+    // console.log('getObjectComposition(cr): ', this.arrComposedRules);
+    console.log('getObjectComposition(rr): ', this.arrReconfigureRules);
 
     // creates rows for every table
-    this.createRowsForTable(this.tableOriginal, arrExp1);
-    this.createRowsForTable(this.tableReconfig, arrExp2);
+    this.createRowsForTable(this.tableOriginal, this.arrComposedRules);
+    this.createRowsForTable(this.tableReconfig, this.arrReconfigureRules);
   },
 
-  /**
-   *
-   * @param {<tbody>} parentNode tbody of table
-   * @param {int array} childsArray array of id's of composed rule
-   */
-  async createRowsForTable(parentNode, childsArray) {
-    childsArray.forEach(async (element, index) => {
-      // creates a row only if character belongs to rules and not to BPMN specs
-      if (!isNaN(parseInt(element))) {
-        // buff td element for cost
-        let cost = this.getAnalyseNodeInputCost();
-        let tr = document.createElement('tr');
-        let td = document.createElement('td');
-        // creates a text from the id of the Composed Rule definition
+  async getObjectComposition(arrRules) {
+    return await Promise.all(
+      arrRules.map(async (ruleId) => {
+        let ruleComposition = { id: ruleId, events: [], actions: [] };
 
-        // get event & action from a rule
-        /* let response = await this.getJsonSpecificRule(element);
-        let ruleDescription = await response.json(); */
-        let ruleDescription = await this.getJsonSpecificRule(element);
+        const ruleDescription = await this.getJsonSpecificRule(ruleId);
 
-        // console.log('rule description', ruleDescription);
+        const eventIDs = ruleDescription.trigger.triggers;
+        const actionIDs = ruleDescription.effect.effects;
 
-        let eventIDs = ruleDescription.trigger.triggers;
-        let actionIDs = ruleDescription.effect.effects;
+        const eventThings = await this.getThingsFromId(eventIDs);
+        const actionsThings = await this.getThingsFromId(actionIDs);
 
-        let textCell = document.createTextNode(await this.getThingName(eventIDs));
-        // creates a cell with all actions for each event
-        // let textCell = await this.createCellTextForActions(eventIDs);
+        // console.log('event things: ', eventThings);
+        // console.log('aux: ', aux);
+        ruleComposition.events = eventThings;
+        ruleComposition.actions = actionsThings;
 
-        td.appendChild(textCell);
-        tr.appendChild(td); // 1st column added
+        // return { ruleId: { events: [{id: thing-1, title: 'title'}], actions: [{id: thing-1, title: 'title'}] } };
+        return ruleComposition;
+      })
+    );
+  },
 
-        tr.append(cost.cloneNode(true)); // 2nd column cost added
+  async getThingsFromId(thingIDs) {
+    let things = [];
+    thingIDs.forEach((element) => {
+      fetch('/things/' + element.property.thing, {
+        headers: API.headers(),
+      })
+        .then((response) => {
+          return response.json();
+        })
+        .then((json) => {
+          things.push(json);
+        })
+        .catch((err) => {
+          console.log('error: ', err);
+        });
+    });
 
+    // console.log('things: ', things);
+    return things;
+  },
+
+  createRowsForTable(tableNode, arrRuleNodes) {
+    // console.log('table node: ', tableNode);
+    console.log('array nodes: ', arrRuleNodes);
+    arrRuleNodes.forEach((rule) => {
+      if (rule != null) {
+        // console.log('rule: ', rule);
+        let costNode = this.getAnalyseNodeInputCost();
+        const tr = document.createElement('tr');
+        let td;
+        let textCell;
+        let textAcum = '';
+
+        // append event nodes
         td = document.createElement('td');
+        rule.events.forEach((event) => {
+          // console.log('event title: ', event.title);
+          textAcum += event.title + '<br>';
+        });
+        textCell = document.createTextNode(textAcum);
+        td.appendChild(textCell);
+        tr.appendChild(td);
 
-        // actions for each event
-        textCell = document.createTextNode(await this.getThingName(actionIDs));
-        // textCell = await document.createTextNode(await this.getThingNameFromID(actionID));
+        // text acum reset
+        textAcum = '';
 
-        td.append(textCell);
-        tr.append(td); // 3rd column added
+        // append cost node
+        td = document.createElement('td');
+        td.appendChild(costNode.cloneNode(true));
+        tr.appendChild(td);
 
-        tr.append(cost.cloneNode(true)); // 4th column added
+        // append action nodes
+        td = document.createElement('td');
+        rule.actions.forEach((action) => {
+          // console.log('action title: ', action.title);
+          textAcum += action.title + '<br>';
+        });
+        textCell = document.createTextNode(textAcum);
+        td.appendChild(textCell);
+        tr.appendChild(td);
 
-        // adding row into <tbody>
-        parentNode.appendChild(tr);
+        // append cost node
+        td = document.createElement('td');
+        td.appendChild(costNode.cloneNode(true));
+        tr.appendChild(td);
+
+        tableNode.appendChild(tr);
       }
     });
-  },
-
-  getJsonRules() {
-    return fetch('/rules', { headers: API.headers() })
-      .then((response) => {
-        return response.json();
-      })
-      .then((json) => {
-        return json;
-      })
-      .catch((err) => {
-        console.log('error: ', err);
-      });
   },
 
   getJsonSpecificRule(ruleId) {
@@ -471,40 +530,7 @@ const VscadRulesScreen = {
     //   })
     // );
 
-    this.getResponsesFromAsyncCalls(
-      thingIDs.map((element) => {
-        return element.property.thing;
-      }),
-      '/things',
-      'json',
-      API.headers()
-    );
-
     return thingIDs[0].property.thing;
-  },
-
-  getResponsesFromAsyncCalls(arrCalls, parentNode, typeofresponse, headers) {
-    let promises = arrCalls.map((element) => {
-      return fetch(parentNode + '/' + element, { headers });
-    });
-
-    return Promise.all(promises)
-      .then((responses) => {
-        return Promise.all(
-          responses.map((res) => {
-            return res.text();
-          })
-        );
-      })
-
-      .then((texts) => {
-        // console.log(...texts);
-        console.log(texts);
-        console.log({ texts });
-        console.log(texts[0]);
-        return texts;
-      })
-      .catch(console.log('no se pudo'));
   },
 
   /* </ Reconfigure analyse functions */
@@ -750,10 +776,10 @@ const VscadRulesScreen = {
   readRules: function readRules() {
     const createRuleButton = document.createElement('div');
     createRuleButton.innerHTML = ` <div class="rule-part-block trigger">
-  <img  src="/images/add.svg">
+	 <img  src="/images/add.svg">
 </div>
 <div class="rule-info">
-    <h3>NEW RULE</h3>
+			<h3>NEW RULE</h3>
 </div>`;
     createRuleButton.setAttribute('id', 'create-rule-shortcut');
     createRuleButton.setAttribute('class', 'rule');
