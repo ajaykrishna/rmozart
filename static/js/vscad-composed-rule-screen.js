@@ -431,8 +431,9 @@ const VscadRulesScreen = {
           // console.log('event title: ', event.title);
           textAcum += event.title + '<br>';
         });
-        textCell = document.createTextNode(textAcum);
-        td.appendChild(textCell);
+        // textCell = document.createTextNode(textAcum);
+        // td.appendChild(textCell);
+        td.innerHTML = textAcum;
         tr.appendChild(td);
 
         // text acum reset
@@ -449,8 +450,9 @@ const VscadRulesScreen = {
           // console.log('action title: ', action.title);
           textAcum += action.title + '<br>';
         });
-        textCell = document.createTextNode(textAcum);
-        td.appendChild(textCell);
+        // textCell = document.createTextNode(textAcum);
+        // td.appendChild(textCell);
+        td.innerHTML = textAcum;
         tr.appendChild(td);
 
         // append cost node
