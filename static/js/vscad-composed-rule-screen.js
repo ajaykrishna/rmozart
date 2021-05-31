@@ -270,27 +270,6 @@ const VscadRulesScreen = {
 
   /* < Reconfigure analyse functions */
 
-  async getResponsesFromAsyncCalls(arrCalls, parentNode, typeofresponse, headers) {
-    let promises = arrCalls.map((element) => {
-      return fetch(parentNode + '/' + element, { headers });
-    });
-
-    return await Promise.all(promises)
-      .then((responses) => {
-        return Promise.all(
-          responses.map((res) => {
-            return res.text();
-          })
-        );
-      })
-      .then((texts) => {
-        // console.log({ texts });
-        // console.log(texts[0]);
-        return texts;
-      });
-    // .catch(console.log('no se pudo'));
-  },
-
   handleAnalyseCSSVisuals: function () {
     // display modal: true
     this.diagramView.classList.add('selected');
@@ -358,59 +337,68 @@ const VscadRulesScreen = {
     let arrExp2 = composedRule.getRulesFromExpression2();
 
     // gets and stores object definition of rules
-    this.arrComposedRules = await this.getObjectComposition(arrExp1);
-    this.arrReconfigureRules = await this.getObjectComposition(arrExp2);
-    // console.log('getObjectComposition(cr): ', this.arrComposedRules);
+    this.arrComposedRules = await this.getCompositionObject(arrExp1);
+    this.arrReconfigureRules = await this.getCompositionObject(arrExp2);
+    console.log('getObjectComposition(cr): ', this.arrComposedRules);
     console.log('getObjectComposition(rr): ', this.arrReconfigureRules);
 
     // creates rows for every table
-    this.createRowsForTable(this.tableOriginal, this.arrComposedRules);
-    this.createRowsForTable(this.tableReconfig, this.arrReconfigureRules);
+    await this.createRowsForTable(this.tableOriginal, this.arrComposedRules);
+    await this.createRowsForTable(this.tableReconfig, this.arrReconfigureRules);
   },
 
-  async getObjectComposition(arrRules) {
-    return await Promise.all(
-      arrRules.map(async (ruleId) => {
-        let ruleComposition = { id: ruleId, events: [], actions: [] };
+  async getCompositionObject(rulesIDs) {
+    let composition = [];
 
-        const ruleDescription = await this.getJsonSpecificRule(ruleId);
+    composition = await rulesIDs.reduce(async (accum, ruleID) => {
+      // waits for the last callback to finish
+      let requieredAcum = await accum;
 
-        const eventIDs = ruleDescription.trigger.triggers;
-        const actionIDs = ruleDescription.effect.effects;
+      // object composition for <Rule>
+      let unitRuleDescription = { id: ruleID, events: [], actions: [] };
 
-        const eventThings = await this.getThingsFromId(eventIDs);
-        const actionsThings = await this.getThingsFromId(actionIDs);
+      // wait for <Rule> description
+      let rulePromise = await this.getRuleDescription(ruleID);
 
-        // console.log('event things: ', eventThings);
-        // console.log('aux: ', aux);
-        ruleComposition.events = eventThings;
-        ruleComposition.actions = actionsThings;
+      // gets thing id's in <Rule> description
+      let actionsIds = rulePromise.effect.effects; // actionsIds
+      let eventIds = rulePromise.trigger.triggers; //eventIds
 
-        // return { ruleId: { events: [{id: thing-1, title: 'title'}], actions: [{id: thing-1, title: 'title'}] } };
-        return ruleComposition;
-      })
-    );
+      // waits for <Thing> description
+      let eventPromise = await this.getThings(eventIds); // waits within function
+      let actionPromise = await this.getThings(actionsIds); // waits within function
+
+      // sets actions & events to according composition object
+      unitRuleDescription.events = eventPromise;
+      unitRuleDescription.actions = actionPromise;
+
+      // composition.push(unitRuleDescription);
+
+      return [...requieredAcum, unitRuleDescription]; // specs for all unitRuleDescription
+    }, []);
+
+    return composition;
   },
 
-  async getThingsFromId(thingIDs) {
-    let things = [];
-    thingIDs.forEach((element) => {
-      fetch('/things/' + element.property.thing, {
-        headers: API.headers(),
+  getRuleDescription(ruleId) {
+    return fetch('/rules/' + ruleId, { headers: API.headers() })
+      .then((response) => {
+        return response.json();
       })
-        .then((response) => {
-          return response.json();
-        })
-        .then((json) => {
-          things.push(json);
-        })
-        .catch((err) => {
-          console.log('error: ', err);
-        });
-    });
+      .catch((err) => {
+        console.log(`error en getRuleDescription(${ruleId}): `, err);
+      });
+  },
 
-    // console.log('things: ', things);
-    return things;
+  async getThings(thingsIds) {
+    return await thingsIds.reduce(async (accum, thing) => {
+      let resultAcum = await accum; // awaits for last promises to resolve
+
+      let response = await fetch('/things/' + thing.property.thing, { headers: API.headers() });
+      let thingJson = await response.json();
+
+      return [...resultAcum, thingJson];
+    }, []);
   },
 
   createRowsForTable(tableNode, arrRuleNodes) {
@@ -445,11 +433,17 @@ const VscadRulesScreen = {
         tr.appendChild(td);
 
         // append action nodes
+        let lineCounter = 0;
         td = document.createElement('td');
         rule.actions.forEach((action) => {
           // console.log('action title: ', action.title);
           textAcum += action.title + '<br>';
+          lineCounter++;
         });
+        //check if has multiple actions, then add rows for each one
+        if (lineCounter > 1) {
+          td.rowSpan = 2;
+        }
         // textCell = document.createTextNode(textAcum);
         // td.appendChild(textCell);
         td.innerHTML = textAcum;
@@ -463,19 +457,6 @@ const VscadRulesScreen = {
         tableNode.appendChild(tr);
       }
     });
-  },
-
-  getJsonSpecificRule(ruleId) {
-    return fetch('/rules/' + ruleId, { headers: API.headers() })
-      .then((response) => {
-        return response.json();
-      })
-      .then((json) => {
-        return json;
-      })
-      .catch((err) => {
-        console.log('error: ', err);
-      });
   },
 
   getAnalyseNodeInputCost() {
@@ -501,38 +482,6 @@ const VscadRulesScreen = {
     let cellText = document.createTextNode(acumulator);
 
     return cellText;
-  },
-
-  getThingNameFromID(thingIDs) {
-    let things = [];
-    thingIDs.forEach(async (element) => {
-      fetch('/things/' + element.property.thing, {
-        headers: API.headers(),
-      })
-        .then((response) => {
-          return response.json();
-        })
-        .then((json) => {
-          things.push(json.title);
-        })
-        .catch((err) => {
-          console.log('error: ', err);
-        });
-    });
-
-    return things;
-  },
-
-  getThingName(thingIDs) {
-    // console.log(this.getThingNameFromID(thingIDs));
-
-    // console.log(
-    //   thingIDs.map((element) => {
-    //     return element.property.thing;
-    //   })
-    // );
-
-    return thingIDs[0].property.thing;
   },
 
   /* </ Reconfigure analyse functions */
