@@ -241,6 +241,10 @@
   display: flex;
 }
 
+.analyse-row:hover {
+  transform: scale(2);
+}
+
 /* </Reconfigure:analyse modal css rule>  */
 
 .diagram-note {

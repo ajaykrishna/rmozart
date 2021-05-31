@@ -36,7 +36,7 @@ const VscadRulesScreen = {
     this.updateButon = document.getElementById('update-button');
     this.reconfButton = document.getElementById('reconf-button');
     this.testButton = document.getElementById('test-button');
-    //modal
+    // modal
     this.diagramView = document.getElementById('diagram-view');
 
     this.diagramButton = document.getElementById('diagram-button');
@@ -60,6 +60,13 @@ const VscadRulesScreen = {
     this.ruleNameCustomize = this.view.querySelector('.rule-name-customize');
     this.ruleName = this.view.querySelector('.rule-name');
 
+    this.setConectorButtons();
+
+    // sets the listeners for all requiered nodes, elements
+    this.setEventListeners();
+  },
+
+  setConectorButtons() {
     // connector buttons
     this.connectors.after = document.getElementById('part-after');
     this.connectors.after.addEventListener('mousedown', (event) =>
@@ -78,7 +85,9 @@ const VscadRulesScreen = {
       this.onconnectorBlockDown(event, 'group')
     );
     this.nextId = 0;
+  },
 
+  setEventListeners() {
     const selectRuleName = () => {
       // Select all of ruleName, https://stackoverflow.com/questions/6139107/
       const range = document.createRange();
@@ -87,20 +96,9 @@ const VscadRulesScreen = {
       selection.removeAllRanges();
       selection.addRange(range);
     };
-    this.diagramView.addEventListener('click', () => {
-      // hide modal
-      this.diagramView.classList.remove('selected');
-      this.diagramView.style.display = 'none';
 
-      // hide Reconfigure:analyse css visuals
-      this.hideAnalyseCSSvisuals();
-      // hide Reconfigure:compare css visuals
-      this.hiddeVerification();
-      // hide ComposedRules:BPMN css visuals
-      this.hiddeDiagram();
-      // hide ComposedRules:verify css visuals
-      this.hideMclDialog();
-    });
+    this.diagramView.addEventListener('click', this.addingModalClickEvent);
+
     this.mclDialog.addEventListener('click', (event) => {
       event.stopPropagation();
     });
@@ -109,7 +107,7 @@ const VscadRulesScreen = {
         console.log(res);
       });
     });
-    this.deployButton.addEventListener('click', (event) => {
+    this.deployButton.addEventListener('click', () => {
       this.deployRule();
     });
     this.reconfButton.addEventListener('click', () => {
@@ -150,6 +148,21 @@ const VscadRulesScreen = {
     });
   },
 
+  addingModalClickEvent: function () {
+    // hide modal
+    this.diagramView.classList.remove('selected');
+    this.diagramView.style.display = 'none';
+
+    // hide Reconfigure:analyse css visuals
+    this.hideAnalyseCSSvisuals();
+    // hide Reconfigure:compare css visuals
+    this.hiddeVerification();
+    // hide ComposedRules:BPMN css visuals
+    this.hiddeDiagram();
+    // hide ComposedRules:verify css visuals
+    this.hideMclDialog();
+  },
+
   showLoader() {
     this.loaders++;
     this.loader.style.display = 'block';
@@ -183,7 +196,7 @@ const VscadRulesScreen = {
         padre.removeChild(imagen);
 
         alertDialog.querySelector('#seamless').textContent = 'Seamless';
-        //alertDialog.querySelector('#seamlessResult').textContent = response.seamless;
+        // alertDialog.querySelector('#seamlessResult').textContent = response.seamless;
         if (response.seamless) {
           alertDialog.querySelector('#seamlessResult').innerHTML =
             '<img src="../images/tick-mark.png"></img>';
@@ -278,7 +291,7 @@ const VscadRulesScreen = {
     // display reconfigure section
     this.analyseView.style.display = 'block';
 
-    //hide other components if needed
+    // hide other components if needed
     this.hiddeVerification();
     this.hideMclDialog();
   },
@@ -327,14 +340,16 @@ const VscadRulesScreen = {
 
   handleAnalyseTable: async function (composedRule) {
     // remove rows in case of any excedent rows
-    while (this.tableOriginal.firstChild)
+    while (this.tableOriginal.firstChild) {
       this.tableOriginal.removeChild(this.tableOriginal.firstChild);
-    while (this.tableReconfig.firstChild)
+    }
+    while (this.tableReconfig.firstChild) {
       this.tableReconfig.removeChild(this.tableReconfig.firstChild);
+    }
 
     // get rules from the composed rule expression
-    let arrExp1 = composedRule.getRulesFromExpression();
-    let arrExp2 = composedRule.getRulesFromExpression2();
+    const arrExp1 = composedRule.getRulesFromExpression();
+    const arrExp2 = composedRule.getRulesFromExpression2();
 
     // gets and stores object definition of rules
     this.arrComposedRules = await this.getCompositionObject(arrExp1);
@@ -352,21 +367,21 @@ const VscadRulesScreen = {
 
     composition = await rulesIDs.reduce(async (accum, ruleID) => {
       // waits for the last callback to finish
-      let requieredAcum = await accum;
+      const requieredAcum = await accum;
 
       // object composition for <Rule>
-      let unitRuleDescription = { id: ruleID, events: [], actions: [] };
+      const unitRuleDescription = { id: ruleID, events: [], actions: [] };
 
       // wait for <Rule> description
-      let rulePromise = await this.getRuleDescription(ruleID);
+      const rulePromise = await this.getRuleDescription(ruleID);
 
       // gets thing id's in <Rule> description
-      let actionsIds = rulePromise.effect.effects; // actionsIds
-      let eventIds = rulePromise.trigger.triggers; //eventIds
+      const actionsIds = rulePromise.effect.effects; // actionsIds
+      const eventIds = rulePromise.trigger.triggers; // eventIds
 
       // waits for <Thing> description
-      let eventPromise = await this.getThings(eventIds); // waits within function
-      let actionPromise = await this.getThings(actionsIds); // waits within function
+      const eventPromise = await this.getThings(eventIds); // waits within function
+      const actionPromise = await this.getThings(actionsIds); // waits within function
 
       // sets actions & events to according composition object
       unitRuleDescription.events = eventPromise;
@@ -381,7 +396,7 @@ const VscadRulesScreen = {
   },
 
   getRuleDescription(ruleId) {
-    return fetch('/rules/' + ruleId, { headers: API.headers() })
+    return fetch(`/rules/${ruleId}`, { headers: API.headers() })
       .then((response) => {
         return response.json();
       })
@@ -392,10 +407,10 @@ const VscadRulesScreen = {
 
   async getThings(thingsIds) {
     return await thingsIds.reduce(async (accum, thing) => {
-      let resultAcum = await accum; // awaits for last promises to resolve
+      const resultAcum = await accum; // awaits for last promises to resolve
 
-      let response = await fetch('/things/' + thing.property.thing, { headers: API.headers() });
-      let thingJson = await response.json();
+      const response = await fetch(`/things/${thing.property.thing}`, { headers: API.headers() });
+      const thingJson = await response.json();
 
       return [...resultAcum, thingJson];
     }, []);
@@ -407,17 +422,16 @@ const VscadRulesScreen = {
     arrRuleNodes.forEach((rule) => {
       if (rule != null) {
         // console.log('rule: ', rule);
-        let costNode = this.getAnalyseNodeInputCost();
+        const costNode = this.getAnalyseNodeInputCost();
         const tr = document.createElement('tr');
         let td;
-        let textCell;
         let textAcum = '';
 
         // append event nodes
         td = document.createElement('td');
         rule.events.forEach((event) => {
           // console.log('event title: ', event.title);
-          textAcum += event.title + '<br>';
+          textAcum += `${event.title}<br>`;
         });
         // textCell = document.createTextNode(textAcum);
         // td.appendChild(textCell);
@@ -437,10 +451,10 @@ const VscadRulesScreen = {
         td = document.createElement('td');
         rule.actions.forEach((action) => {
           // console.log('action title: ', action.title);
-          textAcum += action.title + '<br>';
+          textAcum += `${action.title}<br>`;
           lineCounter++;
         });
-        //check if has multiple actions, then add rows for each one
+        // check if has multiple actions, then add rows for each one
         if (lineCounter > 1) {
           td.rowSpan = 2;
         }
@@ -460,7 +474,7 @@ const VscadRulesScreen = {
   },
 
   getAnalyseNodeInputCost() {
-    let node = document.createElement('input');
+    const node = document.createElement('input');
     node.type = 'text';
     node.value = 0;
 
@@ -469,17 +483,17 @@ const VscadRulesScreen = {
 
   async createCellTextForActions(thingsIDs) {
     // get names from Id of thing
-    let thingTitles = await this.getThingNameFromID(thingsIDs);
+    const thingTitles = await this.getThingNameFromID(thingsIDs);
     let acumulator = '';
 
     thingTitles.forEach((element) => {
       console.log('element: ', element);
-      acumulator += element + '<br>';
+      acumulator += `${element}<br>`;
     });
 
     // console.log('acumulator: ', acumulator);
 
-    let cellText = document.createTextNode(acumulator);
+    const cellText = document.createTextNode(acumulator);
 
     return cellText;
   },
@@ -521,11 +535,11 @@ const VscadRulesScreen = {
   },
   requestExecution: function () {
     this.showLoader();
-    fetch('/composed-rules/deploy/1', { headers: API.headers() }).then((response) => {
+    fetch('/composed-rules/deploy/1', { headers: API.headers() }).then((_response) => {
       this.hiddeLoader();
     });
   },
-  requestVerify: function (cRule) {
+  requestVerify: function (_cRule) {
     fetch(`/rules`, { headers: API.headers() })
       .then((res) => {
         return res.json();
@@ -611,7 +625,7 @@ const VscadRulesScreen = {
           });
       });
   },
-  requestMcl: function (cRule) {
+  requestMcl: function (_cRule) {
     fetch(`/rules`, { headers: API.headers() })
       .then((res) => {
         return res.json();
@@ -726,12 +740,12 @@ const VscadRulesScreen = {
    */
   readRules: function readRules() {
     const createRuleButton = document.createElement('div');
-    createRuleButton.innerHTML = ` <div class="rule-part-block trigger">
-	 <img  src="/images/add.svg">
-</div>
-<div class="rule-info">
-			<h3>NEW RULE</h3>
-</div>`;
+    createRuleButton.innerHTML = `<div class="rule-part-block trigger">
+      <img  src="/images/add.svg">
+      </div>
+      <div class="rule-info">
+            <h3>NEW RULE</h3>
+      </div>`;
     createRuleButton.setAttribute('id', 'create-rule-shortcut');
     createRuleButton.setAttribute('class', 'rule');
     createRuleButton.addEventListener('click', () => {
@@ -877,7 +891,7 @@ const VscadRulesScreen = {
 
     return block;
   },
-  onDeviceBlockDown: function (event, desc, gateway) {
+  onDeviceBlockDown: function (event, desc, _gateway) {
     const deviceRect = event.target.getBoundingClientRect();
     const x = deviceRect.left;
     const y = deviceRect.top;

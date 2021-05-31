@@ -44,7 +44,7 @@ const ReconfigureScreen = {
     // Analyse button
     this.analyseButton.addEventListener('click', () => {
       console.log(this.cRule);
-      //handle css active visuals
+      // handle css active visuals
       modal.handleAnalyseCSSVisuals();
       // handle diagrams visuals
       this.requestAnalyseCompareDiagram();
@@ -114,11 +114,8 @@ const ReconfigureScreen = {
     // console.log('cRule', this.cRule);
 
     // specs of expression for workflow server
-    let bodyExpression1 = JSON.stringify(this.cRule.getBpmnDescription(this.fetchedRules));
-    let bodyExpression2 = JSON.stringify(this.cRule.getBpmnDescription2(this.fetchedRules));
-
-    let resultExpressionPromise1;
-    let resultExpressionPromise2;
+    const bodyExpression1 = JSON.stringify(this.cRule.getBpmnDescription(this.fetchedRules));
+    const bodyExpression2 = JSON.stringify(this.cRule.getBpmnDescription2(this.fetchedRules));
 
     const fetchOptions = {
       method: 'POST',
@@ -137,11 +134,11 @@ const ReconfigureScreen = {
 
     // adding body for expression 1
     fetchOptions.body = bodyExpression1;
-    resultExpressionPromise1 = fetch('http://localhost:9001/workflow', fetchOptions);
+    const resultExpressionPromise1 = fetch('http://localhost:9001/workflow', fetchOptions);
 
     // adding body for expression 2
     fetchOptions.body = bodyExpression2;
-    resultExpressionPromise2 = fetch('http://localhost:9001/workflow', fetchOptions);
+    const resultExpressionPromise2 = fetch('http://localhost:9001/workflow', fetchOptions);
 
     // when finishing calling http(s) url
     Promise.all([resultExpressionPromise1, resultExpressionPromise2])
@@ -217,7 +214,7 @@ const ReconfigureScreen = {
   },
 
   setProperties: async function (json1) {
-    var index = [];
+    const index = [];
     let json2 = this.getCurrentlyStates();
     await json2.then((data) => {
       json2 = data;
@@ -225,14 +222,13 @@ const ReconfigureScreen = {
 
     console.log('this is the original JSON', json1);
 
+    // eslint-disable-next-line @typescript-eslint/prefer-for-of
     for (let i = 0; i < json1.Rules.length; i++) {
-      let indice = json2.Rules.indexOf(json1.Rules[i]);
+      const indice = json2.Rules.indexOf(json1.Rules[i]);
       index.push(indice);
     }
 
-    var newArr = json1.Rule.filter(Boolean);
-
-    /*for (const data of newArr) {
+    /* for (const data of newArr) {
       for (const data2 of data.effects.objets) {
         const result = Object.keys(data2.state).map(function(key) {
           return [key, data2.state[key]];
@@ -253,7 +249,7 @@ const ReconfigureScreen = {
         for (let i = 0; i < result.length; i++) {
           await utils.setProperty(data3.objetId, result[i][0], result[i][1]);
         }
-      }*/
+      } */
   },
   showNotification: function (data) {
     const alertDialog = document.getElementById('validation-dialog-reconf');
@@ -306,6 +302,7 @@ const ReconfigureScreen = {
 
           for (let index = 0; index < cant; index++) {
             formatJson.Rules.push(rules[index].name);
+            // eslint-disable-next-line no-var
             var id = rules[index].id;
             formatJson.Rule[id] = {};
             formatJson.Rule[id].triggers = {};
@@ -571,7 +568,7 @@ const ReconfigureScreen = {
     newBlock.vscadDraggable.onDown(event);
     this.ComposedRuleBlocks.push(newBlock);
   },
-  onDeviceBlockDown: function (event, desc, gateway) {
+  onDeviceBlockDown: function (event, desc) {
     const deviceRect = event.target.getBoundingClientRect();
     const x = deviceRect.left;
     const y = deviceRect.top;

@@ -919,9 +919,11 @@
   <div id="connectivity-scrim" class="hidden"></div>
 
   <script>
+    /* eslint-disable @typescript-eslint/explicit-function-return-type */
+    /* eslint-disable @typescript-eslint/no-unused-vars */
     function openModal() {
-      var y = window.open('/reconfigure/1', '_blank', 'fullscreen=yes');
-      var timer = setInterval(function () {
+      const y = window.open('/reconfigure/1', '_blank', 'fullscreen=yes');
+      const timer = setInterval(function () {
         if (y.closed) {
           clearInterval(timer);
           location.reload();
@@ -932,17 +934,17 @@
     // Executes function only if document is ready
     function docReady(fn) {
       // see if DOM is already available
-      if (document.readyState === "complete" || document.readyState === "interactive") {
+      if (document.readyState === 'complete' || document.readyState === 'interactive') {
         // call on next available tick
         setTimeout(fn, 1);
       } else {
-        document.addEventListener("DOMContentLoaded", fn);
+        document.addEventListener('DOMContentLoaded', fn);
       }
     }
 
     // On document Ready
     docReady(() => {
-      // lister for Modal 
+      // lister for Modal
       // document.getElementById("analyse-reconf-button").addEventListener("click", e => {
       //   handleReconfAnalyseModal(e);
       // });
