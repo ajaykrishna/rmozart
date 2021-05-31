@@ -148,7 +148,7 @@ const VscadRulesScreen = {
     });
   },
 
-  addingModalClickEvent: function () {
+  addingModalClickEvent() {
     // hide modal
     this.diagramView.classList.remove('selected');
     this.diagramView.style.display = 'none';
@@ -496,6 +496,11 @@ const VscadRulesScreen = {
     const cellText = document.createTextNode(acumulator);
 
     return cellText;
+  },
+
+  stopListenerForModal() {
+    // this.diagramView.addEventListener('click', this.addingModalClickEvent);
+    // this.diagram
   },
 
   /* </ Reconfigure analyse functions */

@@ -41,6 +41,11 @@ const ReconfigureScreen = {
     this.ruleNameCustomize = this.view.querySelector('.rule-name-reconf');
     this.ruleName = this.view.querySelector('.reconf-rule-name');
 
+    // init Event Listeners
+    this.initEventListeners();
+  },
+
+  initEventListeners() {
     // Analyse button
     this.analyseButton.addEventListener('click', () => {
       console.log(this.cRule);
