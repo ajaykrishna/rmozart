@@ -677,75 +677,12 @@
       <a href="#" id="analyse-reconf-button" class="buttons">Analyse</a>
       <button id="vscad-create-rule-button" class="icon-button buttons"></button>
     </nav>
-
-    <!-- Modal for Analyse function  -->
-    <!-- <section data-view="diagram" class="hidden" id="analyse-modal-view">
-      <div id="analyse-canvas"></div>
-
-      <div id="analyse-header">
-        <h1 id="analyse-title"></h1>
-        <div id="analyse-result">
-          <label for="analyse-table-original"></label>
-
-        </div>
-      </div>
-    </section> -->
   </section>
 
 
   <!-- diagram screen -->
   <section data-view="diagram" class="hidden" id="diagram-view">
     <div id="canvas"></div>
-
-    <div id="analyse-view">
-      <div class="analyse-canvas-wrapper">
-        <div id="analyse-canvas-1" class="analyse-row"></div>
-        <div id="analyse-canvas-2" class="analyse-row"></div>
-      </div>
-      <div class="analyse-table-wrapper analyse-wrapper">
-        <table id="analyse-table-original" class="...">
-          <thead>
-            <tr>
-              <th colspan="4">Original</th>
-            </tr>
-            <tr>
-              <th>Event</th>
-              <th>Value</th>
-              <th>Action</th>
-              <th>Value</th>
-            </tr>
-          </thead>
-          <tbody id="analyse-table-original-body">
-            <tr>
-              <td>test 1</td>
-              <td>test 2</td>
-            </tr>
-          </tbody>
-        </table>
-        <!--  -->
-        <br>
-        <br>
-        <table id="analyse-table-reconfig" class="...">
-          <thead>
-            <tr>
-              <th colspan="4">Reconfiguration</th>
-            </tr>
-            <tr>
-              <th>Event</th>
-              <th>Value</th>
-              <th>Action</th>
-              <th>Value</th>
-            </tr>
-          </thead>
-          <tbody id="analyse-table-reconfig-body">
-            <tr>
-              <td>test 1</td>
-              <td>test 2</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
 
     <div id="validation-dialog">
       <div id="noti-header">
@@ -778,6 +715,130 @@
       <h3 id="mcl-dialog-title">MCL Properties</h3>
       <input type="text" id="mcl-formula" placeholder="[true*.on] false">
       <button id="mcl-check-button" class="buttons">Check</button>
+    </div>
+  </section>
+
+  <!-- Analyse modal -->
+  <section data-view="analyse-modal" id="analyse-component" class="diagram-view hidden">
+    <div id="analyse-view">
+      <div class="analyse-wrapper">
+        <div id="analyse-canvas-wrapper"></div>
+        <!-- <div id="analyse-canvas-2" class="analyse-row"></div> -->
+        <div id="analyse-table-wrapper">
+          <!-- selection component discuss -->
+          <div>
+            <!-- original selection -->
+            <form id="analyse-original-form" action="#" onsubmit="return false;">
+
+              <!-- Cost / Probability select -->
+              <label for="cost-prob-select">Cost / Probability</label>
+              <select name="cost-prob-select" id="cost-prob-select" class="form-select">
+                <option value="cost">Cost</option>
+                <option value="probability">Probability</option>
+              </select>
+
+
+              <!-- Rules Select -->
+              <label for="rules-select">Rule</label>
+              <select name="rules-select" id="rules-select">
+                <option value="...">...</option>
+              </select>
+
+              <!-- Event / Action Select -->
+              <label for="event-action-select"> Event / Action</label>
+              <select name="event-action-select" id="event-action-select">
+                <option value="...">...</option>
+              </select>
+
+              <!-- Value Input -->
+              <label for="analyse-value">Value</label>
+              <input type="text" name="analyse-value" id="analyse-orig-value" placeholder="0" type="text">
+
+              <button data-table="analyse-table-original" data-form='analyse-original-form' class="add-to-table"
+                type="submit">Add to
+                table</button>
+            </form>
+
+            <!-- reconfiguration selection -->
+            <form id="analyse-reconfiguration-form" action="#" onsubmit="return false;">
+              <!-- Cost / Probability select -->
+              <label for="cost-prob-select">Cost / Probability</label>
+              <select name="cost-prob-select" id="cost-prob-select">
+                <option value="cost">Cost</option>
+                <option value="probability">Probability</option>
+              </select>
+
+              <!-- Rules Select -->
+              <label for="rules-select">Rule</label>
+              <select name="rules-select" id="rules-select">
+                <option value="...">...</option>
+              </select>
+
+              <!-- Event / Action Select -->
+              <label for="event-action-select"> Event / Action</label>
+              <select name="event-action-select" id="event-action-select">
+                <option value="...">...</option>
+              </select>
+
+              <!-- Value Input -->
+              <label for="analyse-value">Value</label>
+              <input type="text" name="analyse-value" id="analyse-reconf-value" placeholder="0">
+
+              <button data-table="analyse-table-reconfig" data-form='analyse-reconfiguration-form' class="add-to-table"
+                type="submit">Add to table</button>
+            </form>
+          </div>
+
+          <!-- tables content -->
+          <div>
+            <!-- table for original -->
+            <table id="analyse-table-original" class="table">
+              <thead>
+                <tr>
+                  <th colspan="4">Original</th>
+                </tr>
+                <tr>
+                  <th>Rule</th>
+                  <th>Event / Action</th>
+                  <th>Probability</th>
+                  <th>Cost</th>
+                </tr>
+              </thead>
+              <tbody id="analyse-table-original-body">
+                <tr>
+                  <td>test 1</td>
+                  <td>test 2</td>
+                </tr>
+              </tbody>
+            </table>
+            <!--  -->
+            <br>
+            <br>
+
+            <!-- table for reconf -->
+            <table id="analyse-table-reconfig" class="table">
+              <thead>
+                <tr>
+                  <th colspan="4">Reconfiguration</th>
+                </tr>
+                <tr>
+                  <th>Rule</th>
+                  <th>Event / Action</th>
+                  <th>Probability</th>
+                  <th>Cost</th>
+                </tr>
+              </thead>
+              <tbody id="analyse-table-reconfig-body">
+                <tr>
+                  <td>test 1</td>
+                  <td>test 2</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div id="analyse-modal-btn">Next</div>
     </div>
   </section>
 

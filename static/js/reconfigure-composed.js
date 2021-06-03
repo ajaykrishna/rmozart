@@ -51,10 +51,10 @@ const ReconfigureScreen = {
       console.log(this.cRule);
       // handle css active visuals
       modal.handleAnalyseCSSVisuals();
-      // handle diagrams visuals
-      this.requestAnalyseCompareDiagram();
-      // handle data for table
-      modal.handleAnalyseTable(this.cRule);
+      // get diagrams xml
+      this.requestAnalyseCompareDiagram().then((result) => {
+        modal.handleAnalyseViewAccess(result, this.cRule, 0);
+      });
     });
 
     this.connectors.after = document.getElementById('part-after-reconf');
@@ -146,7 +146,7 @@ const ReconfigureScreen = {
     const resultExpressionPromise2 = fetch('http://localhost:9001/workflow', fetchOptions);
 
     // when finishing calling http(s) url
-    Promise.all([resultExpressionPromise1, resultExpressionPromise2])
+    return Promise.all([resultExpressionPromise1, resultExpressionPromise2])
       .then((responses) => {
         return Promise.all(
           responses.map((res) => {
@@ -158,7 +158,8 @@ const ReconfigureScreen = {
         // after calling the workflow API
         this.hiddeLoader();
         // console.log(...texts);
-        modal.showAnaylyseCompareDiagram(texts);
+        // modal.showAnaylyseCompareDiagram(texts);
+        return texts;
       })
       .catch((reason) => {
         // if any error

@@ -18,14 +18,21 @@ const VscadConnectorBlock = require('./rules/VscadConnectorBlock');
 const VscadRulesScreen = {
   init: function () {
     // reconfigure analyse components
+    this.analyseViewWrapper = document.getElementById('analyse-component'); // modal
     this.analyseView = document.getElementById('analyse-view');
-    this.diagram = document.getElementById('analyse-canvas-1');
-    this.diagram2 = document.getElementById('analyse-canvas-2');
-    this.anaylseCompareDiagramLoaded = false;
+    this.analyseCanvas = document.getElementById('analyse-canvas-wrapper');
+    this.analyseTable = document.getElementById('analyse-table-wrapper');
+    // this.diagram2 = document.getElementById('analyse-canvas-2');
     this.tableOriginal = document.getElementById('analyse-table-original-body');
     this.tableReconfig = document.getElementById('analyse-table-reconfig-body');
+    this.analyseBtn = document.getElementById('analyse-modal-btn');
+    this.addToTable = document.querySelectorAll('.add-to-table');
+    this.analyseBpmnXMLs = null;
     this.arrComposedRules = null;
     this.arrReconfigureRules = null;
+    this.selectedComposedRules = null;
+    this.selectedReconfigureRules = null;
+    this.analyseModalStepper = 0;
 
     //
     this.rulesList = document.getElementById('rules-side-menu');
@@ -97,7 +104,40 @@ const VscadRulesScreen = {
       selection.addRange(range);
     };
 
-    this.diagramView.addEventListener('click', this.addingModalClickEvent);
+    // Reconfigure Analyse set
+
+    // btn add to table node add to table
+    this.addToTable.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const table = document.getElementById(btn.getAttribute('data-table'));
+        const form = document.getElementById(btn.getAttribute('data-form'));
+
+        const costProb = form.querySelector('#cost-prob-select');
+        const rule = form.querySelector('#rules-select');
+        const eventAction = form.querySelector('#event-action-select');
+        const value = form.querySelector('input[name="analyse-value"]');
+
+        this.handleAnalyseCostProbability(table, form, costProb, rule, eventAction, value);
+      });
+    });
+
+    // btn Analyse listener
+    this.analyseBtn.addEventListener('click', () => {
+      if (this.analyseModalStepper <= 2 /*  */) {
+        this.handleAnalyseView(this.analyseBpmnXMLs, ++this.analyseModalStepper);
+      } else {
+        console.log('do calculation');
+      }
+    });
+
+    // modal
+    this.diagramView.addEventListener('click', () => {
+      this.diagramView.classList.remove('selected');
+      this.diagramView.style.display = 'none';
+      this.hiddeVerification();
+      this.hiddeDiagram();
+      this.hideMclDialog();
+    });
 
     this.mclDialog.addEventListener('click', (event) => {
       event.stopPropagation();
@@ -146,21 +186,6 @@ const VscadRulesScreen = {
       this.cRule.update();
       this.onPresentationChange();
     });
-  },
-
-  addingModalClickEvent() {
-    // hide modal
-    this.diagramView.classList.remove('selected');
-    this.diagramView.style.display = 'none';
-
-    // hide Reconfigure:analyse css visuals
-    this.hideAnalyseCSSvisuals();
-    // hide Reconfigure:compare css visuals
-    this.hiddeVerification();
-    // hide ComposedRules:BPMN css visuals
-    this.hiddeDiagram();
-    // hide ComposedRules:verify css visuals
-    this.hideMclDialog();
   },
 
   showLoader() {
@@ -253,51 +278,147 @@ const VscadRulesScreen = {
     diagram.style.display = 'none';
   },
 
-  showDiagram: function (bpmnXML) {
-    const diagram = document.getElementById('canvas');
-    diagram.style.display = 'flex';
-    this.diagramView.classList.add('selected');
-    this.diagramView.style.display = 'flex';
-    this.hiddeVerification();
-    this.hideMclDialog();
-    if (this.diagramLoaded) {
-      this.bpmnViewer.clear();
+  /* < Reconfigure analyse functions */
+
+  handleAnalyseCostProbability(table, form, costProb, rule, eventAction, value) {
+    this.storeData(table, form, costProb, rule, eventAction, value);
+
+    const tr = document.createElement('tr');
+    let td;
+    let text;
+    let textValue;
+
+    td = document.createElement('td');
+    textValue = rule.options[rule.selectedIndex].text;
+    text = document.createTextNode(textValue);
+    td.appendChild(text);
+    tr.appendChild(td);
+
+    td = document.createElement('td');
+    textValue = eventAction.options[eventAction.selectedIndex].text;
+    text = document.createTextNode(textValue);
+    td.appendChild(text);
+    tr.appendChild(td);
+
+    td = document.createElement('td');
+    textValue = value.value;
+    text = document.createTextNode(textValue);
+
+    if (costProb.value == 'probability') {
+      td.appendChild(text);
+      tr.appendChild(td);
+
+      td = document.createElement('td');
+      tr.appendChild(td);
     } else {
-      this.bpmnViewer = new BpmnJS({
-        container: '#canvas',
-      });
+      tr.appendChild(td);
+
+      td = document.createElement('td');
+      td.appendChild(text);
+      tr.appendChild(td);
     }
-    // import first diagram
-    this.bpmnViewer.importXML(bpmnXML, (err) => {
+
+    table.querySelector('tbody').appendChild(tr);
+  },
+
+  storeData() {
+    console.log();
+  },
+
+  showAnalyseDiagram(bpmnXML) {
+    this.analyseCanvas.innerHTML = '';
+    this.analyseCanvas.style.display = 'flex';
+
+    this.bpmnView = new BpmnJS({
+      container: this.analyseCanvas,
+    });
+
+    this.bpmnView.clear();
+
+    this.bpmnView.importXML(bpmnXML, (err) => {
       if (err) {
         return console.error('could not import BPMN 2.0 diagram', err);
       }
       // access viewer components
-      const canvas = this.bpmnViewer.get('canvas');
+      const canvas = this.bpmnView.get('canvas');
       // zoom to fit full viewport
       canvas.zoom('fit-viewport');
     });
-
-    this.diagramLoaded = true;
   },
-
-  /* < Reconfigure analyse functions */
 
   handleAnalyseCSSVisuals: function () {
     // display modal: true
-    this.diagramView.classList.add('selected');
-    this.diagramView.style.display = 'flex';
+    this.analyseViewWrapper.classList.add('selected');
+    this.analyseViewWrapper.style.display = 'flex';
 
     // display reconfigure section
     this.analyseView.style.display = 'block';
-
-    // hide other components if needed
-    this.hiddeVerification();
-    this.hideMclDialog();
   },
 
-  hideAnalyseCSSvisuals() {
-    this.analyseView.style.display = 'none';
+  async handleAnalyseViewAccess(bpmnXMLs, composedRule) {
+    // stores bpms xml for further usage
+    this.analyseBpmnXMLs = bpmnXMLs;
+
+    // get rules from the composed rule expression
+    const arrExp1 = composedRule.getRulesFromExpression();
+    const arrExp2 = composedRule.getRulesFromExpression2();
+
+    // gets and stores object definition of rules
+    this.arrComposedRules = await this.getCompositionObject(arrExp1);
+    this.arrReconfigureRules = await this.getCompositionObject(arrExp2);
+
+    this.handleAnalyseView(this.analyseBpmnXMLs, 0);
+  },
+
+  /**
+   *
+   * @param {<BPMNxml>} bpmnXMLs
+   * @param {<ComposedRule>} composedRule
+   */
+  handleAnalyseView(bpmnXMLs, stepToShow) {
+    /*
+        1. display none two forms
+        2. display none two tables
+        3. display flex <Form> from step
+        4. display flex <Table> from step
+    */
+
+    const originalForm = document.getElementById('analyse-original-form');
+    const reconfigureForm = document.getElementById('analyse-reconfiguration-form');
+    const tableOriginal = this.tableOriginal.parentNode;
+    const tableReconfig = this.tableReconfig.parentNode;
+
+    tableOriginal.style.display = 'none';
+    tableReconfig.style.display = 'none';
+    originalForm.style.display = 'none';
+    reconfigureForm.style.display = 'none';
+
+    // set step to show on modal
+    this.analyseModalStepper = stepToShow;
+
+    // handle modal view change
+    switch (this.analyseModalStepper) {
+      case 0: // shows first diagram & original form and table
+        this.showAnalyseDiagram(bpmnXMLs[0]);
+        tableOriginal.style.display = 'table';
+        originalForm.style.display = 'block';
+        this.showDatasetTable2(this.tableOriginal, 'analyse-original-form', this.arrComposedRules);
+        break;
+      case 1: // shows second diagram & reconfigure form and table
+        this.showAnalyseDiagram(bpmnXMLs[1]);
+        tableReconfig.style.display = 'table';
+        reconfigureForm.style.display = 'block';
+        this.showDatasetTable2(
+          this.tableReconfig,
+          'analyse-reconfiguration-form',
+          this.arrReconfigureRules
+        );
+        break;
+      // case 2: // shows dataset
+      //   this.analyseTable.style.display = 'flex';
+      //   this.showDatasetTable();
+      //   break;
+    }
   },
 
   showAnaylyseCompareDiagram: function (bpmnXMLs) {
@@ -338,8 +459,7 @@ const VscadRulesScreen = {
     this.anaylseCompareDiagram = true;
   },
 
-  handleAnalyseTable: async function (composedRule) {
-    // remove rows in case of any excedent rows
+  showDatasetTable: async function () {
     while (this.tableOriginal.firstChild) {
       this.tableOriginal.removeChild(this.tableOriginal.firstChild);
     }
@@ -347,19 +467,60 @@ const VscadRulesScreen = {
       this.tableReconfig.removeChild(this.tableReconfig.firstChild);
     }
 
-    // get rules from the composed rule expression
-    const arrExp1 = composedRule.getRulesFromExpression();
-    const arrExp2 = composedRule.getRulesFromExpression2();
+    await this.createAnalyseForm('analyse-original-form', this.arrComposedRules);
+    await this.createAnalyseForm('analyse-reconfiguration-form', this.arrReconfigureRules);
+  },
 
-    // gets and stores object definition of rules
-    this.arrComposedRules = await this.getCompositionObject(arrExp1);
-    this.arrReconfigureRules = await this.getCompositionObject(arrExp2);
-    console.log('getObjectComposition(cr): ', this.arrComposedRules);
-    console.log('getObjectComposition(rr): ', this.arrReconfigureRules);
+  showDatasetTable2(tableNode, formNode, arrComposedRules) {
+    // remove rows in case of any excedent rows
+    while (tableNode.firstChild) {
+      tableNode.removeChild(tableNode.firstChild);
+    }
 
-    // creates rows for every table
-    await this.createRowsForTable(this.tableOriginal, this.arrComposedRules);
-    await this.createRowsForTable(this.tableReconfig, this.arrReconfigureRules);
+    // creates rows for <Form>
+    this.createAnalyseForm(formNode, arrComposedRules);
+  },
+
+  createAnalyseForm(idForm, ruleComposition) {
+    // all input or selections of a form
+    const ruleSelect = document.querySelector(`#${idForm} #rules-select`);
+    const eventActionSelect = document.querySelector(`#${idForm} #event-action-select`);
+
+    // appends rules and event/actions
+    ruleComposition.forEach((rule) => {
+      // option for rule
+      const option = document.createElement('option');
+      option.value = rule.id;
+      option.text = rule.name;
+
+      // IMPORTANT ! Add option to Rule <Select> nodes
+      ruleSelect.appendChild(option);
+
+      // option for event / action
+      rule.events.forEach((event) => {
+        const eventOption = document.createElement('option');
+        eventOption.value = event.id;
+        eventOption.text = event.title;
+
+        // set to what rule it belongs
+        // eventOption.setAttribute('data-rule-belong') = rule.id;
+
+        // IMPORTANT !! Add option to Thing <Select> node
+        eventActionSelect.appendChild(eventOption);
+      });
+
+      rule.actions.forEach((action) => {
+        const actionOption = document.createElement('option');
+        actionOption.value = action.id;
+        actionOption.text = action.title;
+
+        // set to what rule it belongs
+        // actionOption.setAttribute('data-rule-belong') = rule.id;
+
+        // IMPORTANT ! Add option to Thing <Select> node
+        eventActionSelect.appendChild(actionOption);
+      });
+    });
   },
 
   async getCompositionObject(rulesIDs) {
@@ -370,7 +531,7 @@ const VscadRulesScreen = {
       const requieredAcum = await accum;
 
       // object composition for <Rule>
-      const unitRuleDescription = { id: ruleID, events: [], actions: [] };
+      const unitRuleDescription = { id: ruleID, name: null, events: [], actions: [] };
 
       // wait for <Rule> description
       const rulePromise = await this.getRuleDescription(ruleID);
@@ -383,6 +544,8 @@ const VscadRulesScreen = {
       const eventPromise = await this.getThings(eventIds); // waits within function
       const actionPromise = await this.getThings(actionsIds); // waits within function
 
+      // sets name to composition
+      unitRuleDescription.name = rulePromise.name;
       // sets actions & events to according composition object
       unitRuleDescription.events = eventPromise;
       unitRuleDescription.actions = actionPromise;
@@ -471,36 +634,6 @@ const VscadRulesScreen = {
         tableNode.appendChild(tr);
       }
     });
-  },
-
-  getAnalyseNodeInputCost() {
-    const node = document.createElement('input');
-    node.type = 'text';
-    node.value = 0;
-
-    return node;
-  },
-
-  async createCellTextForActions(thingsIDs) {
-    // get names from Id of thing
-    const thingTitles = await this.getThingNameFromID(thingsIDs);
-    let acumulator = '';
-
-    thingTitles.forEach((element) => {
-      console.log('element: ', element);
-      acumulator += `${element}<br>`;
-    });
-
-    // console.log('acumulator: ', acumulator);
-
-    const cellText = document.createTextNode(acumulator);
-
-    return cellText;
-  },
-
-  stopListenerForModal() {
-    // this.diagramView.addEventListener('click', this.addingModalClickEvent);
-    // this.diagram
   },
 
   /* </ Reconfigure analyse functions */
