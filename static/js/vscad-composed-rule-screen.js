@@ -108,6 +108,13 @@ const VscadRulesScreen = {
 
     // Reconfigure Analyse set
 
+    const closeBtn = document.getElementById('close-component');
+    closeBtn.addEventListener('click', () => {
+      // hide modal
+      this.analyseViewWrapper.classList.remove('selected');
+      this.analyseViewWrapper.style.display = 'none';
+    });
+
     const analyseRuleSelects = document.querySelectorAll(`select[name="rules-select"]`);
     analyseRuleSelects.forEach((select) => {
       select.addEventListener('change', () => {
