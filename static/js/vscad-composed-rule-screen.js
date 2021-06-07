@@ -30,9 +30,11 @@ const VscadRulesScreen = {
     this.analyseBpmnXMLs = null;
     this.arrComposedRules = null;
     this.arrReconfigureRules = null;
-    this.selectedComposedRules = null;
-    this.selectedReconfigureRules = null;
     this.analyseModalStepper = 0;
+    this.storedAnalyseRules = {
+      current: {},
+      reconfigure: {},
+    };
 
     //
     this.rulesList = document.getElementById('rules-side-menu');
@@ -109,6 +111,7 @@ const VscadRulesScreen = {
     // btn add to table node add to table
     this.addToTable.forEach((btn) => {
       btn.addEventListener('click', () => {
+        // analyse-table-original or analyse-table-reconfig
         const table = document.getElementById(btn.getAttribute('data-table'));
         const form = document.getElementById(btn.getAttribute('data-form'));
 
@@ -280,8 +283,23 @@ const VscadRulesScreen = {
 
   /* < Reconfigure analyse functions */
 
-  handleAnalyseCostProbability(table, form, costProb, rule, eventAction, value) {
-    this.storeData(table, form, costProb, rule, eventAction, value);
+  addToRow(table, form, accesor, data) {
+    const tds = table.querySelectorAll(`td[data-accessor='${accesor}']`);
+
+    console.log('tds: ', tds);
+
+    tds.forEach((td) => {
+      let inner;
+      td.dataset.tableValue === 'probability' && td.dataset.accessor === accesor
+        ? (inner = data.probability)
+        : (inner = data.cost);
+
+      td.innerHTML = inner;
+    });
+  },
+
+  createRow(table, form, accessor, data) {
+    console.log('data: ', data);
 
     const tr = document.createElement('tr');
     let td;
@@ -289,52 +307,122 @@ const VscadRulesScreen = {
     let textValue;
 
     td = document.createElement('td');
-    textValue = rule.options[rule.selectedIndex].text;
+
+    textValue = data.rule.name;
     text = document.createTextNode(textValue);
     td.appendChild(text);
     tr.appendChild(td);
 
     td = document.createElement('td');
-    textValue = eventAction.options[eventAction.selectedIndex].text;
+    textValue = data.thing.title;
     text = document.createTextNode(textValue);
     td.appendChild(text);
     tr.appendChild(td);
 
+    // Probability <td>
     td = document.createElement('td');
-    textValue = value.value;
+    td.dataset.tableValue = 'probability';
+    td.dataset.accessor = accessor;
+
+    textValue = data.probability;
+    text = document.createTextNode(textValue);
+    td.appendChild(text);
+
+    tr.appendChild(td);
+
+    // Cost <td>
+
+    td = document.createElement('td');
+    td.dataset.tableValue = 'cost';
+    td.dataset.accessor = accessor;
+
+    textValue = data.cost;
     text = document.createTextNode(textValue);
 
-    if (costProb.value == 'probability') {
-      td.appendChild(text);
-      tr.appendChild(td);
-
-      td = document.createElement('td');
-      tr.appendChild(td);
-    } else {
-      tr.appendChild(td);
-
-      td = document.createElement('td');
-      td.appendChild(text);
-      tr.appendChild(td);
-    }
+    td.appendChild(text);
+    tr.appendChild(td);
 
     table.querySelector('tbody').appendChild(tr);
   },
 
-  storeData() {
-    console.log();
+  handleAnalyseCostProbability(table, form, costProb, rule, eventAction, value) {
+    // boolean: created element in this.storedAnalyseRules
+    const wasCreated = this.storeData(table, form, costProb, rule, eventAction, value);
+
+    console.log('store data: ', this.storedAnalyseRules);
+
+    let selected;
+    const accesor = `${rule.value}-${eventAction.value}`;
+
+    if (table.id === 'analyse-table-original') {
+      selected = this.storedAnalyseRules.current[accesor];
+      !wasCreated
+        ? this.addToRow(table, form, accesor, selected)
+        : this.createRow(table, form, accesor, selected);
+    } else {
+      selected = this.storedAnalyseRules.reconfigure[accesor];
+      !wasCreated
+        ? this.addToRow(table, form, accesor, selected)
+        : this.createRow(table, form, accesor, selected);
+    }
+  },
+
+  storeData(table, form, costProb, rule, eventAction, value) {
+    const accesor = `${rule.value}-${eventAction.value}`;
+    let created = false;
+    let auxiliar;
+
+    // check to what Composed to rule store
+    if (table.id === 'analyse-table-original') {
+      auxiliar = this.storedAnalyseRules.current[accesor];
+    } else {
+      auxiliar = this.storedAnalyseRules.reconfigure[accesor];
+    }
+
+    //  If element does not exist, it creates the element
+    if (typeof auxiliar === 'undefined') {
+      created = true;
+      auxiliar = {};
+      auxiliar.rule = { id: rule.value, name: rule.options[rule.selectedIndex].text };
+      auxiliar.thing = {
+        id: eventAction.value,
+        title: eventAction.options[eventAction.selectedIndex].text,
+      };
+    }
+
+    // Store in cost or probability
+    if (costProb.value === 'cost') {
+      auxiliar.cost = value.value;
+    } else {
+      auxiliar.probability = value.value;
+    }
+
+    // store data. This is in case undefined was found trying to retrive object
+    if (table.id === 'analyse-table-original') {
+      this.storedAnalyseRules.current[accesor] = auxiliar;
+    } else {
+      this.storedAnalyseRules.reconfigure[accesor] = auxiliar;
+    }
+
+    return created;
   },
 
   showAnalyseDiagram(bpmnXML) {
+    // starts from zero in case node has any elements
     this.analyseCanvas.innerHTML = '';
+
+    // !-- can be written in css (further refractor)
     this.analyseCanvas.style.display = 'flex';
 
+    // creates an intance of BpmnJs
     this.bpmnView = new BpmnJS({
       container: this.analyseCanvas,
     });
 
+    // I don't know what this does
     this.bpmnView.clear();
 
+    // creates inside of the view of SVG
     this.bpmnView.importXML(bpmnXML, (err) => {
       if (err) {
         return console.error('could not import BPMN 2.0 diagram', err);
@@ -359,7 +447,7 @@ const VscadRulesScreen = {
     // stores bpms xml for further usage
     this.analyseBpmnXMLs = bpmnXMLs;
 
-    // get rules from the composed rule expression
+    // get rules arrar (ex.[1, 2, 5]) from the composed rule expression
     const arrExp1 = composedRule.getRulesFromExpression();
     const arrExp2 = composedRule.getRulesFromExpression2();
 
@@ -375,13 +463,15 @@ const VscadRulesScreen = {
    * @param {<BPMNxml>} bpmnXMLs
    * @param {<ComposedRule>} composedRule
    */
-  handleAnalyseView(bpmnXMLs, stepToShow) {
+  handleAnalyseView(bpmnXML, stepToShow) {
     /*
         1. display none two forms
         2. display none two tables
         3. display flex <Form> from step
         4. display flex <Table> from step
     */
+
+    const title = document.getElementById('analyse-modal-title');
 
     const originalForm = document.getElementById('analyse-original-form');
     const reconfigureForm = document.getElementById('analyse-reconfiguration-form');
@@ -399,13 +489,16 @@ const VscadRulesScreen = {
     // handle modal view change
     switch (this.analyseModalStepper) {
       case 0: // shows first diagram & original form and table
-        this.showAnalyseDiagram(bpmnXMLs[0]);
+        title.innerHTML = 'Current Configuration';
+        this.showAnalyseDiagram(bpmnXML[0]);
         tableOriginal.style.display = 'table';
         originalForm.style.display = 'block';
         this.showDatasetTable2(this.tableOriginal, 'analyse-original-form', this.arrComposedRules);
         break;
+
       case 1: // shows second diagram & reconfigure form and table
-        this.showAnalyseDiagram(bpmnXMLs[1]);
+        title.innerHTML = 'Reconfigure';
+        this.showAnalyseDiagram(bpmnXML[1]);
         tableReconfig.style.display = 'table';
         reconfigureForm.style.display = 'block';
         this.showDatasetTable2(
@@ -419,56 +512,6 @@ const VscadRulesScreen = {
       //   this.showDatasetTable();
       //   break;
     }
-  },
-
-  showAnaylyseCompareDiagram: function (bpmnXMLs) {
-    if (this.anaylseCompareDiagram) {
-      this.bpmnViewerAnalyse.clear();
-      this.bpmnViewerAnalyse2.clear();
-    } else {
-      this.bpmnViewerAnalyse = new BpmnJS({
-        container: this.diagram,
-      });
-
-      this.bpmnViewerAnalyse2 = new BpmnJS({
-        container: this.diagram2,
-      });
-    }
-    // import diagram
-    this.bpmnViewerAnalyse.importXML(bpmnXMLs[0], (err) => {
-      if (err) {
-        return console.error('could not import BPMN 2.0 diagram', err);
-      }
-      // access viewer components
-      const canvas = this.bpmnViewerAnalyse.get('canvas');
-      // zoom to fit full viewport
-      canvas.zoom('fit-viewport');
-    });
-
-    // import second diagram
-    this.bpmnViewerAnalyse2.importXML(bpmnXMLs[1], (err) => {
-      if (err) {
-        return console.error('could not import BPMN 2.0 diagram', err);
-      }
-      // access viewer components
-      const canvas = this.bpmnViewerAnalyse2.get('canvas');
-      // zoom to fit full viewport
-      canvas.zoom('fit-viewport');
-    });
-
-    this.anaylseCompareDiagram = true;
-  },
-
-  showDatasetTable: async function () {
-    while (this.tableOriginal.firstChild) {
-      this.tableOriginal.removeChild(this.tableOriginal.firstChild);
-    }
-    while (this.tableReconfig.firstChild) {
-      this.tableReconfig.removeChild(this.tableReconfig.firstChild);
-    }
-
-    await this.createAnalyseForm('analyse-original-form', this.arrComposedRules);
-    await this.createAnalyseForm('analyse-reconfiguration-form', this.arrReconfigureRules);
   },
 
   showDatasetTable2(tableNode, formNode, arrComposedRules) {
@@ -496,6 +539,11 @@ const VscadRulesScreen = {
       // IMPORTANT ! Add option to Rule <Select> nodes
       ruleSelect.appendChild(option);
 
+      // opt group for events
+      const optgroupEvents = document.createElement('optgroup');
+      optgroupEvents.label = 'Events';
+      optgroupActions.dataset.forRule = rule.id;
+
       // option for event / action
       rule.events.forEach((event) => {
         const eventOption = document.createElement('option');
@@ -506,8 +554,16 @@ const VscadRulesScreen = {
         // eventOption.setAttribute('data-rule-belong') = rule.id;
 
         // IMPORTANT !! Add option to Thing <Select> node
-        eventActionSelect.appendChild(eventOption);
+        optgroupEvents.appendChild(eventOption);
       });
+
+      // add optgroup for Events to select
+      eventActionSelect.appendChild(optgroupEvents);
+
+      // optgroup fot actions
+      const optgroupActions = document.createElement('optgroup');
+      optgroupActions.label = 'Actions';
+      optgroupActions.dataset.forRule = rule.id;
 
       rule.actions.forEach((action) => {
         const actionOption = document.createElement('option');
@@ -518,11 +574,31 @@ const VscadRulesScreen = {
         // actionOption.setAttribute('data-rule-belong') = rule.id;
 
         // IMPORTANT ! Add option to Thing <Select> node
-        eventActionSelect.appendChild(actionOption);
+        optgroupActions.appendChild(actionOption);
       });
+
+      // add optgroup for Actions to select
+      eventActionSelect.appendChild(optgroupActions);
     });
   },
 
+  /**
+   *
+   * @param {<array>} rulesIDs array of ints of rules id's
+   * @returns return Object Composition
+   *
+   * Object Composition:
+   * [
+   *  { id: ruleId, title: ruleTitle, events: [], actions: []},
+   *  ... // other object
+   * ]
+   *
+   * events Composition:
+   * [
+   *  {...}, // complete <Thing> Object
+   *  ... // Another object
+   * ]
+   */
   async getCompositionObject(rulesIDs) {
     let composition = [];
 
@@ -577,63 +653,6 @@ const VscadRulesScreen = {
 
       return [...resultAcum, thingJson];
     }, []);
-  },
-
-  createRowsForTable(tableNode, arrRuleNodes) {
-    // console.log('table node: ', tableNode);
-    console.log('array nodes: ', arrRuleNodes);
-    arrRuleNodes.forEach((rule) => {
-      if (rule != null) {
-        // console.log('rule: ', rule);
-        const costNode = this.getAnalyseNodeInputCost();
-        const tr = document.createElement('tr');
-        let td;
-        let textAcum = '';
-
-        // append event nodes
-        td = document.createElement('td');
-        rule.events.forEach((event) => {
-          // console.log('event title: ', event.title);
-          textAcum += `${event.title}<br>`;
-        });
-        // textCell = document.createTextNode(textAcum);
-        // td.appendChild(textCell);
-        td.innerHTML = textAcum;
-        tr.appendChild(td);
-
-        // text acum reset
-        textAcum = '';
-
-        // append cost node
-        td = document.createElement('td');
-        td.appendChild(costNode.cloneNode(true));
-        tr.appendChild(td);
-
-        // append action nodes
-        let lineCounter = 0;
-        td = document.createElement('td');
-        rule.actions.forEach((action) => {
-          // console.log('action title: ', action.title);
-          textAcum += `${action.title}<br>`;
-          lineCounter++;
-        });
-        // check if has multiple actions, then add rows for each one
-        if (lineCounter > 1) {
-          td.rowSpan = 2;
-        }
-        // textCell = document.createTextNode(textAcum);
-        // td.appendChild(textCell);
-        td.innerHTML = textAcum;
-        tr.appendChild(td);
-
-        // append cost node
-        td = document.createElement('td');
-        td.appendChild(costNode.cloneNode(true));
-        tr.appendChild(td);
-
-        tableNode.appendChild(tr);
-      }
-    });
   },
 
   /* </ Reconfigure analyse functions */

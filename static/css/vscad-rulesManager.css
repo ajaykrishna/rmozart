@@ -224,6 +224,12 @@
   background: #09070782;
 }
 /* <Reconfigure:analyse modal css rule> */
+#analyse-modal-title {
+  width: fit-content;
+  margin: auto;
+  margin-bottom: 1em;
+}
+
 input[type='text'],
 select {
   width: max-content;
