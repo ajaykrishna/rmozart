@@ -108,6 +108,29 @@ const VscadRulesScreen = {
 
     // Reconfigure Analyse set
 
+    const analyseRuleSelects = document.querySelectorAll(`select[name="rules-select"]`);
+    analyseRuleSelects.forEach((select) => {
+      select.addEventListener('change', () => {
+        const ruleId = select.value;
+
+        const thingsDiffOption = document.querySelectorAll(
+          `#event-action-select optgroup:not([data-for-rule='${ruleId}'])`
+        );
+
+        thingsDiffOption.forEach((thingsOpt) => {
+          thingsOpt.style.display = 'none';
+        });
+
+        const thingsFountOpt = document.querySelectorAll(
+          `#event-action-select optgroup[data-for-rule='${ruleId}']`
+        );
+
+        thingsFountOpt.forEach((optgroup) => {
+          optgroup.style.display = 'block';
+        });
+      });
+    });
+
     // btn add to table node add to table
     this.addToTable.forEach((btn) => {
       btn.addEventListener('click', () => {
@@ -286,8 +309,6 @@ const VscadRulesScreen = {
   addToRow(table, form, accesor, data) {
     const tds = table.querySelectorAll(`td[data-accessor='${accesor}']`);
 
-    console.log('tds: ', tds);
-
     tds.forEach((td) => {
       let inner;
       td.dataset.tableValue === 'probability' && td.dataset.accessor === accesor
@@ -299,8 +320,6 @@ const VscadRulesScreen = {
   },
 
   createRow(table, form, accessor, data) {
-    console.log('data: ', data);
-
     const tr = document.createElement('tr');
     let td;
     let text;
@@ -542,7 +561,7 @@ const VscadRulesScreen = {
       // opt group for events
       const optgroupEvents = document.createElement('optgroup');
       optgroupEvents.label = 'Events';
-      optgroupActions.dataset.forRule = rule.id;
+      optgroupEvents.dataset.forRule = rule.id;
 
       // option for event / action
       rule.events.forEach((event) => {
