@@ -224,6 +224,30 @@
   background: #09070782;
 }
 /* <Reconfigure:analyse modal css rule> */
+
+.close-component {
+  right: 0px;
+  top: -30px;
+  position: relative;
+  float: right;
+  font-size: 4em;
+}
+
+#analyse-component .title-bar {
+  height: 1rem;
+}
+
+#analyse-component .title-bar h2 {
+  font-family: 'Open Sans', sans-serif;
+  margin: auto;
+  text-align: center;
+  font-size: medium;
+}
+
+.add-to-table {
+  float: right;
+}
+
 #analyse-modal-title {
   width: fit-content;
   margin: auto;
