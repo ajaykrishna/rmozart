@@ -801,9 +801,14 @@ const VscadRulesScreen = {
             return res.json();
           })
           .then((data) => {
-            console.log('verification data');
+            console.log('verification data (actual)');
             console.log(data);
-            this.showVerification(data);
+            //Mock data - quick changes
+            var mockdata = {};
+            mockdata.status = false;
+            mockdata.message = "Deadlock found :("; 
+            console.log('mockdata - '+mockdata);
+            this.showVerification(mockdata);
             this.hiddeLoader();
           });
       });
@@ -889,7 +894,11 @@ const VscadRulesScreen = {
             return res.json();
           })
           .then((data) => {
-            this.showVerification(data);
+            //mock response
+            var mockdata = {};
+            mockdata.status = false;
+            mockdata.message = "Property-failed"; 
+            this.showVerification(mockdata);
             this.hiddeLoader();
           });
       });

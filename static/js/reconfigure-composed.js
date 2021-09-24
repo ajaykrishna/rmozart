@@ -304,7 +304,7 @@ const ReconfigureScreen = {
         .finally(async () => {
           formatJson.Rules = [];
           formatJson.Exp = expression;
-          formatJson.Rule = [];
+          formatJson.Rule = {};
 
           for (let index = 0; index < cant; index++) {
             formatJson.Rules.push(rules[index].name);
